@@ -4,11 +4,9 @@ import '@fontsource/noto-sans/400.css';
 import '@fontsource/noto-sans/500.css';
 import '@fontsource/noto-sans/700.css';
 
-const defaultTheme = createTheme();
-
 const customTheme = createTheme({
   typography: {
-    fontFamily: 'Noto Sans, serif',
+    fontFamily: 'Noto Sans, sans-serif',
   },
   palette: {
     primary: {
@@ -26,7 +24,7 @@ const customTheme = createTheme({
       styleOverrides: {
         root: {
           '&.Mui-focusVisible': {
-            outline: `2px solid ${defaultTheme.palette.common.white}`,
+            outline: '2px solid white',
           },
         },
       },

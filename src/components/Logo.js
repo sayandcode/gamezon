@@ -3,7 +3,6 @@ import '@fontsource/racing-sans-one';
 import PropTypes from 'prop-types';
 
 export default function Logo(props) {
-  // eslint-disable-next-line react/prop-types
   const { sx, ...restProps } = props;
   return (
     <Typography
@@ -12,9 +11,19 @@ export default function Logo(props) {
       sx={{
         ...sx,
         fontFamily: 'Racing Sans One, cursive',
+        display: 'inline-block',
       }}
     >
       Gamezon
     </Typography>
   );
 }
+
+Logo.propTypes = {
+  // eslint-disable-next-line react/forbid-prop-types
+  sx: PropTypes.object,
+};
+
+Logo.defaultProps = {
+  sx: {},
+};
