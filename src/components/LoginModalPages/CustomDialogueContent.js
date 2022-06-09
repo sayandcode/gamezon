@@ -15,22 +15,35 @@ export default function CustomDialogueContent({
   const { setCurrPage, onClose } = useContext(LoginModalContext);
 
   return (
-    <Box sx={{ px: 3, pt: 1, pb: 2, minWidth: '30vw', minHeight: '30vh' }}>
+    <Box
+      sx={{
+        ml: withBackButton ? 5 : 3,
+        mr: 3,
+        mt: 1,
+        mb: 2,
+        minWidth: '30vw',
+        minHeight: '30vh',
+      }}
+    >
       <Stack direction="row" mb={1} alignItems="center">
         {withBackButton && (
-          <IconButton edge="start" onClick={() => setCurrPage('mainLogin')}>
+          <IconButton
+            edge="start"
+            sx={{ ml: -5 }}
+            onClick={() => setCurrPage('mainLogin')}
+          >
             <ArrowBackIosNewIcon />
           </IconButton>
         )}
         <Typography variant="h6" component="div">
           {heading}
         </Typography>
-        <IconButton edge="end" sx={{ ml: 'auto' }} onClose={onClose}>
+        <IconButton edge="end" sx={{ ml: 'auto' }} onClick={onClose}>
           <CloseIcon />
         </IconButton>
       </Stack>
-      <Divider />
-      <Stack mt={2}>{children}</Stack>
+      <Divider sx={{ mb: 2 }} />
+      {children}
     </Box>
   );
 }

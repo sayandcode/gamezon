@@ -1,4 +1,4 @@
-import { createTheme } from '@mui/material';
+import { alpha, createTheme } from '@mui/material';
 import '@fontsource/noto-sans/300.css';
 import '@fontsource/noto-sans/400.css';
 import '@fontsource/noto-sans/500.css';
@@ -31,6 +31,36 @@ const customTheme = createTheme({
       defaultProps: {
         // The props to apply
         disableRipple: true, // No more ripple, on the whole application 💣!
+      },
+    },
+    MuiTextField: {
+      defaultProps: {
+        InputProps: {
+          notched: false,
+        },
+        InputLabelProps: {
+          shrink: true,
+          variant: 'standard',
+        },
+      },
+      styleOverrides: {
+        root: ({ ownerState, theme }) => ({
+          '.MuiOutlinedInput-root': {
+            marginTop: ownerState.label && theme.spacing(2.5),
+            marginBottom: theme.spacing(2),
+            '&.Mui-focused': {
+              backgroundColor: 'transparent',
+              fieldset: {
+                border: '2px solid',
+                borderColor: alpha(theme.palette.primary.light, 0.75),
+                boxShadow: `${alpha(
+                  theme.palette.primary.light,
+                  0.25
+                )} 0 0 2px 2px`,
+              },
+            },
+          },
+        }),
       },
     },
   },

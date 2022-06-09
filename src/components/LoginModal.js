@@ -5,6 +5,7 @@ import useMeasure from 'react-use-measure';
 import { Modal, Paper } from '@mui/material';
 import {
   MainLoginPage,
+  SignInWithEmail,
   SignInWithPhoneNumberPage,
 } from './LoginModalPages/LoginModalPages';
 import { LoginModalContextProvider } from './LoginModalPages/LoginModalContext';
@@ -13,6 +14,7 @@ import customTheme from '../CustomTheme';
 const pageContent = {
   mainLogin: <MainLoginPage />,
   signInWithPhoneNumber: <SignInWithPhoneNumberPage />,
+  signInWithEmail: <SignInWithEmail />,
 };
 
 const ModalContentAnimationVariants = {
@@ -34,7 +36,7 @@ const ModalContentAnimationVariants = {
 };
 
 export default function LoginModal({ open, onClose }) {
-  const [currPage, setCurrPage] = useState('mainLogin');
+  const [currPage, setCurrPage] = useState('signInWithPhoneNumber');
   const [
     ModalContentRef,
     { width: ModalContentWidth, height: ModalContentHeight },
