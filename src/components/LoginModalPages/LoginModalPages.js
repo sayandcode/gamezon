@@ -1,7 +1,8 @@
 import { Google as GoogleIcon } from '@mui/icons-material';
-import { Button, darken, Stack, TextField } from '@mui/material';
+import { Button, darken, Stack } from '@mui/material';
 import { useContext, useState } from 'react';
 import Logo from '../Logo';
+import MuiPhoneNumberInput from '../MuiPhoneNumberInput';
 import CustomDialogueContent from './CustomDialogueContent';
 import { LoginModalContext } from './LoginModalContext';
 
@@ -58,12 +59,7 @@ export function SignInWithPhoneNumberPage() {
       withBackButton
     >
       <div style={{ textAlign: 'center' }}>
-        <TextField
-          label="Phone Number"
-          type="tel"
-          value={phoneNumber}
-          onChange={(e) => setPhoneNumber(e.target.value)}
-        />
+        <MuiPhoneNumberInput onChange={(newVal) => setPhoneNumber(newVal)} />
       </div>
       <Button
         variant="contained"

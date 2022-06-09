@@ -45,9 +45,9 @@ const customTheme = createTheme({
       },
       styleOverrides: {
         root: ({ ownerState, theme }) => ({
+          marginBottom: theme.spacing(2),
           '.MuiOutlinedInput-root': {
             marginTop: ownerState.label && theme.spacing(2.5),
-            marginBottom: theme.spacing(2),
             '&.Mui-focused': {
               backgroundColor: 'transparent',
               fieldset: {
@@ -55,6 +55,16 @@ const customTheme = createTheme({
                 borderColor: alpha(theme.palette.primary.light, 0.75),
                 boxShadow: `${alpha(
                   theme.palette.primary.light,
+                  0.25
+                )} 0 0 2px 2px`,
+              },
+            },
+            '&.Mui-error': {
+              fieldset: {
+                border: '2px solid',
+                borderColor: alpha(theme.palette.error.main, 0.75),
+                boxShadow: `${alpha(
+                  theme.palette.error.main,
                   0.25
                 )} 0 0 2px 2px`,
               },
