@@ -39,23 +39,23 @@ export default function SignInWithEmail() {
       heading={<>Sign in With Your Email</>}
       withBackButton
     >
-      <TextField
-        label="Email Address"
-        type="email"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        helperText={inputElementProps.helperText}
-        error={inputElementProps.error}
-        inputRef={EmailRef}
-      />
-      <Button
-        variant="contained"
-        size="large"
-        sx={{ my: 2, marginInline: '50%', transform: 'translateX(-50%)' }}
-        onClick={handleSubmit}
-      >
-        Submit
-      </Button>
+      <form style={{ textAlign: 'center' }}>
+        <TextField
+          required
+          placeholder="abc@xyz.com"
+          label="Email Address"
+          type="email"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          helperText={inputElementProps.helperText}
+          error={inputElementProps.error}
+          inputRef={EmailRef}
+          fullWidth
+        />
+        <Button variant="contained" size="large" onClick={handleSubmit}>
+          Submit
+        </Button>
+      </form>
     </CustomDialogueContent>
   );
 }

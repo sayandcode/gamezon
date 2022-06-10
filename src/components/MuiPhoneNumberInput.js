@@ -12,6 +12,7 @@ import getUnicodeFlagIcon from 'country-flag-icons/unicode';
 // always accessible to us via state, so no harm done
 // We mirror this behaviour in our MuiPhoneNumbeInput Component
 function MuiPhoneNumberInput({
+  required,
   helperText,
   error,
   onChange,
@@ -28,66 +29,68 @@ function MuiPhoneNumberInput({
   useEffect(() => setFirstMount(false), []);
 
   return (
-    <Box
-      sx={{
-        ...wrapperComponentSx,
-        position: 'relative',
-        display: 'inline-block',
-      }}
-    >
-      <CountrySelect
-        labels={en}
-        value={country}
-        title="Select your country"
-        onChange={setCountry}
-        style={{
-          position: 'absolute',
-          left: '1px',
-          top: 0,
-          transform: 'translateY(+40.5%)',
-          height: firstMount ? 'auto' : inputRef.current.offsetHeight * 0.95,
-          width: '3.5ch',
-          fontSize: '2rem',
-          zIndex: 10,
-          '&:hover': {
-            backgroundColor: 'red',
-          },
+    <Box sx={{ display: 'inline-block', ...wrapperComponentSx }}>
+      <Box
+        sx={{
+          position: 'relative',
+          display: 'inline-block',
         }}
-        ref={SelectRef}
-      />
-      <TextField
-        // focused
-        label="Phone Number"
-        helperText={helperText}
-        error={error}
-        inputProps={{
-          type: 'tel',
-          ref: inputRef,
-          style: {
-            paddingLeft: firstMount
-              ? 'auto'
-              : `${SelectRef.current.offsetWidth}px`,
-          },
-          international: true,
-          withCountryCallingCode: true,
-          country,
-        }}
-        // eslint-disable-next-line react/jsx-no-duplicate-props
-        InputProps={{
-          inputComponent: Input,
-          notched: false, // need to specify this here cause it becomes true by default when Input props is defined
-          startAdornment: <InputAdornment position="start" />,
-        }}
-        // value={inputValue}
-        onChange={(newVal) => {
-          onChange(newVal);
-        }}
-      />
+      >
+        <CountrySelect
+          labels={en}
+          value={country}
+          title="Select your country"
+          onChange={setCountry}
+          style={{
+            position: 'absolute',
+            left: '1px',
+            top: 0,
+            transform: 'translateY(+40.5%)',
+            height: firstMount ? 'auto' : inputRef.current.offsetHeight * 0.95,
+            width: '3.5ch',
+            fontSize: '2rem',
+            zIndex: 10,
+            '&:hover': {
+              backgroundColor: 'red',
+            },
+          }}
+          ref={SelectRef}
+        />
+        <TextField
+          required={required}
+          label="Phone Number"
+          helperText={helperText}
+          error={error}
+          inputProps={{
+            type: 'tel',
+            ref: inputRef,
+            style: {
+              paddingLeft: firstMount
+                ? 'auto'
+                : `${SelectRef.current.offsetWidth}px`,
+            },
+            international: true,
+            withCountryCallingCode: true,
+            country,
+          }}
+          // eslint-disable-next-line react/jsx-no-duplicate-props
+          InputProps={{
+            inputComponent: Input,
+            notched: false, // need to specify this here cause it becomes true by default when Input props is defined
+            startAdornment: <InputAdornment position="start" />,
+          }}
+          // value={inputValue}
+          onChange={(newVal) => {
+            onChange(newVal);
+          }}
+        />
+      </Box>
     </Box>
   );
 }
 
 MuiPhoneNumberInput.propTypes = {
+  required: PropTypes.bool,
   helperText: PropTypes.string,
   error: PropTypes.bool,
   onChange: PropTypes.func.isRequired,
@@ -96,6 +99,7 @@ MuiPhoneNumberInput.propTypes = {
 };
 MuiPhoneNumberInput.defaultProps = {
   sx: {},
+  required: false,
   helperText: '',
   error: false,
 };

@@ -40,21 +40,18 @@ export default function SignInWithPhoneNumberPage() {
       heading={<>Sign in With Your Phone Number</>}
       withBackButton
     >
-      <div style={{ textAlign: 'center' }}>
+      <form style={{ textAlign: 'center' }}>
         <MuiPhoneNumberInput
+          required
           helperText={phoneInputProps.helperText}
           error={phoneInputProps.error}
           onChange={(newVal) => setPhoneNumber(newVal)}
+          sx={{ display: 'block' }}
         />
-      </div>
-      <Button
-        variant="contained"
-        size="large"
-        sx={{ my: 2, marginInline: '50%', transform: 'translateX(-50%)' }}
-        onClick={handleSubmit}
-      >
-        Submit
-      </Button>
+        <Button variant="contained" size="large" onClick={handleSubmit}>
+          Submit
+        </Button>
+      </form>
     </CustomDialogueContent>
   );
 }

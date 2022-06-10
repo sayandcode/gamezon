@@ -34,7 +34,7 @@ const ModalContentAnimationVariants = {
 };
 
 export default function LoginModal({ open, onClose }) {
-  const [currPage, setCurrPage] = useState('signInWithEmail');
+  const [currPage, setCurrPage] = useState('mainLogin');
   const [
     ModalContentRef,
     { width: ModalContentWidth, height: ModalContentHeight },
