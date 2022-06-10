@@ -1,9 +1,9 @@
-import { Google as GoogleIcon } from '@mui/icons-material';
-import { Button, darken, Stack } from '@mui/material';
+import { Button, Stack } from '@mui/material';
 import { useContext } from 'react';
 import Logo from '../Logo';
 import CustomDialogueContent from './CustomDialogueContent';
 import { LoginModalContext } from './LoginModalContext';
+import SignInWithGoogleButton from './SignInWithGoogleButton';
 
 export default function MainLoginPage() {
   const { setCurrPage } = useContext(LoginModalContext);
@@ -17,20 +17,7 @@ export default function MainLoginPage() {
       }
     >
       <Stack spacing={2}>
-        <Button
-          variant="outlined"
-          sx={{
-            bgcolor: '#4285f4',
-            color: 'white',
-            '&:hover': {
-              bgcolor: darken('#4285f4', 0.2),
-            },
-          }}
-          startIcon={<GoogleIcon />}
-          size="large"
-        >
-          Sign in with Google
-        </Button>
+        <SignInWithGoogleButton />
         <Button
           variant="outlined"
           onClick={() => setCurrPage('signInWithPhoneNumber')}

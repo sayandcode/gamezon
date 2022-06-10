@@ -21,9 +21,12 @@ import {
   Toolbar,
 } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
+import { signOut } from 'firebase/auth';
+import { PropTypes } from 'prop-types';
 import Logo from './Logo';
 import LoginModal from './LoginModal';
 import { FirebaseContext } from '../utlis/FirebaseContext';
+import { auth } from '../utlis/firebase-config';
 
 const Navbar = React.forwardRef((props, ref) => {
   return (
@@ -86,9 +89,8 @@ function SearchBar() {
 }
 
 function NavbarIcons() {
-  const navigate = useNavigate();
-  const user = /* useContext(FirebaseContext) */ false;
-  const [showLoginModal, setShowLoginModal] = useState(true);
+  const user = useContext(FirebaseContext);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [avatarAnchorEl, setAvatarAnchorEl] = useState(null);
 
   const handleShoppingCartClick = () => {
@@ -98,7 +100,7 @@ function NavbarIcons() {
     if (!user) {
       setShowLoginModal(true);
     } else {
-      // implement menu logic
+      // open dropdown Menu
       setAvatarAnchorEl(event.currentTarget);
     }
   };
@@ -120,7 +122,7 @@ function NavbarIcons() {
         aria-haspopup="true"
         aria-expanded={avatarAnchorEl ? 'true' : undefined}
       >
-        <Avatar sx={{ mr: 1 }} />
+        <Avatar sx={{ mr: 1 }} src={user?.photoURL} />
         {!user && 'Login'}
       </Button>
       {showLoginModal && (
@@ -129,29 +131,67 @@ function NavbarIcons() {
           onClose={() => setShowLoginModal(false)}
         />
       )}
-      <Menu
-        open={!!avatarAnchorEl}
-        onClose={() => setAvatarAnchorEl(null)}
-        anchorEl={avatarAnchorEl}
-        anchorOrigin={{
-          vertical: 'center',
-          horizontal: 'center',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-      >
-        <MenuItem onClick={() => navigate('/account')}>My Account</MenuItem>
-        <MenuItem onClick={() => navigate('/orders')}>Orders</MenuItem>
-        <Divider />
-        <MenuItem>
-          <ListItemIcon>
-            <LogoutIcon />
-          </ListItemIcon>
-          Logout
-        </MenuItem>
-      </Menu>
+      <AvatarMenu {...{ avatarAnchorEl, setAvatarAnchorEl }} />
     </Stack>
   );
 }
+
+function AvatarMenu({ avatarAnchorEl, setAvatarAnchorEl }) {
+  const navigate = useNavigate();
+  const closeAvatarMenu = () => setAvatarAnchorEl(null);
+
+  const handleLogout = () => {
+    signOut(auth)
+      .then(closeAvatarMenu)
+      .catch((err) => console.log(err));
+  };
+
+  return (
+    <Menu
+      open={!!avatarAnchorEl}
+      onClose={closeAvatarMenu}
+      anchorEl={avatarAnchorEl}
+      anchorOrigin={{
+        vertical: 'center',
+        horizontal: 'center',
+      }}
+      transformOrigin={{
+        vertical: 'top',
+        horizontal: 'right',
+      }}
+    >
+      <MenuItem
+        onClick={() => {
+          navigate('/account');
+          closeAvatarMenu();
+        }}
+      >
+        My Account
+      </MenuItem>
+      <MenuItem
+        onClick={() => {
+          navigate('/orders');
+          closeAvatarMenu();
+        }}
+      >
+        Orders
+      </MenuItem>
+      <Divider />
+      <MenuItem onClick={handleLogout}>
+        <ListItemIcon>
+          <LogoutIcon />
+        </ListItemIcon>
+        Logout
+      </MenuItem>
+    </Menu>
+  );
+}
+
+AvatarMenu.propTypes = {
+  avatarAnchorEl: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
+  setAvatarAnchorEl: PropTypes.func.isRequired,
+};
+
+AvatarMenu.defaultProps = {
+  avatarAnchorEl: null,
+};
