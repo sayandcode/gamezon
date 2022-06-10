@@ -1,38 +1,35 @@
 import { Button } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { isPossiblePhoneNumber } from 'react-phone-number-input';
 import MuiPhoneNumberInput from '../MuiPhoneNumberInput';
 import CustomDialogueContent from './CustomDialogueContent';
 
-const errorState = {
-  error: true,
-  helperText: 'Enter a valid phone Number',
-};
-
-const normalState = {
-  error: false,
-  helperText: '',
-};
+function getInputPropsFrom(phoneNumber) {
+  const error = !isPossiblePhoneNumber(phoneNumber);
+  return {
+    error,
+    helperText: error ? 'Enter a valid Phone number' : '',
+  };
+}
 
 export default function SignInWithPhoneNumberPage() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [errorChecking, setErrorChecking] = useState(false);
-  const [phoneInputProps, setPhoneInputProps] = useState(normalState);
+  const [phoneInputProps, setPhoneInputProps] = useState({
+    error: false,
+    helperText: '',
+  });
 
-  const handleChange = (newVal) => {
-    setPhoneNumber(newVal);
+  useEffect(() => {
     if (errorChecking) {
-      const newPhoneInputProps = isPossiblePhoneNumber(newVal)
-        ? normalState
-        : errorState;
+      const newPhoneInputProps = getInputPropsFrom(phoneNumber);
       setPhoneInputProps(newPhoneInputProps);
     }
-  };
+  }, [errorChecking, phoneNumber]);
 
   const handleSubmit = () => {
     if (!isPossiblePhoneNumber(phoneNumber)) {
       setErrorChecking(true);
-      setPhoneInputProps(errorState);
     } else {
       // submit form
       console.log('Submitted');
@@ -47,7 +44,7 @@ export default function SignInWithPhoneNumberPage() {
         <MuiPhoneNumberInput
           helperText={phoneInputProps.helperText}
           error={phoneInputProps.error}
-          onChange={handleChange}
+          onChange={(newVal) => setPhoneNumber(newVal)}
         />
       </div>
       <Button
