@@ -1,10 +1,13 @@
 import { Google as GoogleIcon } from '@mui/icons-material';
 import { Button, darken, Stack } from '@mui/material';
 import { useContext, useState } from 'react';
+import { isPossiblePhoneNumber } from 'react-phone-number-input';
 import Logo from '../Logo';
 import MuiPhoneNumberInput from '../MuiPhoneNumberInput';
 import CustomDialogueContent from './CustomDialogueContent';
 import { LoginModalContext } from './LoginModalContext';
+
+/* MainLoginPage START */
 
 export function MainLoginPage() {
   const { setCurrPage } = useContext(LoginModalContext);
@@ -50,27 +53,69 @@ export function MainLoginPage() {
     </CustomDialogueContent>
   );
 }
+/* MainLoginPage END */
+
+/* SignInWithPhoneNumberPage START */
+
+const errorState = {
+  error: true,
+  helperText: 'Enter a valid phone Number',
+};
+
+const normalState = {
+  error: false,
+  helperText: '',
+};
 
 export function SignInWithPhoneNumberPage() {
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [errorChecking, setErrorChecking] = useState(false);
+  const [phoneInputProps, setPhoneInputProps] = useState(normalState);
+
+  const handleChange = (newVal) => {
+    setPhoneNumber(newVal);
+    if (errorChecking) {
+      const newPhoneInputProps = isPossiblePhoneNumber(newVal)
+        ? normalState
+        : errorState;
+      setPhoneInputProps(newPhoneInputProps);
+    }
+  };
+
+  const handleSubmit = () => {
+    if (!isPossiblePhoneNumber(phoneNumber)) {
+      setErrorChecking(true);
+      setPhoneInputProps(errorState);
+    } else {
+      // submit form
+      console.log('Submitted');
+    }
+  };
   return (
     <CustomDialogueContent
       heading={<>Sign in With Your Phone Number</>}
       withBackButton
     >
       <div style={{ textAlign: 'center' }}>
-        <MuiPhoneNumberInput onChange={(newVal) => setPhoneNumber(newVal)} />
+        <MuiPhoneNumberInput
+          helperText={phoneInputProps.helperText}
+          error={phoneInputProps.error}
+          onChange={handleChange}
+        />
       </div>
       <Button
         variant="contained"
         size="large"
         sx={{ my: 2, marginInline: '50%', transform: 'translateX(-50%)' }}
+        onClick={handleSubmit}
       >
         Submit
       </Button>
     </CustomDialogueContent>
   );
 }
+
+/* SignInWithPhoneNumberPage END */
 
 export function SignInWithEmail() {
   return (
