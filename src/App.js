@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import HideOnScroll from './utlis/HideOnScroll';
 import ContextProvidersWrapper from './utlis/Contexts/ContextProvidersWrapper';
 import ConfirmEmailLogin from './pages/ConfirmEmailLogin';
+import NotificationSnackbar from './components/NotificationSnackbar';
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <HideOnScroll>
           <Navbar />
         </HideOnScroll>
+        <NotificationSnackbar />
         <Routes>
           <Route path="/" element={<Home />}>
             <Route path="/confirmEmailLogin" element={<ConfirmEmailLogin />} />

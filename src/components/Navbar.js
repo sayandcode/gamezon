@@ -5,7 +5,6 @@ import {
   ShoppingCart as ShoppingCartIcon,
 } from '@mui/icons-material';
 import {
-  Alert,
   AppBar,
   Avatar,
   Badge,
@@ -18,7 +17,6 @@ import {
   ListItemIcon,
   Menu,
   MenuItem,
-  Snackbar,
   Stack,
   Toolbar,
 } from '@mui/material';
@@ -29,6 +27,7 @@ import Logo from './Logo';
 import LoginModal from './LoginModal';
 import { FirebaseContext } from '../utlis/Contexts/FirebaseContext';
 import { auth } from '../utlis/firebase-config';
+import { NotificationSnackbarContext } from '../utlis/Contexts/NotificationSnackbarContext';
 
 const Navbar = React.forwardRef((props, ref) => {
   return (
@@ -94,9 +93,6 @@ function NavbarIcons() {
   const user = useContext(FirebaseContext);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [avatarAnchorEl, setAvatarAnchorEl] = useState(null);
-  const [logoutSnackbarConfig, setLogoutSnackbarConfig] = useState({
-    show: false,
-  });
 
   const handleShoppingCartClick = () => {
     // route to shopping cart page
@@ -136,32 +132,15 @@ function NavbarIcons() {
           onClose={() => setShowLoginModal(false)}
         />
       )}
-      <AvatarMenu
-        {...{ avatarAnchorEl, setAvatarAnchorEl, setLogoutSnackbarConfig }}
-      />
-      {!user && ( // logout snackbar is only applicable right after user signs out, so we unmount when signed in
-        <LogoutSnackbar
-          open={logoutSnackbarConfig.show}
-          message={logoutSnackbarConfig.message}
-          success={logoutSnackbarConfig.success}
-          closeLogoutSnackbar={() =>
-            setLogoutSnackbarConfig((oldConfig) => ({
-              ...oldConfig,
-              show: false,
-            }))
-          }
-        />
-      )}
+      <AvatarMenu {...{ avatarAnchorEl, setAvatarAnchorEl }} />
     </Stack>
   );
 }
 
-function AvatarMenu({
-  avatarAnchorEl,
-  setAvatarAnchorEl,
-  setLogoutSnackbarConfig,
-}) {
+function AvatarMenu({ avatarAnchorEl, setAvatarAnchorEl }) {
   const navigate = useNavigate();
+  const { showNotificationWith } = useContext(NotificationSnackbarContext);
+
   const closeAvatarMenu = () => setAvatarAnchorEl(null);
 
   const handleLogout = () => {
@@ -169,17 +148,15 @@ function AvatarMenu({
       .then(() => {
         closeAvatarMenu();
         navigate('/');
-        setLogoutSnackbarConfig({
-          show: true,
+        showNotificationWith({
           message: 'Successfully logged out!',
-          success: true,
+          variant: 'success',
         });
       })
       .catch((err) => {
-        setLogoutSnackbarConfig({
-          show: true,
+        showNotificationWith({
           message: err.message,
-          success: false,
+          variant: 'error',
         });
       });
   };
@@ -228,30 +205,8 @@ function AvatarMenu({
 AvatarMenu.propTypes = {
   avatarAnchorEl: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
   setAvatarAnchorEl: PropTypes.func.isRequired,
-  setLogoutSnackbarConfig: PropTypes.func.isRequired,
 };
 
 AvatarMenu.defaultProps = {
   avatarAnchorEl: null,
-};
-
-function LogoutSnackbar({ open, closeLogoutSnackbar, message, success }) {
-  return (
-    <Snackbar open={open} autoHideDuration={3000} onClose={closeLogoutSnackbar}>
-      <Alert
-        onClose={closeLogoutSnackbar}
-        severity={success ? 'success' : 'error'}
-        sx={{ width: '100%' }}
-      >
-        {message}
-      </Alert>
-    </Snackbar>
-  );
-}
-
-LogoutSnackbar.propTypes = {
-  open: PropTypes.bool.isRequired,
-  closeLogoutSnackbar: PropTypes.func.isRequired,
-  message: PropTypes.node.isRequired,
-  success: PropTypes.bool.isRequired,
 };
