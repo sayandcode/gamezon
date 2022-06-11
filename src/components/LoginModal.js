@@ -3,9 +3,9 @@ import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import useMeasure from 'react-use-measure';
 import { Modal, Paper } from '@mui/material';
-import MainLoginPage from './LoginModalPages/MainLoginPage';
 import { LoginModalContextProvider } from './LoginModalPages/LoginModalContext';
 import customTheme from '../CustomTheme';
+import MainLoginPage from './LoginModalPages/MainLoginPage';
 import SignInWithPhoneNumberPage from './LoginModalPages/SignInWithPhoneNumberPage';
 import SignInWithEmail from './LoginModalPages/SignInWithEmailPage';
 

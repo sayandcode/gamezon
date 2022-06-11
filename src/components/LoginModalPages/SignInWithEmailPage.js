@@ -69,10 +69,7 @@ export default function SignInWithEmail() {
     }
   };
   return (
-    <CustomDialogueContent
-      heading={<>Sign in With Your Email</>}
-      withBackButton
-    >
+    <CustomDialogueContent heading="Sign in With Your Email" withBackButton>
       <Collapse in={endAlert.show}>
         <Alert
           variant="filled"

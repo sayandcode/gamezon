@@ -37,7 +37,7 @@ export default function SignInWithPhoneNumberPage() {
   };
   return (
     <CustomDialogueContent
-      heading={<>Sign in With Your Phone Number</>}
+      heading="Sign in With Your Phone Number"
       withBackButton
     >
       <form style={{ textAlign: 'center' }}>
