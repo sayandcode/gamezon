@@ -27,7 +27,7 @@ import { signOut } from 'firebase/auth';
 import { PropTypes } from 'prop-types';
 import Logo from './Logo';
 import LoginModal from './LoginModal';
-import { FirebaseContext } from '../utlis/FirebaseContext';
+import { FirebaseContext } from '../utlis/Contexts/FirebaseContext';
 import { auth } from '../utlis/firebase-config';
 
 const Navbar = React.forwardRef((props, ref) => {
