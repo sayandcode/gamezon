@@ -23,6 +23,7 @@ export default function CustomDialogueContent({
         mb: 2,
         minWidth: '30vw',
         minHeight: '30vh',
+        maxWidth: '50vw',
       }}
     >
       <Stack direction="row" mb={1} alignItems="center">
@@ -35,7 +36,7 @@ export default function CustomDialogueContent({
             <ArrowBackIosNewIcon />
           </IconButton>
         )}
-        <Typography variant="h6" component="div">
+        <Typography variant="h6" component="h2">
           {heading}
         </Typography>
         <IconButton edge="end" sx={{ ml: 'auto' }} onClick={onClose}>

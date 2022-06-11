@@ -76,7 +76,6 @@ function MuiPhoneNumberInput({
           // eslint-disable-next-line react/jsx-no-duplicate-props
           InputProps={{
             inputComponent: Input,
-            notched: false, // need to specify this here cause it becomes true by default when Input props is defined
             startAdornment: <InputAdornment position="start" />,
           }}
           // value={inputValue}

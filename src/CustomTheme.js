@@ -35,9 +35,6 @@ const customTheme = createTheme({
     },
     MuiTextField: {
       defaultProps: {
-        InputProps: {
-          notched: false,
-        },
         InputLabelProps: {
           shrink: true,
           variant: 'standard',
@@ -48,6 +45,13 @@ const customTheme = createTheme({
           marginBottom: theme.spacing(2),
           '.MuiOutlinedInput-root': {
             marginTop: ownerState.label && theme.spacing(2.5),
+            fieldset: {
+              legend: {
+                // this does what notched:false does, but permanently,
+                // and cannot be overriden by mentioning InputProps
+                width: 0,
+              },
+            },
             '&.Mui-focused': {
               backgroundColor: 'transparent',
               fieldset: {
@@ -69,6 +73,9 @@ const customTheme = createTheme({
                 )} 0 0 2px 2px`,
               },
             },
+          },
+          '.MuiFormHelperText-root': {
+            overflowX: 'auto',
           },
         }),
       },

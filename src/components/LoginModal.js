@@ -79,7 +79,7 @@ export default function LoginModal({ open, onClose }) {
           left: '50%',
           transform: 'translate(-50%, -50%)',
           overflow: 'hidden',
-          transitionProperty: 'all',
+          transitionProperty: 'height',
           transitionDuration: (theme) =>
             `${theme.transitions.duration.enteringScreen}ms`,
           transitionTimingFunction: (theme) =>
