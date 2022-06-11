@@ -17,7 +17,7 @@ export default function MainLoginPage() {
       }
     >
       <Stack spacing={2}>
-        <SignInWithGoogleButton />
+        <SignInWithGoogleButton size="large" />
         <Button
           variant="outlined"
           onClick={() => setCurrPage('signInWithPhoneNumber')}
