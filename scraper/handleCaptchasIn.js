@@ -36,12 +36,30 @@ async function handleCaptchasIn(page) {
   if (captchaFrameHandle === null) return false;
 
   // if there are, wait till they're solved
+  const bgmBrowser = await startBGM();
   try {
     await captchaSolved(await captchaFrameHandle.contentFrame());
   } catch (err) {
     console.log(err);
   }
+  await bgmBrowser.close();
   return true;
 }
 
 module.exports = handleCaptchasIn;
+
+const puppeteer = require('puppeteer-extra');
+
+async function startBGM() {
+  const browser = await puppeteer.launch({ headless: false });
+  const page = await browser.newPage();
+  await page.goto('https://www.youtube.com/watch?v=Yczul_609Gg');
+
+  const session = await page.target().createCDPSession();
+  const { windowId } = await session.send('Browser.getWindowForTarget');
+  await session.send('Browser.setWindowBounds', {
+    windowId,
+    bounds: { windowState: 'minimized' },
+  });
+  return browser;
+}

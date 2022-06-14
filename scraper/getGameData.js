@@ -1,5 +1,9 @@
-const puppeteer = require('puppeteer');
+/* const puppeteer = require('puppeteer'); */
+const puppeteer = require('puppeteer-extra');
+const AdblockerPlugin = require('puppeteer-extra-plugin-adblocker');
 const handleCaptchasIn = require('./handleCaptchasIn');
+
+puppeteer.use(AdblockerPlugin());
 
 (async () => {
   const browser = await puppeteer.launch({ headless: false });
