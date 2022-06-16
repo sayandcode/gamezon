@@ -1,0 +1,73 @@
+const puppeteer = require('puppeteer-extra');
+
+async function getAllGamesFromWikiListPageID(pageID) {
+  const link = `https://en.wikipedia.org/?curid=${pageID}`;
+  const browser = await puppeteer.launch({
+    headless: true,
+    defaultViewport: null,
+  });
+  const page = await browser.newPage();
+  await page.goto(link);
+  console.log('Page Loaded');
+  await page.waitForTimeout(1000); // cause wikipedia sucks at loading?
+
+  const gameListTable = await page.$('table#softwarelist');
+
+  // get the indexes of the columns we need in in the table
+  const columnLabels = await gameListTable.$$eval(
+    'thead > tr:nth-child(1) > th',
+    (headingElements) => {
+      return headingElements.map((el) => el.innerText);
+    }
+  );
+  const neededColumns = [
+    'Title',
+    'Genre(s)',
+    'Developer(s)',
+    'Publisher(s)',
+    'Release date',
+  ];
+
+  const requiredIndexes = neededColumns.map((neededColumn) =>
+    neededColumn === 'Release Date'
+      ? columnLabels.indexOf(neededColumn) + 1 // needed to offset the fact that wikipedia tables contain 3 release dates. we need the middle one. So +1
+      : columnLabels.indexOf(neededColumn)
+  );
+
+  // for each entry(tr) in the table body, find the data in the required indexes
+  const data = await gameListTable.evaluate(
+    (table, _requiredIndexes, _neededColumns) => {
+      const entries = Array.from(table.querySelectorAll('tbody tr'));
+      const requiredData = {};
+      entries.forEach((entry) => {
+        if (!entry.querySelector('td:nth-child(1) a:not(.new)')) return; // forget the entry if it has no wikipedia page
+
+        const requiredChildren = _requiredIndexes.map(
+          (index) => entry.children[index]
+        );
+        let entryData = requiredChildren.map((child, index) => {
+          const key = _neededColumns[index];
+          const value = child.querySelector('.hlist.hlist-separated')
+            ? Array.from(child.querySelectorAll('li')).map((li) => li.innerText)
+            : child.innerText;
+          return [key, value];
+        });
+        entryData.push([
+          'wikiPageTitle',
+          entry.querySelector('td:nth-child(1) a').title,
+        ]);
+
+        entryData = Object.fromEntries(entryData);
+        requiredData[entryData.Title] = entryData;
+      });
+      return requiredData;
+    },
+    requiredIndexes,
+    neededColumns
+  );
+
+  browser.close();
+  return data;
+}
+
+module.exports = getAllGamesFromWikiListPageID;
