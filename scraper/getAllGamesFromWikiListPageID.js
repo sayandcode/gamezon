@@ -3,7 +3,7 @@ const puppeteer = require('puppeteer-extra');
 async function getAllGamesFromWikiListPageID(pageID) {
   const link = `https://en.wikipedia.org/?curid=${pageID}`;
   const browser = await puppeteer.launch({
-    headless: true,
+    headless: false,
     defaultViewport: null,
   });
   const page = await browser.newPage();
@@ -29,7 +29,7 @@ async function getAllGamesFromWikiListPageID(pageID) {
   ];
 
   const requiredIndexes = neededColumns.map((neededColumn) =>
-    neededColumn === 'Release Date'
+    neededColumn === 'Release date'
       ? columnLabels.indexOf(neededColumn) + 1 // needed to offset the fact that wikipedia tables contain 3 release dates. we need the middle one. So +1
       : columnLabels.indexOf(neededColumn)
   );

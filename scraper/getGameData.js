@@ -3,7 +3,7 @@ const AdblockerPlugin = require('puppeteer-extra-plugin-adblocker');
 const fs = require('fs/promises');
 const handleCaptchasIn = require('./handleCaptchasIn');
 const getAllGamesFromWikiListPageID = require('./getAllGamesFromWikiListPageID');
-const { getWikiSummaryFor } = require('./wikiHelpers');
+const { getGameDescriptionsFor } = require('./wikiHelpers');
 require('dotenv').config();
 
 puppeteer.use(AdblockerPlugin());
@@ -28,33 +28,12 @@ puppeteer.use(AdblockerPlugin());
     });
   }); */
   const gamesList = await getAllGamesFromWikiListPageID(38592593);
-  const gamesListArray = Object.values(gamesList);
-  let apiCall = {
-    /* wikiTitle:title */
-  };
-  for (let i = 0; i < gamesListArray.length; i += 1) {
-    const game = gamesListArray[i];
-    apiCall = {
-      ...apiCall,
-      [game.wikiPageTitle]: game.Title,
-    };
-    if ((i + 1) % 50 === 0 || i === gamesListArray.length - 1) {
-      // wikipedia API policy prefers serialized calls
-      // eslint-disable-next-line no-await-in-loop
-      const summaries = await getWikiSummaryFor(Object.keys(apiCall));
-      for (let j = 0; j < summaries.length; j += 1) {
-        const summary = summaries[j];
-        const correspondingTitle = apiCall[summary.wikiTitle]; // returns the game title
-        try {
-          gamesList[correspondingTitle].Description = summary.summaryText;
-        } catch (err) {
-          console.log(err);
-        }
-        delete gamesList[correspondingTitle].wikiPageTitle;
-      }
-      console.log(`${i} of ${gamesListArray.length}`);
-      apiCall = {};
-    }
-  }
-  await fs.writeFile('PS4GamesList', JSON.stringify(gamesList));
+
+  const gamesListWithDescriptions = await getGameDescriptionsFor(gamesList);
+  console.log(gamesListWithDescriptions);
+  console.log('End');
+  await fs.writeFile(
+    'PS4GamesList.json',
+    JSON.stringify(gamesListWithDescriptions)
+  );
 })();
