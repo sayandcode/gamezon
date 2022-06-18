@@ -1,39 +1,41 @@
+/* eslint-disable no-await-in-loop */
 const puppeteer = require('puppeteer-extra');
 const AdblockerPlugin = require('puppeteer-extra-plugin-adblocker');
 const fs = require('fs/promises');
-const handleCaptchasIn = require('./handleCaptchasIn');
 const getAllGamesFromWikiListPageID = require('./getAllGamesFromWikiListPageID');
-const { getGameDescriptionsFor } = require('./wikiHelpers');
+const {
+  getGameDescriptionsFor,
+  findWikipediaPageIDFor,
+} = require('./wikiHelpers');
 require('dotenv').config();
 
 puppeteer.use(AdblockerPlugin());
 
 (async () => {
-  /* const gamingConsoles = [
+  const gamingConsoles = [
     'Playstation 4',
     'Playstation 5',
     'Xbox series X and series S',
   ];
 
-  const gamesListsForAllConsoles = gamingConsoles.map(async (consoleName) => {
+  for (let i = 0; i < gamingConsoles.length; i += 1) {
+    const consoleName = gamingConsoles[i];
+    console.log(`${consoleName}: Starting`);
+
     const pageID = await findWikipediaPageIDFor(`List of ${consoleName} games`);
     const gamesList = await getAllGamesFromWikiListPageID(pageID);
-    Object.values(gamesList).forEach(async (game) => {
-      const gamePageID = await findWikipediaPageIDFor(
-        `${game.Title} ${consoleName} game`
-      );
-      const gameDescription = await getWikiSummaryFromPageID(gamePageID);
+    const gamesListWithDescriptions = await getGameDescriptionsFor(gamesList);
 
-      gamesList[game.Title].Description = gameDescription;
-    });
-  }); */
-  const gamesList = await getAllGamesFromWikiListPageID(38592593);
+    const dir = './gameDataJSON';
+    const fileName = `${consoleName
+      .replace(/(\w+)/g, (m) => m[0].toUpperCase() + m.slice(1))
+      .replace(/\s/g, '')}GamesList.json`;
+    await fs.mkdir(dir, { recursive: true });
+    await fs.writeFile(
+      `${dir}/${fileName}`,
+      JSON.stringify(gamesListWithDescriptions)
+    );
 
-  const gamesListWithDescriptions = await getGameDescriptionsFor(gamesList);
-  console.log(gamesListWithDescriptions);
-  console.log('End');
-  await fs.writeFile(
-    'PS4GamesList.json',
-    JSON.stringify(gamesListWithDescriptions)
-  );
+    console.log(`${consoleName}: Completed\nFileName:${fileName}`);
+  }
 })();

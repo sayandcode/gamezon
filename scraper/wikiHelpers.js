@@ -20,7 +20,14 @@ async function findWikipediaPageIDFor(searchString) {
   };
 
   const queryUrl = wikiAPIbaseUrl + new URLSearchParams(queryObj);
-  const response = await fetch(queryUrl, MyUserAgent);
+  try {
+    // eslint-disable-next-line no-var , vars-on-top
+    var response = await fetch(queryUrl, MyUserAgent);
+  } catch (err) {
+    console.log(err);
+  }
+
+  // eslint-disable-next-line block-scoped-var
   const data = await response.json();
   const pageID = data.query.search[0].pageid;
   return pageID;

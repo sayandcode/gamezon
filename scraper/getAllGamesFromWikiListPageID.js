@@ -40,7 +40,9 @@ async function getAllGamesFromWikiListPageID(pageID) {
       const entries = Array.from(table.querySelectorAll('tbody tr'));
       const requiredData = {};
       entries.forEach((entry) => {
-        if (!entry.querySelector('td:nth-child(1) a:not(.new)')) return; // forget the entry if it has no wikipedia page
+        const wikiPageLink =
+          entry.firstElementChild.querySelector('a:not(.new)'); // the first entry is the heading i.e gameName
+        if (!wikiPageLink) return; // forget the entry if it has no wikipedia page
 
         const requiredChildren = _requiredIndexes.map(
           (index) => entry.children[index]
@@ -52,10 +54,7 @@ async function getAllGamesFromWikiListPageID(pageID) {
             : child.innerText;
           return [key, value];
         });
-        entryData.push([
-          'wikiPageTitle',
-          entry.querySelector('td:nth-child(1) a').title,
-        ]);
+        entryData.push(['wikiPageTitle', wikiPageLink.title]);
 
         entryData = Object.fromEntries(entryData);
         requiredData[entryData.Title] = entryData;
