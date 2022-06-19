@@ -49,6 +49,7 @@ async function getAllGamesFromWikiListPageID(pageID) {
         );
         let entryData = requiredChildren.map((child, index) => {
           const key = _neededColumns[index];
+          // if its a list, make an array
           const value = child.querySelector('.hlist.hlist-separated')
             ? Array.from(child.querySelectorAll('li')).map((li) => li.innerText)
             : child.innerText;
