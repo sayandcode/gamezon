@@ -2,7 +2,10 @@
 const puppeteer = require('puppeteer-extra');
 const AdblockerPlugin = require('puppeteer-extra-plugin-adblocker');
 const fs = require('fs/promises');
-const getYoutubeURL = require('./helperFns/getYoutubeURL');
+const {
+  getYoutubeURL,
+  getGameScreenshots,
+} = require('./helperFns/picsNPricesHelpers');
 
 /* THINGS TO SCRAPE */
 //  1 Box Art Image
@@ -21,12 +24,21 @@ puppeteer.use(AdblockerPlugin());
   for (let i = 0; i < /* gameNames.length */ 1; i += 1) {
     const gameName = gameNames[i];
 
+    /* Source the data */
     //  1 Box Art Image
     //  1 Game trailer youtube URL
-    const youtubeURL = await getYoutubeURL(`${gameName} video game trailer`);
-    console.log(youtubeURL);
+    /* const youtubeURL = await getYoutubeURL(`${gameName} video game trailer`); */
     //  4 Game screenshot images
+    const gameScreenshots = await getGameScreenshots(gameName);
+
     //  price foreach console
+
+    /* Now write everything to disk */
+    const dir = `./pics/${gameName}`;
+    await fs.mkdir(dir, { recursive: true });
+    gameScreenshots.forEach(async (screenshot, index) =>
+      fs.writeFile(`${dir}/${index + 1}.png`, screenshot)
+    );
   }
 })();
 
