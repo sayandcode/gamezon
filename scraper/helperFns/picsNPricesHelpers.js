@@ -43,5 +43,22 @@ async function getGameScreenshots(gameName) {
   return gameScreenshots;
 }
 
+async function getBoxArtImage(gameName) {
+  const queryString = `${gameName} video game box art`;
+  const response = await GOOGLE_IMG_SCRAP({
+    search: queryString,
+    limit: 1,
+    // eslint-disable-next-line consistent-return
+    execute(element) {
+      if (!element.url.match('gstatic.com')) return element;
+    },
+  });
+  const boxArtUrl = response.result[0].url;
+  const fetchResponse = await fetch(boxArtUrl);
+  const boxArtImage = fetchResponse.body;
+  return boxArtImage;
+}
+
 exports.getYoutubeURL = getYoutubeURL;
 exports.getGameScreenshots = getGameScreenshots;
+exports.getBoxArtImage = getBoxArtImage;

@@ -5,6 +5,7 @@ const fs = require('fs/promises');
 const {
   getYoutubeURL,
   getGameScreenshots,
+  getBoxArtImage,
 } = require('./helperFns/picsNPricesHelpers');
 
 /* THINGS TO SCRAPE */
@@ -26,19 +27,21 @@ puppeteer.use(AdblockerPlugin());
 
     /* Source the data */
     //  1 Box Art Image
+    const boxArtImage = await getBoxArtImage(gameName);
     //  1 Game trailer youtube URL
     /* const youtubeURL = await getYoutubeURL(`${gameName} video game trailer`); */
     //  4 Game screenshot images
-    const gameScreenshots = await getGameScreenshots(gameName);
+    /* const gameScreenshots = await getGameScreenshots(gameName); */
 
     //  price foreach console
 
     /* Now write everything to disk */
     const dir = `./pics/${gameName}`;
     await fs.mkdir(dir, { recursive: true });
-    gameScreenshots.forEach(async (screenshot, index) =>
+    /* gameScreenshots.forEach(async (screenshot, index) =>
       fs.writeFile(`${dir}/${index + 1}.png`, screenshot)
-    );
+    ); */
+    await fs.writeFile(`${dir}/boxArt.png`, boxArtImage);
   }
 })();
 
