@@ -17,14 +17,14 @@ const sleep = require('./helperFns/sleep');
 //  price foreach console
 
 // runtime constants
-const DB_URL = './gameDataJSON/gameData.json';
+const DB_URL = './gameDataJSON/gameDataWithPrices.json';
 
 puppeteer.use(AdblockerPlugin());
 
 (async () => {
   const db = JSON.parse(await fs.readFile(DB_URL));
   const gameNames = Object.keys(db);
-  for (let i = 2; i < /* gameNames.length */ 3; i += 1) {
+  for (let i = 129; i < /* gameNames.length */ 200; i += 1) {
     const gameName = gameNames[i];
 
     /* Source the data */
@@ -41,27 +41,34 @@ puppeteer.use(AdblockerPlugin());
     const { variants } = db[gameName];
     for (let j = 0; j < variants.length; j += 1) {
       const thisVariant = variants[j];
-      const price = await getPriceAccToConsole(
+      const { price, purchaseUrl } = await getPriceAccToConsole(
         gameName,
         thisVariant.consoleName
       );
       thisVariant.price = price;
       if (!price) thisVariant['Release date'] = null;
+      thisVariant.purchaseUrl = purchaseUrl;
       await sleep(500);
     }
 
     /* Now write everything to disk */
     const picsDir = `./pics/${gameName}`;
     await fs.mkdir(picsDir, { recursive: true });
-    gameScreenshots.forEach(async (screenshot, index) =>
-      fs.writeFile(`${picsDir}/${index + 1}.png`, screenshot)
+    await Promise.all(
+      gameScreenshots.map(async (screenshot, index) =>
+        fs.writeFile(`${picsDir}/${index + 1}.png`, screenshot)
+      )
     );
     await fs.writeFile(`${picsDir}/boxArt.png`, boxArtImage);
-    console.log(`Finished${i + 1} of ${gameNames.length} `);
-  }
+    console.log(`Finished ${i + 1} of ${gameNames.length} `);
 
-  // write to the disk last cause anyway its stored in memory
-  const dataDir = './gameDataJSON';
-  await fs.mkdir(dataDir, { recursive: true });
-  await fs.writeFile(`${dataDir}/gameDataWithPrices.json`, JSON.stringify(db));
+    // write to the disk at every iteration vs once,
+    // cause I want to be able to pause the program
+    const dataDir = './gameDataJSON';
+    await fs.mkdir(dataDir, { recursive: true });
+    await fs.writeFile(
+      `${dataDir}/gameDataWithPrices.json`,
+      JSON.stringify(db)
+    );
+  }
 })();

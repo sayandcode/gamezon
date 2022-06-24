@@ -1,4 +1,4 @@
-const TIME_TO_HANDLE_CAPTCHAS = 60000; /* milliseconds */
+const TIME_TO_HANDLE_CAPTCHAS = 600000; /* milliseconds */
 
 function captchaSolved(frame) {
   return new Promise((resolve, reject) => {

@@ -7,6 +7,9 @@ node_modules
 
 #development
 doForNextCommit.md
+test.js
+test/
+pics/
 
 # testing
 /coverage

@@ -2,7 +2,6 @@ const { GOOGLE_IMG_SCRAP } = require('google-img-scrap');
 const fetch = require('node-fetch');
 const puppeteer = require('puppeteer-extra');
 const handleCaptchasIn = require('./handleCaptchasIn');
-const sleep = require('./sleep');
 
 async function getYoutubeURL(queryString) {
   const browser = await puppeteer.launch({
@@ -15,10 +14,10 @@ async function getYoutubeURL(queryString) {
     `https://www.youtube.com/results?search_query=${queryString.replace(
       /\s/g,
       '+'
-    )}`
+    )}`,
+    { waitUntil: 'networkidle2' }
   );
   await handleCaptchasIn(page);
-  await sleep(100);
   const URL = await page.$eval('#contents a', (a) => a.href);
   await browser.close();
   return URL;
@@ -35,12 +34,18 @@ async function getGameScreenshots(gameName) {
     },
   });
   const screenshotUrls = response.result.map((pic) => pic.url);
-  const gameScreenshots = await Promise.all(
-    screenshotUrls.map(async (url) => {
-      const fetchResponse = await fetch(url);
-      return fetchResponse.body;
-    })
-  );
+  const gameScreenshots = (
+    await Promise.all(
+      screenshotUrls.map(async (url) => {
+        try {
+          const fetchResponse = await fetch(url);
+          return fetchResponse.body;
+        } catch {
+          return null; // if theres a bad certificate from the website, just ignore it
+        }
+      })
+    )
+  ).filter((ss) => ss !== null);
   return gameScreenshots;
 }
 
@@ -77,25 +82,33 @@ async function getPriceAccToConsole(gameName, consoleName) {
     );
     imFeelingLuckyBtn.click();
   });
-  await page.waitForNavigation();
-  if (page.url().match(/en-in/)) {
-    const newURL = page.url().replace(/en-in/g, 'en-us');
-    await page.goto(newURL);
+
+  await page.waitForNavigation({ waitUntil: 'networkidle2' });
+  const currUrl = page.url();
+  if (currUrl.match(/en-in/i)) {
+    const newURL = currUrl.replace(/en-in/gi, 'en-us');
+    await page.goto(newURL, { waitUntil: 'networkidle2' });
+  } else if (currUrl.match(/amazon\.in/)) {
+    const newURL = currUrl.replace(/amazon\.in/, 'amazon.com');
+    await page.goto(newURL, { waitUntil: 'networkidle2' });
   }
 
   const priceElement = (
     await page.$x(
       "//*[(self::p or self::div or self::span)][contains(text(),'$')]"
     )
-  )?.[0];
+  )[0];
 
   const price = priceElement
-    ? await priceElement.evaluate((el) => el.innerText.match(/(\$[\d,.]+)/)[0])
+    ? await priceElement.evaluate(
+        (el) => el.textContent.match(/\$\d+(\.\d+)?/)?.[0] // this works, cause if it cant find a match, it returns null
+      )
     : null;
+  const purchaseUrl = page.url();
 
   await browser.close();
 
-  return price;
+  return { price, purchaseUrl };
 }
 
 exports.getYoutubeURL = getYoutubeURL;
