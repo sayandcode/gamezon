@@ -3,23 +3,20 @@ const fetch = require('node-fetch');
 const puppeteer = require('puppeteer-extra');
 const handleCaptchasIn = require('./handleCaptchasIn');
 
-async function getYoutubeURL(queryString) {
-  const browser = await puppeteer.launch({
-    headless: false,
-    defaultViewport: false,
-  });
+async function getYoutubeURL(queryString, browser) {
   const page = await browser.newPage();
 
+  const youtubeQueryString = encodeURIComponent(queryString).replace(
+    /%20/g,
+    '+'
+  );
   await page.goto(
-    `https://www.youtube.com/results?search_query=${queryString.replace(
-      /\s/g,
-      '+'
-    )}`,
+    `https://www.youtube.com/results?search_query=${youtubeQueryString}`,
     { waitUntil: 'networkidle2' }
   );
   await handleCaptchasIn(page);
   const URL = await page.$eval('#contents a', (a) => a.href);
-  await browser.close();
+  await page.close();
   return URL;
 }
 
@@ -65,11 +62,7 @@ async function getBoxArtImage(gameName) {
   return boxArtImage;
 }
 
-async function getPriceAccToConsole(gameName, consoleName) {
-  const browser = await puppeteer.launch({
-    headless: false,
-    defaultViewport: false,
-  });
+async function getPriceAccToConsole(gameName, consoleName, browser) {
   const page = await browser.newPage();
   await page.goto('https://www.google.com');
   await handleCaptchasIn(page);
@@ -83,7 +76,7 @@ async function getPriceAccToConsole(gameName, consoleName) {
     imFeelingLuckyBtn.click();
   });
 
-  await page.waitForNavigation({ waitUntil: 'networkidle2' });
+  await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 0 });
   const currUrl = page.url();
   if (currUrl.match(/en-in/i)) {
     const newURL = currUrl.replace(/en-in/gi, 'en-us');
@@ -106,7 +99,7 @@ async function getPriceAccToConsole(gameName, consoleName) {
     : null;
   const purchaseUrl = page.url();
 
-  await browser.close();
+  await page.close();
 
   return { price, purchaseUrl };
 }

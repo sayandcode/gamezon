@@ -24,14 +24,24 @@ puppeteer.use(AdblockerPlugin());
 (async () => {
   const db = JSON.parse(await fs.readFile(DB_URL));
   const gameNames = Object.keys(db);
-  for (let i = 129; i < /* gameNames.length */ 200; i += 1) {
+
+  const browser = await puppeteer.launch({
+    headless: false,
+    defaultViewport: false,
+  });
+
+  // FAILED: 303
+  for (let i = 303; i < gameNames.length; i += 1) {
     const gameName = gameNames[i];
 
     /* Source the data */
     //  1 Box Art Image
     const boxArtImage = await getBoxArtImage(gameName);
     //  1 Game trailer youtube URL
-    const youtubeURL = await getYoutubeURL(`${gameName} video game trailer`);
+    const youtubeURL = await getYoutubeURL(
+      `${gameName} video game trailer`,
+      browser
+    );
     db[gameName].trailerURL = youtubeURL;
 
     //  4 Game screenshot images
@@ -43,7 +53,8 @@ puppeteer.use(AdblockerPlugin());
       const thisVariant = variants[j];
       const { price, purchaseUrl } = await getPriceAccToConsole(
         gameName,
-        thisVariant.consoleName
+        thisVariant.consoleName,
+        browser
       );
       thisVariant.price = price;
       if (!price) thisVariant['Release date'] = null;
@@ -52,15 +63,7 @@ puppeteer.use(AdblockerPlugin());
     }
 
     /* Now write everything to disk */
-    const picsDir = `./pics/${gameName}`;
-    await fs.mkdir(picsDir, { recursive: true });
-    await Promise.all(
-      gameScreenshots.map(async (screenshot, index) =>
-        fs.writeFile(`${picsDir}/${index + 1}.png`, screenshot)
-      )
-    );
-    await fs.writeFile(`${picsDir}/boxArt.png`, boxArtImage);
-    console.log(`Finished ${i + 1} of ${gameNames.length} `);
+    // json first, cause pics are more likely to fail
 
     // write to the disk at every iteration vs once,
     // cause I want to be able to pause the program
@@ -70,5 +73,17 @@ puppeteer.use(AdblockerPlugin());
       `${dataDir}/gameDataWithPrices.json`,
       JSON.stringify(db)
     );
+
+    const picsDir = `./pics/${gameName}`;
+    await fs.mkdir(picsDir, { recursive: true });
+    await Promise.all(
+      gameScreenshots.map(async (screenshot, index) =>
+        fs.writeFile(`${picsDir}/${index + 1}.png`, screenshot)
+      )
+    );
+    await fs.writeFile(`${picsDir}/boxArt.png`, boxArtImage);
+
+    console.log(`Finished ${i + 1} of ${gameNames.length}: ${gameName}`);
   }
+  browser.close();
 })();
