@@ -8,7 +8,7 @@ node_modules
 #development
 doForNextCommit.md
 test.js
-test/
+test.*
 pics/
 
 # testing

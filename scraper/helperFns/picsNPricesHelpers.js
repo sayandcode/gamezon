@@ -1,6 +1,5 @@
 const { GOOGLE_IMG_SCRAP } = require('google-img-scrap');
 const fetch = require('node-fetch');
-const puppeteer = require('puppeteer-extra');
 const handleCaptchasIn = require('./handleCaptchasIn');
 
 async function getYoutubeURL(queryString, browser) {
@@ -50,14 +49,22 @@ async function getBoxArtImage(gameName) {
   const queryString = `${gameName} video game box art`;
   const response = await GOOGLE_IMG_SCRAP({
     search: queryString,
-    limit: 1,
+    limit: 2,
     // eslint-disable-next-line consistent-return
     execute(element) {
       if (!element.url.match('gstatic.com')) return element;
     },
   });
-  const boxArtUrl = response.result[0].url;
-  const fetchResponse = await fetch(boxArtUrl);
+
+  let fetchResponse;
+  try {
+    const boxArtUrl = response.result[0].url;
+    fetchResponse = await fetch(boxArtUrl);
+  } catch (err) {
+    console.log(`First fetch didn't work for ${gameName} boxArt`);
+    const boxArtUrl = response.result[1].url;
+    fetchResponse = await fetch(boxArtUrl);
+  }
   const boxArtImage = fetchResponse.body;
   return boxArtImage;
 }

@@ -30,8 +30,7 @@ puppeteer.use(AdblockerPlugin());
     defaultViewport: false,
   });
 
-  // FAILED: 303
-  for (let i = 303; i < gameNames.length; i += 1) {
+  for (let i = 0; i < gameNames.length; i += 1) {
     const gameName = gameNames[i];
 
     /* Source the data */
@@ -76,12 +75,12 @@ puppeteer.use(AdblockerPlugin());
 
     const picsDir = `./pics/${gameName}`;
     await fs.mkdir(picsDir, { recursive: true });
+    await fs.writeFile(`${picsDir}/boxArt.png`, boxArtImage);
     await Promise.all(
       gameScreenshots.map(async (screenshot, index) =>
         fs.writeFile(`${picsDir}/${index + 1}.png`, screenshot)
       )
     );
-    await fs.writeFile(`${picsDir}/boxArt.png`, boxArtImage);
 
     console.log(`Finished ${i + 1} of ${gameNames.length}: ${gameName}`);
   }
