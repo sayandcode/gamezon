@@ -2,8 +2,8 @@ import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
 } from '@mui/icons-material';
-import { Box, IconButton, keyframes, Typography } from '@mui/material';
-import { useContext } from 'react';
+import { Box, Button, IconButton, keyframes, Typography } from '@mui/material';
+import React, { useContext, useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { TodaysOffersContext } from '../../utlis/Contexts/TodaysOffersContext';
 
@@ -21,6 +21,44 @@ const scroll = keyframes`
 
 function SpotlightCarousel() {
   // const { spotlightItems } = useContext(TodaysOffersContext);
+  const carouselItems = [
+    {
+      img: '1.png',
+      title: 'Title 1',
+      description: 'Description for the first one',
+    },
+    {
+      img: '2.png',
+      title: 'Title 2',
+      description:
+        'Description for the second one. Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatibus, doloremque!',
+    },
+    {
+      img: '3.png',
+      title: 'Title 3',
+      description: 'Description for the third one',
+    },
+  ];
+
+  const [currItemIndex, setCurrItemIndex] = useState(0);
+  const changePic = ({ rightDir }) => {
+    const itemCount = carouselItems.length;
+
+    setCurrItemIndex((oldIndex) => {
+      const newIndex = rightDir ? oldIndex + 1 : oldIndex - 1;
+      const circularIndex = (newIndex + itemCount) % itemCount;
+      return circularIndex;
+    });
+  };
+
+  const [intervalRef, setIntervalRef] = useState(null);
+  useEffect(() => {
+    const newIntervalRef = setInterval(
+      () => changePic({ rightDir: true }),
+      5000
+    );
+    setIntervalRef(newIntervalRef);
+  }, []);
 
   return (
     <Box
@@ -28,7 +66,7 @@ function SpotlightCarousel() {
         height: CAROUSEL_HEIGHT,
         overflow: 'hidden',
         position: 'relative',
-        '&:hover': {
+        '&:hover, &:focus-within': {
           img: {
             animationPlayState: 'paused',
           },
@@ -40,17 +78,37 @@ function SpotlightCarousel() {
           },
         },
       }}
+      onMouseEnter={() => {
+        clearInterval(intervalRef);
+        setIntervalRef(null);
+      }}
+      onMouseLeave={() => {
+        const newIntervalRef = setInterval(
+          () => changePic({ rightDir: true }),
+          5000
+        );
+        setIntervalRef(newIntervalRef);
+      }}
     >
-      <CarouselControls />
-      <InfoOverlay />
+      <CarouselControls
+        changePic={changePic}
+        currItemIndex={currItemIndex}
+        setCurrItemIndex={setCurrItemIndex}
+        itemCount={carouselItems.length}
+      />
+      <InfoOverlay
+        title={carouselItems[currItemIndex].title}
+        description={carouselItems[currItemIndex].description}
+        onClick={() => console.log(`Clicked ${currItemIndex}`)}
+      />
       <Box
         component="img"
-        src="2.png"
+        src={carouselItems[currItemIndex].img}
         alt=""
         sx={{
           zIndex: 1,
           width: '100%',
-          // animation: `${scroll} 30s linear infinite alternate`,
+          animation: `${scroll} 30s linear infinite alternate`,
         }}
       />
     </Box>
@@ -59,7 +117,7 @@ function SpotlightCarousel() {
 
 export default SpotlightCarousel;
 
-function InfoOverlay() {
+function InfoOverlay({ title, description, onClick }) {
   return (
     <Box
       className="InfoOverlay"
@@ -80,9 +138,9 @@ function InfoOverlay() {
         width: '100%',
         height: '100%',
         display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
+        cursor: 'pointer',
       }}
+      onClick={onClick}
     >
       <Box
         className="InfoOverlayContentContainer"
@@ -92,6 +150,8 @@ function InfoOverlay() {
           display: 'flex',
           gap: 5,
           alignItems: 'center',
+          maxWidth: '70%',
+          marginInline: '25% 10%',
         }}
       >
         <Box
@@ -100,31 +160,63 @@ function InfoOverlay() {
           sx={{ height: `calc(${CAROUSEL_HEIGHT}/1.5)` }}
         />
         <div style={{ color: 'white' }}>
-          <Typography variant="h4">Game Title</Typography>
-          <Typography variant="subtitle2">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempore,
-            architecto?
-          </Typography>
+          <Typography variant="h4">{title}</Typography>
+          <Typography variant="subtitle2">{description}</Typography>
         </div>
       </Box>
     </Box>
   );
 }
 
-function CarouselControls() {
+InfoOverlay.propTypes = {
+  title: PropTypes.string.isRequired,
+  description: PropTypes.string,
+  onClick: PropTypes.func,
+};
+
+InfoOverlay.defaultProps = {
+  description: '',
+  onClick: () => {},
+};
+
+function CarouselControls({
+  changePic,
+  currItemIndex,
+  setCurrItemIndex,
+  itemCount,
+}) {
   return (
     <>
-      <CarouselIconButton position="left">
+      <CarouselIconButton
+        position="left"
+        onClick={() => changePic({ rightDir: false })}
+      >
         <ChevronLeftIcon />
       </CarouselIconButton>
-      <CarouselIconButton position="right">
+      <CarouselIconButton
+        position="right"
+        onClick={() => changePic({ rightDir: true })}
+      >
         <ChevronRightIcon />
       </CarouselIconButton>
+      <CarouselPagination
+        setCurrItemIndex={setCurrItemIndex}
+        currItemIndex={currItemIndex}
+        itemCount={itemCount}
+      />
     </>
   );
 }
 
-function CarouselIconButton({ children, position }) {
+CarouselControls.propTypes = {
+  changePic: PropTypes.func.isRequired,
+  currItemIndex: PropTypes.number.isRequired,
+  setCurrItemIndex: PropTypes.func.isRequired,
+  itemCount: PropTypes.number.isRequired,
+};
+
+function CarouselIconButton({ children, position, onClick }) {
+  const buttonRef = useRef(null);
   return (
     <IconButton
       sx={{
@@ -142,6 +234,11 @@ function CarouselIconButton({ children, position }) {
         },
       }}
       size="large"
+      ref={buttonRef}
+      onClick={() => {
+        onClick();
+        buttonRef.current.blur(); // dont require the user to manually click away from the carousel
+      }}
     >
       {children}
     </IconButton>
@@ -151,4 +248,56 @@ function CarouselIconButton({ children, position }) {
 CarouselIconButton.propTypes = {
   children: PropTypes.node.isRequired,
   position: PropTypes.string.isRequired,
+  onClick: PropTypes.func,
+};
+
+CarouselIconButton.defaultProps = {
+  onClick: () => {},
+};
+
+function CarouselPagination({ itemCount, currItemIndex, setCurrItemIndex }) {
+  const pageRef = useRef(
+    Array.from(Array(itemCount).keys()).map(() => React.createRef())
+  );
+
+  return (
+    <Box
+      sx={{
+        position: 'absolute',
+        zIndex: 11,
+        bottom: (theme) => theme.spacing(2),
+        left: '50%',
+        transform: 'translateX(-50%)',
+
+        display: 'flex',
+        gap: 1,
+      }}
+    >
+      {Array.from(Array(itemCount).keys()).map((_, i) => (
+        <IconButton
+          disableRipple
+          // eslint-disable-next-line react/no-array-index-key
+          key={i}
+          size="small"
+          ref={pageRef.current[i]}
+          sx={{
+            bgcolor: currItemIndex === i ? 'red' : 'white',
+            '&:hover': {
+              bgcolor: (theme) => theme.palette.secondary.light,
+            },
+          }}
+          onClick={() => {
+            setCurrItemIndex(i);
+            pageRef.current[i].current.blur();
+          }}
+        />
+      ))}
+    </Box>
+  );
+}
+
+CarouselPagination.propTypes = {
+  itemCount: PropTypes.number.isRequired,
+  currItemIndex: PropTypes.number.isRequired,
+  setCurrItemIndex: PropTypes.func.isRequired,
 };
