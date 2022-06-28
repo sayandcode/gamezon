@@ -1,4 +1,4 @@
-import { PropTypes } from 'prop-types';
+import PropTypes from 'prop-types';
 import { createContext } from 'react';
 
 export const LoginModalContext = createContext();

@@ -22,7 +22,7 @@ import {
 } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
-import { PropTypes } from 'prop-types';
+import PropTypes from 'prop-types';
 import Logo from './Logo';
 import LoginModal from './LoginModal';
 import { FirebaseContext } from '../utlis/Contexts/FirebaseContext';

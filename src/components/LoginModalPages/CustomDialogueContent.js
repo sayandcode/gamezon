@@ -4,7 +4,7 @@ import {
   Close as CloseIcon,
 } from '@mui/icons-material';
 import { Box, Divider, IconButton, Stack, Typography } from '@mui/material';
-import { PropTypes } from 'prop-types';
+import PropTypes from 'prop-types';
 import { LoginModalContext } from './LoginModalContext';
 
 export default function CustomDialogueContent({

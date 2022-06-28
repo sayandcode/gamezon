@@ -1,5 +1,5 @@
 import { useScrollTrigger, Slide } from '@mui/material';
-import { PropTypes } from 'prop-types';
+import PropTypes from 'prop-types';
 
 export default function HideOnScroll(props) {
   const { children } = props;

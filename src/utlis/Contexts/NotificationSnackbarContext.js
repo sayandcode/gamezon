@@ -1,4 +1,4 @@
-import { PropTypes } from 'prop-types';
+import PropTypes from 'prop-types';
 import { createContext, useMemo, useState } from 'react';
 
 export const NotificationSnackbarContext = createContext({
