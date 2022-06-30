@@ -49,10 +49,16 @@ async function getAllGamesFromWikiListPageID(pageID) {
         );
         let entryData = requiredChildren.map((child, index) => {
           const key = _neededColumns[index];
+          let value;
+
           // if its a list, make an array
-          const value = child.querySelector('.hlist.hlist-separated')
-            ? Array.from(child.querySelectorAll('li')).map((li) => li.innerText)
-            : child.innerText;
+          if (child.querySelector('.hlist.hlist-separated')) {
+            value = Array.from(child.querySelectorAll('li')).map(
+              (li) => li.innerText
+            );
+          } else if (key.endsWith('(s)')) value = [child.innerText];
+          else value = child.innerText;
+
           return [key, value];
         });
         entryData.push(['wikiPageTitle', wikiPageLink.title]);
