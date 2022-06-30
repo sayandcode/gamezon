@@ -14,7 +14,7 @@ import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { getBlob, ref } from 'firebase/storage';
-// import sleep from '../../utlis/sleep';
+import sleep from '../../utlis/sleep';
 import { TodaysOffersContext } from '../../utlis/Contexts/TodaysOffersContext';
 import { firebaseStorage, firestoreDB } from '../../utlis/firebase-config';
 
@@ -43,7 +43,7 @@ function SpotlightCarousel() {
 
     // MOCK FIREBASE, TO SAVE NETWORK REQUESTS WHILE
     /* Delete this section */
-    /* async function getDataFromFirebase() {
+    async function getDataFromFirebase() {
       await sleep(3000);
 
       const newCarouselItems = Array.from(Array(3).keys()).map((doc, i) => {
@@ -57,50 +57,50 @@ function SpotlightCarousel() {
 
       // and finally set the carousel Items
       setCarouselItems(newCarouselItems);
-    } */
+    }
     /* Delete this section */
 
-    async function getDataFromFirebase() {
-      // get the firestore data
-      const dataQuery = query(
-        collection(firestoreDB, 'games'),
-        where('Title', 'in', spotlightItems)
-      );
-      const dataSnapshot = await getDocs(dataQuery);
+    // async function getDataFromFirebase() {
+    //   // get the firestore data
+    //   const dataQuery = query(
+    //     collection(firestoreDB, 'games'),
+    //     where('Title', 'in', spotlightItems)
+    //   );
+    //   const dataSnapshot = await getDocs(dataQuery);
 
-      const newCarouselItems = await Promise.all(
-        dataSnapshot.docs.map(async (doc) => {
-          const { Title, Description } = doc.data();
+    //   const newCarouselItems = await Promise.all(
+    //     dataSnapshot.docs.map(async (doc) => {
+    //       const { Title, Description } = doc.data();
 
-          // get the cloud storage data
-          const bgImgPathRef = ref(
-            firebaseStorage,
-            `gameListPics/${Title}/1.png`
-          );
-          const boxArtImgPathRef = ref(
-            firebaseStorage,
-            `gameListPics/${Title}/boxArt.png`
-          );
-          const [bgImgBlob, boxArtImgBlob] = await Promise.all([
-            getBlob(bgImgPathRef),
-            getBlob(boxArtImgPathRef),
-          ]);
+    //       // get the cloud storage data
+    //       const bgImgPathRef = ref(
+    //         firebaseStorage,
+    //         `gameListPics/${Title}/1.png`
+    //       );
+    //       const boxArtImgPathRef = ref(
+    //         firebaseStorage,
+    //         `gameListPics/${Title}/boxArt.png`
+    //       );
+    //       const [bgImgBlob, boxArtImgBlob] = await Promise.all([
+    //         getBlob(bgImgPathRef),
+    //         getBlob(boxArtImgPathRef),
+    //       ]);
 
-          const bgImgURL = URL.createObjectURL(bgImgBlob);
-          const boxArtImgUrl = URL.createObjectURL(boxArtImgBlob);
+    //       const bgImgURL = URL.createObjectURL(bgImgBlob);
+    //       const boxArtImgUrl = URL.createObjectURL(boxArtImgBlob);
 
-          return {
-            title: Title,
-            description: Description.match(/(.*?)\.\s/)?.[0] || Description,
-            bgIMG: bgImgURL,
-            boxArtIMG: boxArtImgUrl,
-          };
-        })
-      );
+    //       return {
+    //         title: Title,
+    //         description: Description.match(/(.*?)\.\s/)?.[0] || Description,
+    //         bgIMG: bgImgURL,
+    //         boxArtIMG: boxArtImgUrl,
+    //       };
+    //     })
+    //   );
 
-      // and finally set the carousel Items
-      setCarouselItems(newCarouselItems);
-    }
+    //   // and finally set the carousel Items
+    //   setCarouselItems(newCarouselItems);
+    // }
   }, [spotlightItems]);
 
   // unload carousel Images

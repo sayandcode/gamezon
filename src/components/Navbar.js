@@ -28,21 +28,24 @@ import LoginModal from './LoginModal';
 import { FirebaseContext } from '../utlis/Contexts/FirebaseContext';
 import { auth } from '../utlis/firebase-config';
 import { NotificationSnackbarContext } from '../utlis/Contexts/NotificationSnackbarContext';
+import HideOnScroll from '../utlis/HideOnScroll';
 
 const Navbar = React.forwardRef((props, ref) => {
   return (
-    <AppBar position="sticky" sx={{ bgcolor: 'primary.dark' }} ref={ref}>
-      <Toolbar>
-        <Logo
-          variant="h3"
-          component={Link}
-          to="/"
-          sx={{ color: 'inherit', textDecoration: 'none' }}
-        />
-        <SearchBar />
-        <NavbarIcons />
-      </Toolbar>
-    </AppBar>
+    <HideOnScroll>
+      <AppBar position="sticky" sx={{ bgcolor: 'primary.dark' }} ref={ref}>
+        <Toolbar>
+          <Logo
+            variant="h3"
+            component={Link}
+            to="/"
+            sx={{ color: 'inherit', textDecoration: 'none' }}
+          />
+          <SearchBar />
+          <NavbarIcons />
+        </Toolbar>
+      </AppBar>
+    </HideOnScroll>
   );
 });
 

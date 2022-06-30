@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import { createContext, useEffect, useMemo, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { firestoreDB } from '../firebase-config';
-// import sleep from '../sleep';
+import sleep from '../sleep';
 
 export const TodaysOffersContext = createContext({
   spotlightItems: [],
@@ -18,22 +18,22 @@ export default function TodaysOffersContextProvider({ children }) {
   useEffect(() => {
     const getSpotlightNOfferItems = async () => {
       // get all the game titles
-      const allGameTitlesDocSnap = await getDoc(
+      /* const allGameTitlesDocSnap = await getDoc(
         doc(firestoreDB, 'games', 'allGameTitles')
-      );
+      ); */
 
       // MOCK FIREBASE, TO SAVE NETWORK REQUESTS WHILE DEVELOPING
       /* Delete this section */
-      // await sleep(2000);
-      // const gameData = await (
-      //   await fetch('mockFirebase/gameDataWithPrices.json')
-      // ).json();
-      // const allGameTitlesDocSnap = {
-      //   data() {
-      //     const allGameTitles = Object.keys(gameData);
-      //     return { allGameTitles };
-      //   },
-      // };
+      await sleep(2000);
+      const gameData = await (
+        await fetch('mockFirebase/gameDataWithPrices.json')
+      ).json();
+      const allGameTitlesDocSnap = {
+        data() {
+          const allGameTitles = Object.keys(gameData);
+          return { allGameTitles };
+        },
+      };
       /* Delete this section */
 
       const { allGameTitles } = allGameTitlesDocSnap.data();
