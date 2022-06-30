@@ -2,10 +2,21 @@ import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
 } from '@mui/icons-material';
-import { Box, Button, IconButton, keyframes, Typography } from '@mui/material';
+import {
+  Box,
+  IconButton,
+  keyframes,
+  Skeleton,
+  Typography,
+} from '@mui/material';
 import React, { useContext, useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { useNavigate } from 'react-router-dom';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { getBlob, ref } from 'firebase/storage';
+// import sleep from '../../utlis/sleep';
 import { TodaysOffersContext } from '../../utlis/Contexts/TodaysOffersContext';
+import { firebaseStorage, firestoreDB } from '../../utlis/firebase-config';
 
 const CAROUSEL_HEIGHT = '200px';
 
@@ -20,30 +31,92 @@ const scroll = keyframes`
 `;
 
 function SpotlightCarousel() {
-  // const { spotlightItems } = useContext(TodaysOffersContext);
-  const carouselItems = [
-    {
-      img: '1.png',
-      title: 'Title 1',
-      description: 'Description for the first one',
-    },
-    {
-      img: '2.png',
-      title: 'Title 2',
-      description:
-        'Description for the second one. Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatibus, doloremque!',
-    },
-    {
-      img: '3.png',
-      title: 'Title 3',
-      description: 'Description for the third one',
-    },
-  ];
+  const navigate = useNavigate();
+  const { spotlightItems } = useContext(TodaysOffersContext);
+
+  const [carouselItems, setCarouselItems] = useState([{}]);
+
+  // load carousel Images
+  useEffect(() => {
+    // avoid the first run of useEffect, when spotlightItems = [{}]
+    if (spotlightItems.length !== 0) getDataFromFirebase();
+
+    // MOCK FIREBASE, TO SAVE NETWORK REQUESTS WHILE
+    /* Delete this section */
+    /* async function getDataFromFirebase() {
+      await sleep(3000);
+
+      const newCarouselItems = Array.from(Array(3).keys()).map((doc, i) => {
+        return {
+          title: `Title${i + 1}`,
+          description: `Lorem ${i} ipsum dolor sit amet consectetur adipisicing elit. Earum, error!`,
+          bgIMG: `mockFirebase/${i + 1}.png`,
+          boxArtIMG: 'mockFirebase/boxArt.png',
+        };
+      });
+
+      // and finally set the carousel Items
+      setCarouselItems(newCarouselItems);
+    } */
+    /* Delete this section */
+
+    async function getDataFromFirebase() {
+      // get the firestore data
+      const dataQuery = query(
+        collection(firestoreDB, 'games'),
+        where('Title', 'in', spotlightItems)
+      );
+      const dataSnapshot = await getDocs(dataQuery);
+
+      const newCarouselItems = await Promise.all(
+        dataSnapshot.docs.map(async (doc) => {
+          const { Title, Description } = doc.data();
+
+          // get the cloud storage data
+          const bgImgPathRef = ref(
+            firebaseStorage,
+            `gameListPics/${Title}/1.png`
+          );
+          const boxArtImgPathRef = ref(
+            firebaseStorage,
+            `gameListPics/${Title}/boxArt.png`
+          );
+          const [bgImgBlob, boxArtImgBlob] = await Promise.all([
+            getBlob(bgImgPathRef),
+            getBlob(boxArtImgPathRef),
+          ]);
+
+          const bgImgURL = URL.createObjectURL(bgImgBlob);
+          const boxArtImgUrl = URL.createObjectURL(boxArtImgBlob);
+
+          return {
+            title: Title,
+            description: Description.match(/(.*?)\.\s/)?.[0] || Description,
+            bgIMG: bgImgURL,
+            boxArtIMG: boxArtImgUrl,
+          };
+        })
+      );
+
+      // and finally set the carousel Items
+      setCarouselItems(newCarouselItems);
+    }
+  }, [spotlightItems]);
+
+  // unload carousel Images
+  // clean up the imgBlob URLs to prevent memory leak
+  useEffect(() => {
+    return () => {
+      carouselItems.forEach((item) => {
+        URL.revokeObjectURL(item.bgIMG);
+        URL.revokeObjectURL(item.boxArtIMG);
+      });
+    };
+  }, [carouselItems]);
 
   const [currItemIndex, setCurrItemIndex] = useState(0);
   const changePic = ({ rightDir }) => {
     const itemCount = carouselItems.length;
-
     setCurrItemIndex((oldIndex) => {
       const newIndex = rightDir ? oldIndex + 1 : oldIndex - 1;
       const circularIndex = (newIndex + itemCount) % itemCount;
@@ -51,14 +124,24 @@ function SpotlightCarousel() {
     });
   };
 
-  const [intervalRef, setIntervalRef] = useState(null);
+  // automatic switching interval
+  const intervalRef = useRef(null);
+  const startCarouselSwitching = () => {
+    clearInterval(intervalRef.current);
+    const newIntervalRef = setInterval(() => {
+      changePic({ rightDir: true });
+    }, 5000);
+    intervalRef.current = newIntervalRef;
+  };
+  const pauseCarouselSwitching = () => {
+    clearInterval(intervalRef.current);
+    intervalRef.current = null;
+  };
+
   useEffect(() => {
-    const newIntervalRef = setInterval(
-      () => changePic({ rightDir: true }),
-      5000
-    );
-    setIntervalRef(newIntervalRef);
-  }, []);
+    startCarouselSwitching();
+    return pauseCarouselSwitching;
+  }, [carouselItems]);
 
   return (
     <Box
@@ -78,17 +161,10 @@ function SpotlightCarousel() {
           },
         },
       }}
-      onMouseEnter={() => {
-        clearInterval(intervalRef);
-        setIntervalRef(null);
-      }}
-      onMouseLeave={() => {
-        const newIntervalRef = setInterval(
-          () => changePic({ rightDir: true }),
-          5000
-        );
-        setIntervalRef(newIntervalRef);
-      }}
+      onMouseEnter={pauseCarouselSwitching}
+      onMouseLeave={startCarouselSwitching}
+      onFocus={pauseCarouselSwitching}
+      onBlur={startCarouselSwitching}
     >
       <CarouselControls
         changePic={changePic}
@@ -99,25 +175,41 @@ function SpotlightCarousel() {
       <InfoOverlay
         title={carouselItems[currItemIndex].title}
         description={carouselItems[currItemIndex].description}
-        onClick={() => console.log(`Clicked ${currItemIndex}`)}
+        boxArtSrc={carouselItems[currItemIndex].boxArtIMG}
+        onClick={() =>
+          navigate(
+            `/product/${encodeURIComponent(carouselItems[currItemIndex].title)}`
+          )
+        }
       />
-      <Box
-        component="img"
-        src={carouselItems[currItemIndex].img}
-        alt=""
-        sx={{
-          zIndex: 1,
-          width: '100%',
-          animation: `${scroll} 30s linear infinite alternate`,
-        }}
-      />
+      {carouselItems[currItemIndex].bgIMG ? (
+        <Box
+          component="img"
+          src={carouselItems[currItemIndex].bgIMG}
+          alt=""
+          sx={{
+            zIndex: 1,
+            width: '100%',
+            animation: `${scroll} 30s linear infinite alternate`,
+          }}
+        />
+      ) : (
+        <Skeleton
+          height={CAROUSEL_HEIGHT}
+          variant="rectangular"
+          sx={{
+            transform: 'scale(1)',
+            bgcolor: 'black',
+          }}
+        />
+      )}
     </Box>
   );
 }
 
 export default SpotlightCarousel;
 
-function InfoOverlay({ title, description, onClick }) {
+function InfoOverlay({ title, description, boxArtSrc, onClick }) {
   return (
     <Box
       className="InfoOverlay"
@@ -154,11 +246,22 @@ function InfoOverlay({ title, description, onClick }) {
           marginInline: '25% 10%',
         }}
       >
-        <Box
-          component="img"
-          src="boxArt.png"
-          sx={{ height: `calc(${CAROUSEL_HEIGHT}/1.5)` }}
-        />
+        {boxArtSrc ? (
+          <Box
+            component="img"
+            src={boxArtSrc}
+            sx={{ height: `calc(${CAROUSEL_HEIGHT}/1.5)` }}
+          />
+        ) : (
+          <Skeleton
+            sx={{
+              height: `calc(${CAROUSEL_HEIGHT}/1.5)`,
+              width: '100px',
+              transform: 'scale(1)',
+              bgcolor: 'white',
+            }}
+          />
+        )}
         <div style={{ color: 'white' }}>
           <Typography variant="h4">{title}</Typography>
           <Typography variant="subtitle2">{description}</Typography>
@@ -169,13 +272,16 @@ function InfoOverlay({ title, description, onClick }) {
 }
 
 InfoOverlay.propTypes = {
-  title: PropTypes.string.isRequired,
+  title: PropTypes.string,
   description: PropTypes.string,
+  boxArtSrc: PropTypes.string,
   onClick: PropTypes.func,
 };
 
 InfoOverlay.defaultProps = {
-  description: '',
+  title: 'Loading...',
+  description: 'Loading...',
+  boxArtSrc: '',
   onClick: () => {},
 };
 
