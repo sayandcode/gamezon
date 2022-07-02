@@ -33,6 +33,15 @@ const customTheme = createTheme({
         disableRipple: true, // No more ripple, on the whole application 💣!
       },
     },
+    MuiIconButton: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          '&::after, &::before': {
+            ...theme.typography.button,
+          },
+        }),
+      },
+    },
     MuiTextField: {
       defaultProps: {
         InputLabelProps: {
