@@ -23,16 +23,18 @@ export default function Home() {
         title="Today's Offers"
         itemNames={itemNames}
         productButtons={
-          <Stack direction="row" justifyContent="flex-start">
+          <Stack direction="row" justifyContent="space-between" p={1}>
             <ExpandingButton
               textContent="Add to Cart"
               icon={<AddShoppingCartIcon />}
               size="large"
+              expandDir="right"
             />
             <ExpandingButton
               textContent="Add to Wishlist"
               icon={<ReceiptLongIcon />}
               size="large"
+              expandDir="left"
             />
           </Stack>
         }

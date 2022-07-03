@@ -62,6 +62,7 @@ function CarouselItem({ itemName, productButtons }) {
           component="img"
           src={imgSrc}
           sx={{
+            display: 'block',
             width: '100%',
             height: '200px',
             objectFit: 'cover',

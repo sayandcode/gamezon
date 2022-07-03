@@ -1,54 +1,69 @@
-import { Box, Button } from '@mui/material';
+import { Box, Button, IconButton } from '@mui/material';
 import PropTypes from 'prop-types';
 
-function ExpandingButton({ textContent, icon, size }) {
+function ExpandingButton({ textContent, icon, size, expandDir }) {
   return (
-    <Button
-      startIcon={icon}
-      variant="contained"
-      color="primary"
+    <IconButton
       className="ExpandingButton-root"
+      color="secondary"
       size={size}
       sx={{
-        '.MuiButton-startIcon': {
-          m: 0,
-          color: (theme) => theme.palette.primary.main,
-          bgcolor: (theme) => theme.palette.primary.contrastText,
+        p: 0,
+
+        position: 'relative',
+        '&:hover': {
+          zIndex: 3,
+        },
+
+        '&:after': {
+          zIndex: 1,
+          content: `"${textContent}"`,
+          whiteSpace: 'nowrap',
+          bgcolor: 'primary.main',
+          color: 'primary.contrastText',
+
+          position: 'absolute',
+          [expandDir === 'right' ? 'left' : 'right']: 0,
           height: '100%',
           display: 'flex',
-          justifyContent: 'center',
           alignItems: 'center',
-          borderRadius: '50%',
-          width: '32.5px', // set width same as height
-          zIndex: 2,
-        },
-        px: 0,
-        py: 0,
-        minWidth: 'initial',
-        borderRadius: (theme) => theme.shape.borderRadius,
-        '.ExpandingButton-text': {
-          zIndex: 1,
-          width: 0,
+
+          borderRadius: (theme) => theme.shape.borderRadius,
+
+          width: '100%', // takes shape of iconButton
           overflow: 'hidden',
-          transitionProperty: 'width, padding-inline',
-          transitionDuration: '1s',
+          transitionPropery: 'width, padding',
+          transitionDuration: (theme) =>
+            `${theme.transitions.duration.complex}ms`,
+          transitionTimingFunction: (theme) =>
+            `${theme.transitions.easing.easeInOut}`,
+          boxSizing: 'content-box',
         },
-        '&:hover .ExpandingButton-text': {
-          width: (theme) =>
-            `calc(${textContent.length}ch + ${theme.spacing(3 * 1)})`,
+        '&:hover::after': {
+          px: 2,
+          [expandDir === 'right' ? 'pl' : 'pr']: 5,
+          width: `${textContent.length}ch`,
         },
       }}
     >
       <Box
-        className="ExpandingButton-text"
+        className="ExpandingButton-icon"
         sx={{
-          whiteSpace: 'nowrap',
-          py: 0.5,
+          zIndex: 2,
+          bgcolor: 'white',
+          color: 'primary.main',
+          borderRadius: '50%',
+          aspectRatio: '1',
+
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          p: 0.5,
         }}
       >
-        {textContent}
+        {icon}
       </Box>
-    </Button>
+    </IconButton>
   );
 }
 
@@ -56,11 +71,13 @@ ExpandingButton.propTypes = {
   textContent: PropTypes.string,
   icon: PropTypes.node.isRequired,
   size: PropTypes.oneOf(['small', 'medium', 'large']),
+  expandDir: PropTypes.oneOf(['left', 'right']),
 };
 
 ExpandingButton.defaultProps = {
   textContent: '',
   size: 'medium',
+  expandDir: 'right',
 };
 
 export default ExpandingButton;
