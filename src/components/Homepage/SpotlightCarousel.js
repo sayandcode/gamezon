@@ -198,7 +198,6 @@ function SpotlightCarousel() {
           height={CAROUSEL_HEIGHT}
           variant="rectangular"
           sx={{
-            transform: 'scale(1)',
             bgcolor: 'black',
           }}
         />
@@ -257,7 +256,6 @@ function InfoOverlay({ title, description, boxArtSrc, onClick }) {
             sx={{
               height: `calc(${CAROUSEL_HEIGHT}/1.5)`,
               width: '100px',
-              transform: 'scale(1)',
               bgcolor: 'white',
             }}
           />

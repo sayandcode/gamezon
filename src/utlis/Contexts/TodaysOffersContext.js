@@ -46,7 +46,11 @@ export default function TodaysOffersContextProvider({ children }) {
       );
 
       setSpotlightItems(randomShuffledGameTitles.slice(0, 5));
-      setOfferItems(randomShuffledGameTitles.slice(5, 55));
+      setOfferItems(
+        randomShuffledGameTitles
+          .slice(5, 55)
+          .map((title) => ({ title, discount: Math.random() * 0.5 }))
+      );
     };
 
     getSpotlightNOfferItems();

@@ -11,7 +11,7 @@ function ExpandingButton({ textContent, icon, size, expandDir }) {
         p: 0,
 
         position: 'relative',
-        '&:hover': {
+        '&:hover, &:focus': {
           zIndex: 3,
         },
 
@@ -39,7 +39,7 @@ function ExpandingButton({ textContent, icon, size, expandDir }) {
             `${theme.transitions.easing.easeInOut}`,
           boxSizing: 'content-box',
         },
-        '&:hover::after': {
+        '&:hover::after, &:focus::after': {
           px: 2,
           [expandDir === 'right' ? 'pl' : 'pr']: 5,
           width: `${textContent.length}ch`,

@@ -3,18 +3,18 @@ import {
   ReceiptLong as ReceiptLongIcon,
 } from '@mui/icons-material';
 import { Stack } from '@mui/material';
+import { useContext } from 'react';
 import { Outlet } from 'react-router-dom';
 import SpotlightCarousel from '../components/Homepage/SpotlightCarousel';
 import ProductsDisplayCarousel from '../components/ProductsDisplayCarousel';
 import ExpandingButton from '../ExpandingButton';
+import { TodaysOffersContext } from '../utlis/Contexts/TodaysOffersContext';
 
 export default function Home() {
-  const itemNames = [
-    '140',
-    "Assassin's Creed Valhalla",
-    "Assassin's Creed IV: Black Flag",
-    '198X',
-  ];
+  const { offerItems } = useContext(TodaysOffersContext);
+
+  const itemNames = offerItems.map((item) => item.title);
+  const discounts = offerItems.map((item) => item.discount);
 
   return (
     <>
