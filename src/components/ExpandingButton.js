@@ -1,7 +1,20 @@
+import { Add as AddIcon, Remove as RemoveIcon } from '@mui/icons-material';
 import { Box, Button, IconButton } from '@mui/material';
 import PropTypes from 'prop-types';
 
-function ExpandingButton({ textContent, icon, size, expandDir }) {
+function ExpandingButton({
+  clicked,
+  unclickedText,
+  clickedText,
+  unclickedIcon,
+  clickedIcon,
+  size,
+  expandDir,
+  onClick,
+}) {
+  const textContent = clicked ? clickedText : unclickedText;
+  const buttonIcon = clicked ? clickedIcon : unclickedIcon;
+
   return (
     <IconButton
       className="ExpandingButton-root"
@@ -45,6 +58,7 @@ function ExpandingButton({ textContent, icon, size, expandDir }) {
           width: `${textContent.length}ch`,
         },
       }}
+      onClick={onClick}
     >
       <Box
         className="ExpandingButton-icon"
@@ -61,23 +75,32 @@ function ExpandingButton({ textContent, icon, size, expandDir }) {
           p: 0.5,
         }}
       >
-        {icon}
+        {buttonIcon}
       </Box>
     </IconButton>
   );
 }
 
 ExpandingButton.propTypes = {
-  textContent: PropTypes.string,
-  icon: PropTypes.node.isRequired,
+  clicked: PropTypes.bool,
+  unclickedText: PropTypes.string,
+  clickedText: PropTypes.string,
+  unclickedIcon: PropTypes.node,
+  clickedIcon: PropTypes.node,
   size: PropTypes.oneOf(['small', 'medium', 'large']),
   expandDir: PropTypes.oneOf(['left', 'right']),
+  onClick: PropTypes.func,
 };
 
 ExpandingButton.defaultProps = {
-  textContent: '',
+  clicked: false,
+  unclickedText: 'Add ', // add this space at the end cause ch doesn't exactly work
+  clickedText: 'Remove ', // add this space at the end cause ch doesn't exactly work
+  unclickedIcon: <AddIcon />,
+  clickedIcon: <RemoveIcon />,
   size: 'medium',
   expandDir: 'right',
+  onClick: () => {},
 };
 
 export default ExpandingButton;

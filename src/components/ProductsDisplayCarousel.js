@@ -1,11 +1,14 @@
 import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
+  AddShoppingCart as AddShoppingCartIcon,
+  RemoveShoppingCart as RemoveShoppingCartIcon,
+  ReceiptLong as ReceiptLongIcon,
+  PlaylistRemove as PlaylistRemoveIcon,
 } from '@mui/icons-material';
 import {
   Box,
   Divider,
-  IconButton,
   Paper,
   Skeleton,
   Stack,
@@ -15,25 +18,19 @@ import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ContainedIconButton from './ContainedIconButton';
+import ExpandingButton from './ExpandingButton';
 
 const CAROUSEL_ITEM_HEIGHT = '250px';
 const CAROUSEL_ITEM_COUNT = 6;
 
-export default function ProductsDisplayCarousel({
-  title,
-  itemNames,
-  productButtons,
-}) {
+export default function ProductsDisplayCarousel({ title, itemNames }) {
   return (
     <Box sx={{ bgcolor: 'grey.50', m: 2, py: 1, px: 2 }}>
       <Typography variant="h5" as="h3" sx={{ fontWeight: 'bold' }} gutterBottom>
         {title}
       </Typography>
       <Divider />
-      <CarouselContainer
-        itemNames={itemNames}
-        productButtons={productButtons}
-      />
+      <CarouselContainer itemNames={itemNames} />
     </Box>
   );
 }
@@ -41,14 +38,9 @@ export default function ProductsDisplayCarousel({
 ProductsDisplayCarousel.propTypes = {
   title: PropTypes.string.isRequired,
   itemNames: PropTypes.arrayOf(PropTypes.string).isRequired,
-  productButtons: PropTypes.node,
 };
 
-ProductsDisplayCarousel.defaultProps = {
-  productButtons: null,
-};
-
-function CarouselContainer({ itemNames, productButtons }) {
+function CarouselContainer({ itemNames }) {
   const [currRangeStart, setcurrRangeStart] = useState(0);
   return (
     <Stack direction="row" my={2} position="relative" alignItems="center">
@@ -70,11 +62,7 @@ function CarouselContainer({ itemNames, productButtons }) {
           {itemNames
             .slice(currRangeStart, currRangeStart + CAROUSEL_ITEM_COUNT)
             .map((itemName) => (
-              <CarouselItem
-                key={itemName}
-                itemName={itemName}
-                productButtons={productButtons}
-              />
+              <CarouselItem key={itemName} itemName={itemName} />
             ))}
         </Stack>
       ) : (
@@ -103,14 +91,9 @@ function CarouselContainer({ itemNames, productButtons }) {
 
 CarouselContainer.propTypes = {
   itemNames: PropTypes.arrayOf(PropTypes.string).isRequired,
-  productButtons: PropTypes.node,
 };
 
-CarouselContainer.defaultProps = {
-  productButtons: null,
-};
-
-function CarouselItem({ itemName, productButtons }) {
+function CarouselItem({ itemName }) {
   const [imgSrc, setImgSrc] = useState();
   useEffect(() => {
     (async () => {
@@ -127,6 +110,8 @@ function CarouselItem({ itemName, productButtons }) {
       };
     })();
   }, []);
+
+  const [clicked, setClicked] = useState(false);
 
   return (
     <Paper sx={{ width: '150px', height: CAROUSEL_ITEM_HEIGHT }}>
@@ -149,16 +134,32 @@ function CarouselItem({ itemName, productButtons }) {
           <Skeleton sx={{ width: '100%', height: '200px' }} />
         )}
       </Link>
-      {productButtons}
+      <Stack direction="row" justifyContent="space-between" p={1}>
+        <ExpandingButton
+          clicked={clicked} /* make this dynamic from cart, and wishlist */
+          unclickedText="Add to Cart"
+          clickedText="Remove from Cart"
+          unclickedIcon={<AddShoppingCartIcon />}
+          clickedIcon={<RemoveShoppingCartIcon />}
+          size="large"
+          expandDir="right"
+          onClick={() => setClicked((old) => !old)}
+        />
+        <ExpandingButton
+          clicked={clicked} /* make this dynamic from cart, and wishlist */
+          unclickedText="Add to Wishlist"
+          clickedText="Remove from Wishlist"
+          unclickedIcon={<ReceiptLongIcon />}
+          clickedIcon={<PlaylistRemoveIcon />}
+          size="large"
+          expandDir="left"
+          onClick={() => setClicked((old) => !old)}
+        />
+      </Stack>
     </Paper>
   );
 }
 
 CarouselItem.propTypes = {
   itemName: PropTypes.string.isRequired,
-  productButtons: PropTypes.node,
-};
-
-CarouselItem.defaultProps = {
-  productButtons: null,
 };
