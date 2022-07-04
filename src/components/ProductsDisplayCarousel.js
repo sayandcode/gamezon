@@ -17,11 +17,15 @@ import {
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import useMeasure from 'react-use-measure';
+import toPX from 'to-px';
+import customTheme from '../CustomTheme';
 import ContainedIconButton from './ContainedIconButton';
 import ExpandingButton from './ExpandingButton';
 
 const CAROUSEL_ITEM_HEIGHT = '250px';
-const CAROUSEL_ITEM_COUNT = 6;
+const CAROUSEL_ITEM_WIDTH = '150px';
+const CAROUSEL_SPACING = customTheme.spacing(2);
 
 export default function ProductsDisplayCarousel({ title, itemNames }) {
   return (
@@ -41,9 +45,19 @@ ProductsDisplayCarousel.propTypes = {
 };
 
 function CarouselContainer({ itemNames }) {
+  const [CarouselStackRef, { width: carouselStackWidth }] = useMeasure();
+  const itemCount = Math.floor(
+    carouselStackWidth / (toPX(CAROUSEL_ITEM_WIDTH) + toPX(CAROUSEL_SPACING))
+  );
   const [currRangeStart, setcurrRangeStart] = useState(0);
   return (
-    <Stack direction="row" my={2} position="relative" alignItems="center">
+    <Stack
+      direction="row"
+      my={2}
+      position="relative"
+      alignItems="center"
+      ref={CarouselStackRef}
+    >
       <ContainedIconButton
         color="primary"
         sx={{
@@ -51,16 +65,14 @@ function CarouselContainer({ itemNames }) {
           left: 0,
           visibility: currRangeStart === 0 ? 'hidden' : 'visible',
         }}
-        onClick={() =>
-          setcurrRangeStart((oldStart) => oldStart - CAROUSEL_ITEM_COUNT)
-        }
+        onClick={() => setcurrRangeStart((oldStart) => oldStart - itemCount)}
       >
         <ChevronLeftIcon />
       </ContainedIconButton>
       {itemNames.length ? (
-        <Stack direction="row" spacing={2} px={3}>
+        <Stack direction="row" spacing={CAROUSEL_SPACING} px={3}>
           {itemNames
-            .slice(currRangeStart, currRangeStart + CAROUSEL_ITEM_COUNT)
+            .slice(currRangeStart, currRangeStart + itemCount)
             .map((itemName) => (
               <CarouselItem key={itemName} itemName={itemName} />
             ))}
@@ -75,13 +87,11 @@ function CarouselContainer({ itemNames }) {
           position: 'absolute',
           right: 0,
           visibility:
-            currRangeStart + CAROUSEL_ITEM_COUNT >= itemNames.length
+            currRangeStart + itemCount >= itemNames.length
               ? 'hidden'
               : 'visible',
         }}
-        onClick={() =>
-          setcurrRangeStart((oldStart) => oldStart + CAROUSEL_ITEM_COUNT)
-        }
+        onClick={() => setcurrRangeStart((oldStart) => oldStart + itemCount)}
       >
         <ChevronRightIcon />
       </ContainedIconButton>
@@ -114,7 +124,7 @@ function CarouselItem({ itemName }) {
   const [clicked, setClicked] = useState(false);
 
   return (
-    <Paper sx={{ width: '150px', height: CAROUSEL_ITEM_HEIGHT }}>
+    <Paper sx={{ width: CAROUSEL_ITEM_WIDTH, height: CAROUSEL_ITEM_HEIGHT }}>
       <Link to={`/product/${encodeURIComponent(itemName)}`}>
         {imgSrc ? (
           <Box
