@@ -17,7 +17,7 @@ const app = initializeApp(firebaseConfig);
 
   // write a separate document containing all the indexes
   const allGameTitles = gamesDB.map((game) => game.Title);
-  await setDoc(doc(firestoreDB, 'games', 'allGameTitles'), {
+  await setDoc(doc(firestoreDB, 'games', '#metadata'), {
     allGameTitles,
   });
 
