@@ -5,6 +5,20 @@ const GAMES_DB_COLLECTION_NAME = 'games';
 
 class DatabaseQuery {
   constructor(key, comparison, value, collectionName) {
+    // if any parameter is missing, throw an error
+    const allParams = { key, comparison, value, collectionName };
+    const undefinedParams = Object.entries(allParams)
+      .filter(([, paramVal]) => paramVal === undefined)
+      .map(([paramName]) => paramName);
+
+    if (undefinedParams.length !== 0) {
+      throw new Error(
+        `[${undefinedParams.join(
+          ', '
+        )}] parameter(s) are missing:\n${JSON.stringify(allParams)}`
+      );
+    }
+
     this.key = key;
     this.comparison = comparison;
     this.value = value;

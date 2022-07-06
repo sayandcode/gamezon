@@ -10,6 +10,7 @@ doForNextCommit.md
 test.js
 test.*
 pics/
+mockFirebase/
 
 # testing
 /coverage

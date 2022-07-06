@@ -1,4 +1,4 @@
-import { getboxArtFor, getScreenshotFor } from './DBFetch';
+import { getboxArtFor, getScreenshotFor } from './MockDBFetch'; // BEFORE PRODUCTION: change '/MockDBFetch' to '/DBFetch' for production
 
 console.log(); // remove this eslint later
 // eslint-disable-next-line import/prefer-default-export

@@ -1,0 +1,9 @@
+mockFirebase/
+  JSONDatabase/
+    games.json
+  storage/
+    gameListPics/
+      {gameName}/
+        1.png
+        ...
+      ...
