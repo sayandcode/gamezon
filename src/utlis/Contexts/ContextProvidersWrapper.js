@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import customTheme from '../../CustomTheme';
 import FirebaseContextProvider from './FirebaseContext';
 import NotificationSnackbarContextProvider from './NotificationSnackbarContext';
-import TodaysOffersContextProvider from './TodaysOffersContext';
 
 export default function ContextProvidersWrapper({ children }) {
   return (
@@ -11,7 +10,7 @@ export default function ContextProvidersWrapper({ children }) {
       <CssBaseline />
       <FirebaseContextProvider>
         <NotificationSnackbarContextProvider>
-          <TodaysOffersContextProvider>{children}</TodaysOffersContextProvider>
+          {children}
         </NotificationSnackbarContextProvider>
       </FirebaseContextProvider>
     </ThemeProvider>

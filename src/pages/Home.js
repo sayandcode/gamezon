@@ -1,19 +1,15 @@
-import { useContext } from 'react';
 import { Outlet } from 'react-router-dom';
-import SpotlightCarousel from '../components/Homepage/SpotlightCarousel';
+import ImageCarousel from '../components/Homepage/ImageCarousel';
 import ProductsDisplayCarousel from '../components/ProductsDisplayCarousel';
-import { TodaysOffersContext } from '../utlis/Contexts/TodaysOffersContext';
+import { GameDatabaseQuery } from '../utlis/DBHandlers/DBQueryClasses';
 
 export default function Home() {
-  const { offerItems } = useContext(TodaysOffersContext);
-
-  const itemNames = offerItems.map((item) => item.title);
-  const discounts = offerItems.map((item) => item.discount);
+  const spotlightItemsQuery = new GameDatabaseQuery('spotlight', '!=', false);
 
   return (
     <>
-      <SpotlightCarousel items={1} />
-      <ProductsDisplayCarousel title="Today's Offers" itemNames={itemNames} />
+      <ImageCarousel itemsQuery={spotlightItemsQuery} />
+      {/* <ProductsDisplayCarousel title="Today's Offers" itemNames={itemNames} /> */}
       <Outlet />
     </>
   );
