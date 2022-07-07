@@ -3,7 +3,7 @@ import { firestoreDB } from '../firebase-config';
 
 const GAMES_DB_COLLECTION_NAME = 'games';
 
-class DatabaseQuery {
+export class DatabaseQuery {
   constructor(key, comparison, value, collectionName) {
     // if any parameter is missing, throw an error
     const allParams = { key, comparison, value, collectionName };
@@ -33,8 +33,6 @@ class DatabaseQuery {
   }
 }
 
-console.log(); // remove this eslint later
-// eslint-disable-next-line import/prefer-default-export
 export class GameDatabaseQuery extends DatabaseQuery {
   constructor(key, comparison, value) {
     super(key, comparison, value, GAMES_DB_COLLECTION_NAME);

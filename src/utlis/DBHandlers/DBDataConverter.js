@@ -1,7 +1,5 @@
 import { getboxArtFor, getScreenshotFor } from './MockDBFetch'; // BEFORE PRODUCTION: change '/MockDBFetch' to '/DBFetch' for production
 
-console.log(); // remove this eslint later
-// eslint-disable-next-line import/prefer-default-export
 export class ImageCarouselItem {
   constructor(data) {
     this.title = data.Title;
@@ -19,5 +17,20 @@ export class ImageCarouselItem {
     ]);
 
     return new ImageCarouselItem({ ...data, bgImgUrl, boxArtUrl });
+  }
+}
+
+export class ProductsDisplayCarouselItem {
+  constructor(data) {
+    this.title = data.Title;
+    this.price = data.Price;
+    this.boxArtUrl = data.boxArtUrl;
+  }
+
+  static async createFrom(data) {
+    const gameTitle = data.Title;
+    const boxArtUrl = await getboxArtFor(gameTitle);
+
+    return new ProductsDisplayCarouselItem({ ...data, boxArtUrl });
   }
 }
