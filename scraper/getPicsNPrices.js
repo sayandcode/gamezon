@@ -9,6 +9,7 @@ const {
   getPriceAccToConsole,
 } = require('./helperFns/picsNPricesHelpers');
 const sleep = require('./helperFns/sleep');
+const { findSmallestInArray } = require('./helperFns/findSmallest');
 
 /* THINGS TO SCRAPE */
 //  1 Box Art Image
@@ -47,17 +48,21 @@ puppeteer.use(AdblockerPlugin());
     const gameScreenshots = await getGameScreenshots(gameName);
 
     //  price foreach console
-    const { variants } = db[gameName];
-    for (let j = 0; j < variants.length; j += 1) {
-      const thisVariant = variants[j];
+    const consoleNames = db[gameName]['Console(s)'];
+    db[gameName].variants = [];
+    for (let j = 0; j < consoleNames.length; j += 1) {
+      const thisConsoleName = consoleNames[j];
       const { price, purchaseUrl } = await getPriceAccToConsole(
         gameName,
-        thisVariant.consoleName,
+        thisConsoleName,
         browser
       );
-      thisVariant.price = price;
-      if (!price) thisVariant['Release date'] = null;
-      thisVariant.purchaseUrl = purchaseUrl;
+      db[gameName].variants.push({ price, purchaseUrl });
+      const startingPrice = findSmallestInArray(
+        db[gameName].variants,
+        'price.value'
+      );
+      db[gameName].startingPrice = { currency: '$', value: startingPrice };
       await sleep(500);
     }
 

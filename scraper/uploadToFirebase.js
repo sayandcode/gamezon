@@ -3,23 +3,29 @@ const { initializeApp } = require('firebase/app');
 const { getFirestore, writeBatch, doc, setDoc } = require('firebase/firestore');
 const { getStorage, ref, uploadBytes } = require('firebase/storage');
 const fs = require('fs/promises');
+const path = require('path');
 
 require('dotenv').config();
 
-const DB_URL = './gameDataJSON/gameDataWithPrices.json';
+const DB_URL = path.resolve(
+  __dirname,
+  '../mockFirebase/JSONDatabase/games.json'
+);
+const METADATA_URL = path.resolve(
+  __dirname,
+  '../mockFirebase/JSONDatabase/games.metadata.json'
+);
 const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG);
 const app = initializeApp(firebaseConfig);
 
 (async function addGamesDataJSON() {
   const gamesDB = Object.values(JSON.parse(await fs.readFile(DB_URL)));
+  const metadata = JSON.parse(await fs.readFile(METADATA_URL));
 
   const firestoreDB = getFirestore(app);
 
-  // write a separate document containing all the indexes
-  const allGameTitles = gamesDB.map((game) => game.Title);
-  await setDoc(doc(firestoreDB, 'games', '#metadata'), {
-    allGameTitles,
-  });
+  // write a separate document for metadata
+  await setDoc(doc(firestoreDB, 'games', '#metadata'), metadata);
 
   // maximum 500 writes per batch
   const FIRESTORE_MAX_WRITES = 500;

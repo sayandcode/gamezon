@@ -20,18 +20,10 @@ async function getAllGamesFromWikiListPageID(pageID) {
       return headingElements.map((el) => el.innerText);
     }
   );
-  const neededColumns = [
-    'Title',
-    'Genre(s)',
-    'Developer(s)',
-    'Publisher(s)',
-    'Release date',
-  ];
+  const neededColumns = ['Title', 'Genre(s)', 'Developer(s)', 'Publisher(s)'];
 
-  const requiredIndexes = neededColumns.map((neededColumn) =>
-    neededColumn === 'Release date'
-      ? columnLabels.indexOf(neededColumn) + 1 // needed to offset the fact that wikipedia tables contain 3 release dates. we need the middle one. So +1
-      : columnLabels.indexOf(neededColumn)
+  const requiredIndexes = neededColumns.map(
+    (neededColumn) => neededColumn === columnLabels.indexOf(neededColumn)
   );
 
   // for each entry(tr) in the table body, find the data in the required indexes

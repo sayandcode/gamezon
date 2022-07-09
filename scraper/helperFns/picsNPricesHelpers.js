@@ -99,11 +99,17 @@ async function getPriceAccToConsole(gameName, consoleName, browser) {
     )
   )[0];
 
-  const price = priceElement
+  const scrapedPrice = priceElement
     ? await priceElement.evaluate(
         (el) => el.textContent.match(/\$\d+(\.\d+)?/)?.[0] // this works, cause if it cant find a match, it returns null
       )
     : null;
+
+  const price =
+    scrapedPrice === null
+      ? null
+      : { currency: scrapedPrice.charAt(0), value: scrapedPrice.slice(1) };
+
   const purchaseUrl = page.url();
 
   await page.close();
