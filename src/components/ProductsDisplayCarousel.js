@@ -57,11 +57,12 @@ function CarouselContainer({ itemsQuery }) {
 
   const [carouselItems, setCarouselItems] = useState([]);
   const carousel = useRef(carouselItems);
-  const [moreItemsAvailable, setMoreItemsAvailable] = useState(false);
+  const [moreItemsAvailable, setMoreItemsAvailable] = useState(true);
   const [rangeStart, setRangeStart] = useState(0);
 
   // FETCH CAROUSEL ITEMS
   const stackRef = useRef(new SequentialExecutionQueue());
+  const [fetchInProcess, setFetchInProcess] = useState(false); // this is a flag
 
   useEffect(() => {
     // We run the fetch function only after the previous one has completed
@@ -76,9 +77,10 @@ function CarouselContainer({ itemsQuery }) {
       const highestIndex = carousel.current.length - 1;
       const rangeEnd = rangeStart + itemCount - 1;
       const reachedCarouselEnd = rangeEnd > highestIndex;
-      if (!itemCount || !reachedCarouselEnd) return;
+      if (!itemCount || !reachedCarouselEnd || !moreItemsAvailable) return;
 
-      setMoreItemsAvailable(false); // prevent clicks when loading
+      setFetchInProcess(true); // prevent clicks when loading
+
       // take the last item in the carouselItems array, and start at that one.
       // That way, we query only the ones that are extra
       const lastFetchedItem = carousel.current.slice(-1)[0];
@@ -106,6 +108,7 @@ function CarouselContainer({ itemsQuery }) {
           return newItems;
         });
       });
+      setFetchInProcess(false);
     }
   }, [rangeStart, itemCount]);
 
@@ -136,23 +139,27 @@ function CarouselContainer({ itemsQuery }) {
         <ChevronLeftIcon />
       </ContainedIconButton>
       <Stack direction="row" spacing={CAROUSEL_SPACING} px={3}>
-        {carouselItems
-          ? carouselItems
-              .slice(rangeStart, rangeStart + itemCount)
-              .map((item, i) => {
-                // eslint-disable-next-line react/no-array-index-key
-                return <CarouselItem key={i} item={item} />;
-              })
-          : Array.from(Array(itemCount)).map((_, i) => (
-              <Skeleton
-                // eslint-disable-next-line react/no-array-index-key
-                key={i}
-                sx={{
-                  width: CAROUSEL_ITEM_WIDTH,
-                  height: CAROUSEL_ITEM_HEIGHT,
-                }}
+        {Array.from(Array(itemCount)).map((_, i) => {
+          const indexInCarousel = rangeStart + i;
+          // if the item exists then show it
+          if (carouselItems[indexInCarousel])
+            return (
+              <CarouselItem
+                key={indexInCarousel}
+                item={carouselItems[indexInCarousel]}
               />
-            ))}
+            );
+          // if theres something to be fetched show a skeleton, else show nothing
+          return fetchInProcess ? (
+            <Skeleton
+              key={indexInCarousel}
+              sx={{
+                width: CAROUSEL_ITEM_WIDTH,
+                height: CAROUSEL_ITEM_HEIGHT,
+              }}
+            />
+          ) : undefined;
+        })}
       </Stack>
       <ContainedIconButton
         color="primary"
@@ -160,10 +167,11 @@ function CarouselContainer({ itemsQuery }) {
           position: 'absolute',
           right: 0,
           visibility:
-            moreItemsAvailable ||
-            rangeStart + itemCount < carouselItems.length - 1 // current rangeEnd Index < last index fetched
-              ? 'visible'
-              : 'hidden',
+            fetchInProcess ||
+            (!moreItemsAvailable &&
+              rangeStart + itemCount > carouselItems.length - 1) // current rangeEnd Index < last index fetched
+              ? 'hidden'
+              : 'visible',
         }}
         onClick={() => changePage({ forward: true })}
       >
