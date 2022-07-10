@@ -12,7 +12,7 @@ import {
 import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
-import { getDataFromQuery } from '../../utlis/DBHandlers/MockDBFetch'; // BEFORE PRODUCTION: change '/MockDBFetch' to '/DBFetch' for production
+import { getDataFromQuery } from '../../utlis/DBHandlers/MockDBFetch'; // BEFORE PRODUCTION: change 'MockDBFetch' to 'DBFetch' for production
 import { ImageCarouselItem } from '../../utlis/DBHandlers/DBDataConverter';
 import { GameDatabaseQuery } from '../../utlis/DBHandlers/DBQueryClasses';
 

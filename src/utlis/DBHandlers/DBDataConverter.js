@@ -1,36 +1,52 @@
-import { getboxArtFor, getScreenshotFor } from './MockDBFetch'; // BEFORE PRODUCTION: change '/MockDBFetch' to '/DBFetch' for production
+import { getboxArtFor, getScreenshotFor } from './MockDBFetch'; // BEFORE PRODUCTION: change 'MockDBFetch' to 'DBFetch' for production
 
-export class ImageCarouselItem {
-  constructor(data) {
+class RootDatabaseEntity {
+  #ref;
+
+  constructor(doc) {
+    this.#ref = doc.ref;
+  }
+
+  getRef() {
+    return this.#ref;
+  }
+}
+
+export class ImageCarouselItem extends RootDatabaseEntity {
+  constructor(doc, { bgImgUrl, boxArtUrl }) {
+    super(doc);
+    const { data } = doc;
     this.title = data.Title;
     this.description =
       data.Description.match(/(.*?)\.\s/)?.[0] || data.Description;
-    this.bgImgUrl = data.bgImgUrl;
-    this.boxArtUrl = data.boxArtUrl;
+    this.bgImgUrl = bgImgUrl;
+    this.boxArtUrl = boxArtUrl;
   }
 
-  static async createFrom(data) {
-    const gameTitle = data.Title;
+  static async createFrom(doc) {
+    const gameTitle = doc.data.Title;
     const [bgImgUrl, boxArtUrl] = await Promise.allSettledFiltered([
       getScreenshotFor(gameTitle),
       getboxArtFor(gameTitle),
     ]);
 
-    return new ImageCarouselItem({ ...data, bgImgUrl, boxArtUrl });
+    return new ImageCarouselItem(doc, { bgImgUrl, boxArtUrl });
   }
 }
 
-export class ProductsDisplayCarouselItem {
-  constructor(data) {
+export class ProductsDisplayCarouselItem extends RootDatabaseEntity {
+  constructor(doc, { boxArtUrl }) {
+    super(doc);
+    const { data } = doc;
     this.title = data.Title;
-    this.price = data.Price;
-    this.boxArtUrl = data.boxArtUrl;
+    this.price = data.startingPrice;
+    this.boxArtUrl = boxArtUrl;
   }
 
-  static async createFrom(data) {
-    const gameTitle = data.Title;
+  static async createFrom(doc) {
+    const gameTitle = doc.data.Title;
     const boxArtUrl = await getboxArtFor(gameTitle);
 
-    return new ProductsDisplayCarouselItem({ ...data, boxArtUrl });
+    return new ProductsDisplayCarouselItem(doc, { boxArtUrl });
   }
 }

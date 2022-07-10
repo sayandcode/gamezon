@@ -7,8 +7,11 @@ const GAME_PICS_ROOT_FOLDER = 'gameListPics';
 export async function getDataFromQuery(queryObj) {
   const q = queryObj.extractQuery();
   const docsSnapshot = await getDocs(q);
-  const data = docsSnapshot.docs.map((doc) => doc.data());
-  return data;
+  const documents = docsSnapshot.docs.map((doc) => ({
+    ref: doc,
+    data: doc.data(),
+  }));
+  return documents;
 }
 
 export async function getScreenshotFor(title, { count } = { count: 1 }) {

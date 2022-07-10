@@ -15,14 +15,16 @@ import {
   Typography,
 } from '@mui/material';
 import PropTypes from 'prop-types';
-import { useEffect, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useMeasure from 'react-use-measure';
 import toPX from 'to-px';
+import { flushSync } from 'react-dom';
 import customTheme from '../CustomTheme';
 import { ProductsDisplayCarouselItem } from '../utlis/DBHandlers/DBDataConverter';
 import { DatabaseQuery } from '../utlis/DBHandlers/DBQueryClasses';
-import { getDataFromQuery } from '../utlis/DBHandlers/MockDBFetch';
+import { getDataFromQuery } from '../utlis/DBHandlers/MockDBFetch'; // BEFORE PRODUCTION: change 'MockDBFetch' to 'DBFetch' for production
+import SequentialExecutionQueue from '../utlis/SequentialExecutionQueue';
 import ContainedIconButton from './ContainedIconButton';
 import ExpandingButton from './ExpandingButton';
 
@@ -52,21 +54,67 @@ function CarouselContainer({ itemsQuery }) {
   const itemCount = Math.floor(
     carouselStackWidth / (toPX(CAROUSEL_ITEM_WIDTH) + toPX(CAROUSEL_SPACING))
   );
-  const [currRangeStart, setcurrRangeStart] = useState(0);
 
-  const [carouselItems, setCarouselItems] = useState();
+  const [carouselItems, setCarouselItems] = useState([]);
+  const carousel = useRef(carouselItems);
+  const [moreItemsAvailable, setMoreItemsAvailable] = useState(false);
+  const [rangeStart, setRangeStart] = useState(0);
+
   // FETCH CAROUSEL ITEMS
+  const stackRef = useRef(new SequentialExecutionQueue());
+
   useEffect(() => {
-    (async () => {
-      const queriedItems = await getDataFromQuery(itemsQuery);
+    // We run the fetch function only after the previous one has completed
+    // That way, the function always has access to the latest state of carouselItems
+    // and thus fetches only the extra ones needed, despite an additional network request
+    // The stack is the only way this will work with resizes also
+    stackRef.current.push(getCarouselItems);
+
+    async function getCarouselItems() {
+      // any time the last index is greater than number of items in the carousel items
+      // we fetch the new items, and add them to the carouselItems buffer
+      const highestIndex = carousel.current.length - 1;
+      const rangeEnd = rangeStart + itemCount - 1;
+      const reachedCarouselEnd = rangeEnd > highestIndex;
+      if (!itemCount || !reachedCarouselEnd) return;
+
+      setMoreItemsAvailable(false); // prevent clicks when loading
+      // take the last item in the carouselItems array, and start at that one.
+      // That way, we query only the ones that are extra
+      const lastFetchedItem = carousel.current.slice(-1)[0];
+      const noOfItemsToFetch = rangeEnd - highestIndex + 1; // fetch one extra, to see if there are more items available
+      const subsetQuery = itemsQuery
+        .limit(noOfItemsToFetch)
+        .startAfter(lastFetchedItem); // startAfter method can also work with undefined. It just ignores the call
+
+      const queriedItems = await getDataFromQuery(subsetQuery);
+      const extraItem = queriedItems[noOfItemsToFetch - 1]; // (noOfItemsToFetch - 1) is the last item cause thats how indexes work
+      if (extraItem) setMoreItemsAvailable(true);
+      else setMoreItemsAvailable(false);
+
       const newCarouselItems = await Promise.allSettledFiltered(
         queriedItems.map(async (item) =>
           ProductsDisplayCarouselItem.createFrom(item)
         )
       );
-      setCarouselItems(newCarouselItems);
-    })();
-  }, []);
+
+      // make sure the setState completes before dequeuing the task
+      flushSync(() => {
+        setCarouselItems((oldItems) => {
+          const newItems = [...oldItems, ...newCarouselItems];
+          carousel.current = newItems;
+          return newItems;
+        });
+      });
+    }
+  }, [rangeStart, itemCount]);
+
+  const changePage = ({ forward }) => {
+    const offset = (forward ? 1 : -1) * itemCount;
+    const newCurr = rangeStart + offset;
+
+    setRangeStart(newCurr < 0 ? 0 : newCurr);
+  };
 
   return (
     <Stack
@@ -81,17 +129,20 @@ function CarouselContainer({ itemsQuery }) {
         sx={{
           position: 'absolute',
           left: 0,
-          visibility: currRangeStart === 0 ? 'hidden' : 'visible',
+          visibility: rangeStart === 0 ? 'hidden' : 'visible',
         }}
-        onClick={() => setcurrRangeStart((oldStart) => oldStart - itemCount)}
+        onClick={() => changePage({ forward: false })}
       >
         <ChevronLeftIcon />
       </ContainedIconButton>
       <Stack direction="row" spacing={CAROUSEL_SPACING} px={3}>
         {carouselItems
           ? carouselItems
-              .slice(currRangeStart, currRangeStart + itemCount)
-              .map((item) => <CarouselItem key={item.title} item={item} />)
+              .slice(rangeStart, rangeStart + itemCount)
+              .map((item, i) => {
+                // eslint-disable-next-line react/no-array-index-key
+                return <CarouselItem key={i} item={item} />;
+              })
           : Array.from(Array(itemCount)).map((_, i) => (
               <Skeleton
                 // eslint-disable-next-line react/no-array-index-key
@@ -103,18 +154,18 @@ function CarouselContainer({ itemsQuery }) {
               />
             ))}
       </Stack>
-
       <ContainedIconButton
         color="primary"
         sx={{
           position: 'absolute',
           right: 0,
           visibility:
-            currRangeStart + itemCount >= carouselItems?.length
-              ? 'hidden'
-              : 'visible',
+            moreItemsAvailable ||
+            rangeStart + itemCount < carouselItems.length - 1 // current rangeEnd Index < last index fetched
+              ? 'visible'
+              : 'hidden',
         }}
-        onClick={() => setcurrRangeStart((oldStart) => oldStart + itemCount)}
+        onClick={() => changePage({ forward: true })}
       >
         <ChevronRightIcon />
       </ContainedIconButton>

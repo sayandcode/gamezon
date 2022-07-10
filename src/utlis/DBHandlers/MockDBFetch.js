@@ -1,6 +1,8 @@
 // this is listed as a dev dependency, as MockDBFetch is intended only for dev builds
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { FastHTMLParser } from 'fast-html-dom-parser';
+import { getPropertyValue } from '../HelperFns';
+import sleep from '../sleep';
 
 const JSON_DATABASE_URL = 'http://127.0.0.1:5500/JSONDatabase';
 const STORAGE_DB_URL = 'http://127.0.0.1:5500/storage';
@@ -11,7 +13,15 @@ export async function getDataFromQuery({
   comparison,
   value,
   collectionName,
+  limitNo,
+  startAtDoc,
+  startAfterDoc,
+  limitToLastNo,
+  endBeforeDoc,
+  orderByField,
+  orderDesc,
 }) {
+  await sleep(1000);
   const response = await fetch(`${JSON_DATABASE_URL}/${collectionName}.json`);
   const dataObj = await response.json();
 
@@ -29,9 +39,48 @@ export async function getDataFromQuery({
         );
     }
   }
-  const result = Object.values(dataObj).filter((doc) =>
-    compare(doc[key], doc[value])
-  );
+  const queriedDocs = Object.values(dataObj)
+    .filter((doc) => compare(doc[key], doc[value]))
+    .sort((doc1, doc2) => {
+      const [a, b] = orderDesc ? [doc2, doc1] : [doc1, doc2];
+      const sortField = orderByField || 'Title';
+      const [aVal, bVal] = [
+        getPropertyValue(a, sortField),
+        getPropertyValue(b, sortField),
+      ];
+
+      if (typeof aVal === 'string') return aVal > bVal ? 1 : -1;
+      return aVal - bVal;
+    });
+
+  let startDocIndex = 0;
+  let endDocIndex;
+
+  if (startAfterDoc || startAtDoc) {
+    const givenDocIndex = queriedDocs.findIndex(
+      (doc) => doc.Title === (startAfterDoc || startAtDoc)
+    );
+    if (givenDocIndex === -1)
+      throw new Error("Start doc doesn't exist in queried results");
+
+    startDocIndex = startAfterDoc ? givenDocIndex + 1 : givenDocIndex;
+  }
+  if (endBeforeDoc) {
+    endDocIndex = queriedDocs.findIndex((doc) => doc.Title === endBeforeDoc);
+    if (startDocIndex === -1)
+      throw new Error("End doc doesn't exist in queried results");
+  }
+
+  const edgeFilteredDocs = queriedDocs
+    .map((doc) => ({ ref: doc.Title, data: doc }))
+    .slice(startDocIndex, endDocIndex); // if endDocIndex is undefined it just returns all the docs
+
+  if (limitNo) [startDocIndex, endDocIndex] = [0, limitNo];
+  else if (limitToLastNo)
+    [startDocIndex, endDocIndex] = [-limitToLastNo, undefined];
+
+  const result = edgeFilteredDocs.slice(startDocIndex, endDocIndex);
+
   return result;
 }
 
