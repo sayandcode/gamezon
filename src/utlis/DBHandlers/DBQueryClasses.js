@@ -7,63 +7,57 @@ import {
   startAt as firebaseStartAt,
   endBefore as firebaseEndBefore,
   orderBy as firebaseOrderBy,
-  FieldPath,
-  where,
+  where as firebaseWhere,
 } from 'firebase/firestore';
 import { firestoreDB } from '../firebase-config';
 
 const GAMES_DB_COLLECTION_NAME = 'games';
 
 export class DatabaseQuery {
-  constructor(key, comparison, value, collectionName) {
+  constructor(collectionName) {
+    this.collectionName = collectionName;
+  }
+
+  where(key, comparison, value) {
     // if any of the following parameter is missing, throw an error
-    const allParams = { key, comparison, value, collectionName };
-    const undefinedParams = Object.entries(allParams)
-      .filter(([, paramVal]) => paramVal === undefined)
-      .map(([paramName]) => paramName);
+    const requiredParams =
+      comparison === 'exists' ? { key } : { key, comparison, value };
+    checkIfParamsPresent(requiredParams);
 
-    // TODO: implement field 'exists' query feature
-    // if comparison === 'exists' and value === undefined, then pop it off the undefined params stack
-    // cause thats a special case for a query
-
-    if (undefinedParams.length !== 0) {
-      throw new Error(
-        `[${undefinedParams.join(
-          ', '
-        )}] parameter(s) are missing:\n${JSON.stringify(allParams)}`
-      );
+    // if comparison is 'exists', you can add an orderBy clause instead, just to filter it out
+    if (comparison === 'exists') {
+      return this.orderBy(key);
     }
 
-    this.key = key;
-    this.comparison = comparison;
-    this.value = value;
-    this.collectionName = collectionName;
+    const copy = this.clone();
+    const officialFieldName = copy.constructor.convertToDatabaseField(key);
+    copy.whereFields = copy.whereFields || [];
+    copy.whereFields.push({ key: officialFieldName, comparison, value });
+    return copy;
   }
 
   extractQuery() {
     const constraints = [];
+
+    this.whereFields?.forEach((field) =>
+      constraints.push(firebaseWhere(field.key, field.comparison, field.value))
+    );
+    this.orderByFields?.forEach((field) => {
+      const dir = field.desc ? 'desc' : 'asc';
+      const finalField = field.key === null ? '__name__' : field.key;
+      constraints.push(firebaseOrderBy(finalField, dir));
+    });
+
     if (this.limitNo) constraints.push(firebaseLimit(this.limitNo));
     if (this.limitToLastNo)
       constraints.push(firebaseLimitToLast(this.limitToLastNo));
-
-    if (this.orderByField !== undefined) {
-      const dir = this.orderDesc ? 'desc' : 'asc';
-      const finalField =
-        this.orderByField === null ? FieldPath.documentId() : this.orderByField;
-      constraints.push(firebaseOrderBy(finalField, dir));
-    }
-
     if (this.startAfterDoc)
       constraints.push(firebaseStartAfter(this.startAfterDoc));
     if (this.startAtDoc) constraints.push(firebaseStartAt(this.startAfterDoc));
     if (this.endBeforeDoc)
       constraints.push(firebaseEndBefore(this.endBeforeDoc));
 
-    return query(
-      collection(firestoreDB, this.collectionName),
-      where(this.key, this.comparison, this.value),
-      ...constraints
-    );
+    return query(collection(firestoreDB, this.collectionName), ...constraints);
   }
 
   clone() {
@@ -91,21 +85,27 @@ export class DatabaseQuery {
     return copy;
   }
 
+  // if 'startAt', 'startAfter' or 'endBefore' is called, you better make sure there is an orderBy
+  // going on this is because it can be used polymorphically, such that the first call is empty,
+  // but subsequent calls have a RootDBEntityItem. But we still need to make sure that the first
+  // result and the subsequent ones are part of the same order
+
   startAt(RootDBEntityItem) {
     if (this.startAfterDoc)
       throw new Error('"startAt" cannot be called along with "startAfter"');
+
+    let copy;
+    if (!this.orderByFields)
+      copy = this.orderBy(); // orderBy is compulsory for startAt
+    else copy = this.clone();
+
     if (!RootDBEntityItem) {
       console.warn('"startAt" constraint called with empty parameter', {
         RootDBEntityItem,
       });
-      return this;
+      return copy;
     }
-
-    let copy;
-    if (!this.orderByField)
-      copy = this.orderBy(); // orderBy is compulsory for startAfter
-    else copy = this.clone();
-
+    // if  there is an entity provided, then set the ref
     const docRef = RootDBEntityItem.getRef();
     copy.startAtDoc = docRef;
     return copy;
@@ -114,64 +114,107 @@ export class DatabaseQuery {
   startAfter(RootDBEntityItem) {
     if (this.startAtDoc)
       throw new Error('"startAfter" cannot be called along with "startAt"');
+
+    let copy;
+    if (!this.orderByFields)
+      copy = this.orderBy(); // orderBy is compulsory for startAfter
+    else copy = this.clone();
+
     if (!RootDBEntityItem) {
       console.warn('"startAfter" constraint called with empty parameter', {
         RootDBEntityItem,
       });
-      return this;
+      return copy;
     }
-
-    let copy;
-    if (!this.orderByField)
-      copy = this.orderBy(); // orderBy is compulsory for startAfter
-    else copy = this.clone();
-
+    // if  there is an entity provided, then set the ref
     const docRef = RootDBEntityItem.getRef();
     copy.startAfterDoc = docRef;
     return copy;
   }
 
   endBefore(RootDBEntityItem) {
+    let copy;
+    if (!this.orderByFields)
+      copy = this.orderBy(); // orderBy is compulsory for endBefore
+    else copy = this.clone();
+
     if (!RootDBEntityItem) {
       console.warn('"endBefore" constraint called with empty parameter', {
         RootDBEntityItem,
       });
       return this;
     }
-
-    let copy;
-    if (!this.orderByField)
-      copy = this.orderBy(); // orderBy is compulsory for endBefore
-    else copy = this.clone();
-
+    // if  there is an entity provided, then set the ref
     const docRef = RootDBEntityItem.getRef();
     copy.endBeforeDoc = docRef;
     return copy;
   }
 
   orderBy(field, { descending } = { descending: false }) {
-    // Uncaught (in promise) FirebaseError: Invalid query. You have a where filter with an inequality (<, <=, !=, not-in, >, or >=) on field 'discount' and so you must also use 'discount' as your first argument to orderBy(), but your first orderBy() is on field 'Title' instead.
     const copy = this.clone();
-    copy.orderByField = (() => {
-      const processedFieldName = field?.toLowerCase();
-      switch (processedFieldName) {
-        case 'title':
-          return 'Title';
-        case 'price':
-          return 'startingPrice.value';
-        case 'discount':
-          return 'discount';
-        default:
-          return null;
-      }
-    })();
-    copy.orderDesc = descending;
+
+    copy.orderByFields = copy.orderByFields || [];
+    const officialFieldName = copy.constructor.convertToDatabaseField(field);
+
+    // if its already added, remove it, and then add the new one at the end
+    const indexOfAlreadyAdded = copy.orderByFields.findIndex(
+      (order) => order.key === officialFieldName
+    );
+    if (indexOfAlreadyAdded !== -1)
+      copy.orderByFields.splice(indexOfAlreadyAdded, 1);
+    copy.orderByFields.push({ key: officialFieldName, desc: descending });
+
+    // if the query already has an inequality filter (<, <=, !=, not-in, >, or >=)
+    // then orderBy that field first
+    const hasInequalityFilter = copy.whereFields?.find((where) =>
+      ['<', '<=', '!=', 'not-in', '>', '>='].includes(where.comparison)
+    );
+    if (hasInequalityFilter) {
+      copy.orderByFields.splice(0, 0, {
+        field: this.whereField.key,
+        desc: descending,
+      });
+      console.warn(
+        `An inequality filter: '${hasInequalityFilter.comparison}' was used. So sequence of orderBy is ${copy.orderByFields}`
+      );
+    }
+
     return copy;
   }
 }
 
 export class GameDatabaseQuery extends DatabaseQuery {
-  constructor(key, comparison, value) {
-    super(key, comparison, value, GAMES_DB_COLLECTION_NAME);
+  static convertToDatabaseField(field) {
+    const processedFieldName = field?.toLowerCase();
+    switch (processedFieldName) {
+      case 'title':
+        return 'Title';
+      case 'price':
+        return 'startingPrice.value';
+      case 'discount':
+        return 'discount';
+      case 'spotlight':
+        return 'spotlight';
+      default:
+        return null;
+    }
+  }
+
+  constructor() {
+    super(GAMES_DB_COLLECTION_NAME);
+  }
+}
+
+function checkIfParamsPresent(requiredParams) {
+  const undefinedParams = Object.entries(requiredParams)
+    .filter(([, paramVal]) => paramVal === undefined)
+    .map(([paramName]) => paramName);
+
+  if (undefinedParams.length !== 0) {
+    throw new Error(
+      `[${undefinedParams.join(
+        ', '
+      )}] parameter(s) are missing:\n${JSON.stringify(requiredParams)}`
+    );
   }
 }

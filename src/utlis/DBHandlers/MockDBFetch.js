@@ -9,41 +9,37 @@ const STORAGE_DB_URL = 'http://127.0.0.1:5500/storage';
 const GAME_PICS_ROOT_FOLDER = 'gameListPics';
 
 export async function getDataFromQuery({
-  key,
-  comparison,
-  value,
   collectionName,
+  whereFields,
   limitNo,
   startAtDoc,
   startAfterDoc,
   limitToLastNo,
   endBeforeDoc,
-  orderByField,
-  orderDesc,
+  orderByFields,
 }) {
   await sleep(1000);
   const response = await fetch(`${JSON_DATABASE_URL}/${collectionName}.json`);
   const dataObj = await response.json();
 
-  function compare(_key, _value) {
-    switch (comparison) {
-      case '==':
-        return _key === _value;
-      case '!=':
-        return _key !== _value;
-      default:
-        throw new Error(
-          `Cannot query database without comparison operator!(${JSON.stringify({
-            comparison,
-          })})`
-        );
-    }
-  }
-  const queriedDocs = Object.values(dataObj)
-    .filter((doc) => compare(doc[key], doc[value]))
-    .sort((doc1, doc2) => {
-      const [a, b] = orderDesc ? [doc2, doc1] : [doc1, doc2];
-      const sortField = orderByField || 'Title';
+  // filter by where clause, and also any orderBy fields
+  let filteredDocs = Object.values(dataObj);
+  whereFields?.forEach((field) => {
+    const { key, comparison, value } = field;
+    filteredDocs = filteredDocs.filter((doc) =>
+      compare(doc, key, comparison, value)
+    );
+  });
+  orderByFields?.forEach(({ key }) => {
+    filteredDocs = filteredDocs.filter((doc) => compare(doc, key, 'exists'));
+  });
+
+  // order by orderBy clause
+  let filteredOrderedDocs = filteredDocs;
+  orderByFields?.forEach(({ key, desc }) => {
+    filteredOrderedDocs = filteredDocs.sort((doc1, doc2) => {
+      const [a, b] = desc ? [doc2, doc1] : [doc1, doc2];
+      const sortField = key === null ? 'Title' : key;
       const [aVal, bVal] = [
         getPropertyValue(a, sortField),
         getPropertyValue(b, sortField),
@@ -52,6 +48,9 @@ export async function getDataFromQuery({
       if (typeof aVal === 'string') return aVal > bVal ? 1 : -1;
       return aVal - bVal;
     });
+  });
+
+  const queriedDocs = filteredOrderedDocs;
 
   let startDocIndex = 0;
   let endDocIndex;
@@ -80,8 +79,45 @@ export async function getDataFromQuery({
     [startDocIndex, endDocIndex] = [-limitToLastNo, undefined];
 
   const result = edgeFilteredDocs.slice(startDocIndex, endDocIndex);
+  console.log({ result });
 
   return result;
+
+  function compare(doc, _key, _comparison, givenVal) {
+    // eslint-disable-next-line no-underscore-dangle
+    const valueInDoc = getPropertyValue(doc, _key);
+    switch (_comparison) {
+      case '==':
+        return valueInDoc === givenVal;
+      case '!=':
+        return valueInDoc !== givenVal;
+      case '<':
+        return valueInDoc < givenVal;
+      case '<=':
+        return valueInDoc <= givenVal;
+      case '>':
+        return valueInDoc > givenVal;
+      case '>=':
+        return valueInDoc >= givenVal;
+      case 'in':
+        return givenVal.includes(valueInDoc);
+      case 'not-in':
+        return !givenVal.includes(valueInDoc);
+      case 'array-contains':
+        return valueInDoc.includes(givenVal);
+      case 'array-contains-any':
+        return givenVal.some((val) => valueInDoc.includes(val));
+      case 'exists':
+        return !!valueInDoc;
+
+      default:
+        throw new Error(
+          `Cannot query database without comparison operator!(${JSON.stringify({
+            _comparison,
+          })})`
+        );
+    }
+  }
 }
 
 export async function getScreenshotFor(title, { count } = { count: 1 }) {

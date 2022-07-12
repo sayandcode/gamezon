@@ -4,8 +4,11 @@ import ProductsDisplayCarousel from '../components/ProductsDisplayCarousel';
 import { GameDatabaseQuery } from '../utlis/DBHandlers/DBQueryClasses';
 
 export default function Home() {
-  const spotlightItemsQuery = new GameDatabaseQuery('spotlight', '!=', false);
-  const offerItemsQuery = new GameDatabaseQuery('discount', '!=', false);
+  const spotlightItemsQuery = new GameDatabaseQuery().where(
+    'spotlight',
+    'exists'
+  );
+  const offerItemsQuery = new GameDatabaseQuery().where('discount', 'exists');
 
   return (
     <>
