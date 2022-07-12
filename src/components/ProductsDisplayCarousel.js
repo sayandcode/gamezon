@@ -113,6 +113,13 @@ function CarouselContainer({ itemsQuery }) {
     }
   }, [rangeStart, itemCount]);
 
+  // dispose of the data when component is unmounted
+  useEffect(() => {
+    return () => {
+      carousel.current.forEach((item) => item.dispose());
+    };
+  }, []);
+
   const changePage = ({ forward }) => {
     const offset = (forward ? 1 : -1) * itemCount;
     const newCurr = rangeStart + offset;

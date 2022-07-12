@@ -46,12 +46,7 @@ export default function ImageCarousel({ itemsQuery }) {
   // unload carousel Images
   // clean up the imgBlob URLs to prevent memory leak
   useEffect(() => {
-    return () => {
-      carouselItems.forEach((item) => {
-        URL.revokeObjectURL(item.bgImgUrl);
-        URL.revokeObjectURL(item.boxArtUrl);
-      });
-    };
+    return () => carouselItems.forEach((item) => item.dispose?.());
   }, [carouselItems]);
 
   const [currItemIndex, setCurrItemIndex] = useState(0);

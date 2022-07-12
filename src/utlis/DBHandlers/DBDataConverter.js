@@ -32,6 +32,11 @@ export class ImageCarouselItem extends RootDatabaseEntity {
 
     return new ImageCarouselItem(doc, { bgImgUrl, boxArtUrl });
   }
+
+  dispose() {
+    URL.revokeObjectURL(this.boxArtUrl);
+    URL.revokeObjectURL(this.bgImgUrl);
+  }
 }
 
 export class ProductsDisplayCarouselItem extends RootDatabaseEntity {
@@ -63,5 +68,9 @@ export class ProductsDisplayCarouselItem extends RootDatabaseEntity {
     const boxArtUrl = await getboxArtFor(gameTitle);
 
     return new ProductsDisplayCarouselItem(doc, { boxArtUrl });
+  }
+
+  dispose() {
+    URL.revokeObjectURL(this.boxArtUrl);
   }
 }
