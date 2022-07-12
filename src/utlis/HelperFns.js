@@ -1,9 +1,9 @@
 export function customSortingFn({ a, b, field }) {
   const findingFn = (() => {
     switch (Object.getPrototypeOf(a).constructor.name) {
-      case 'Object':
+      case Object.name:
         return (obj) => findSmallestInObj(obj, field);
-      case 'Array':
+      case Array.name:
         return findSmallestInArray;
       default:
         return (val) => val;
@@ -41,9 +41,9 @@ export function findSmallestInArray(arr, field) {
   return arr.reduce((smallest, currItem) => {
     const findingFn = (() => {
       switch (Object.getPrototypeOf(currItem).constructor.name) {
-        case 'Object':
+        case Object.name:
           return (obj) => findSmallestInObj(obj, field);
-        case 'Array':
+        case Array.name:
           return findSmallestInArray;
         default:
           return (val) => val;

@@ -62,7 +62,8 @@ puppeteer.use(AdblockerPlugin());
         db[gameName].variants,
         'price.value'
       );
-      db[gameName].startingPrice = { currency: '$', value: startingPrice };
+      db[gameName].startingPrice =
+        startingPrice === null ? null : { currency: '$', value: startingPrice };
       await sleep(500);
     }
 
