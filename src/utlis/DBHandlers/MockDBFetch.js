@@ -79,7 +79,6 @@ export async function getDataFromQuery({
     [startDocIndex, endDocIndex] = [-limitToLastNo, undefined];
 
   const result = edgeFilteredDocs.slice(startDocIndex, endDocIndex);
-  console.log({ result });
 
   return result;
 

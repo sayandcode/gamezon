@@ -8,6 +8,7 @@ import {
 } from '@mui/icons-material';
 import {
   Box,
+  darken,
   Divider,
   Paper,
   Skeleton,
@@ -189,7 +190,24 @@ function CarouselItem({ item }) {
   const [clicked, setClicked] = useState(false);
 
   return (
-    <Paper sx={{ width: CAROUSEL_ITEM_WIDTH, height: CAROUSEL_ITEM_HEIGHT }}>
+    <Paper
+      sx={{
+        width: CAROUSEL_ITEM_WIDTH,
+        height: CAROUSEL_ITEM_HEIGHT,
+        position: 'relative',
+        '.CarouselItem-discountSticker::after': {
+          content: `"${item.discount.percent}% OFF"`,
+        },
+        '&:hover': {
+          '.CarouselItem-discountSticker::after': {
+            content: `"${item.discount.price}"`,
+          },
+          '.CarouselItem-originalPrice': {
+            textDecoration: item.discount && 'line-through',
+          },
+        },
+      }}
+    >
       <Link to={`/product/${encodeURIComponent(item.title)}`}>
         <Box
           component="img"
@@ -204,6 +222,45 @@ function CarouselItem({ item }) {
             cursor: 'pointer',
           }}
         />
+        <Box
+          sx={{
+            position: 'absolute',
+            top: (theme) => theme.spacing(1),
+            right: (theme) => theme.spacing(1),
+            fontWeight: (theme) => theme.typography.fontWeightMedium,
+            fontSize: (theme) => theme.typography.fontSize,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.5,
+          }}
+        >
+          {item.discount && (
+            <Box
+              sx={{
+                bgcolor: (theme) => darken(theme.palette.secondary.main, 0.1),
+                color: (theme) => theme.palette.secondary.contrastText,
+                px: 1,
+                py: 0.5,
+                borderRadius: (theme) => theme.shape.borderRadius,
+                transition: 'all 2s',
+              }}
+              className="CarouselItem-discountSticker"
+            />
+          )}
+          <Box
+            sx={{
+              bgcolor: (theme) => darken(theme.palette.background.paper, 0.1),
+              color: (theme) => theme.palette.text.primary,
+              px: 1,
+              py: 0.5,
+              borderRadius: (theme) => theme.shape.borderRadius,
+              position: 'relative',
+            }}
+            className="CarouselItem-originalPrice"
+          >
+            {item.price}
+          </Box>
+        </Box>
       </Link>
       <Stack direction="row" justifyContent="space-between" p={1}>
         <ExpandingButton

@@ -39,7 +39,22 @@ export class ProductsDisplayCarouselItem extends RootDatabaseEntity {
     super(doc);
     const { data } = doc;
     this.title = data.Title;
-    this.price = data.startingPrice;
+
+    this.price = `${
+      data.startingPrice.currency
+    }${data.startingPrice.value.toFixed(2)}`;
+    const discountFraction = data.discount;
+
+    if (discountFraction) {
+      const discountedPriceVal = (
+        data.startingPrice.value *
+        (1 - discountFraction)
+      ).toFixed(2);
+      this.discount = {
+        percent: (discountFraction * 100).toFixed(0),
+        price: `${data.startingPrice.currency}${discountedPriceVal}`,
+      };
+    }
     this.boxArtUrl = boxArtUrl;
   }
 
