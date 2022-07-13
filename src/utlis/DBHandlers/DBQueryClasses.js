@@ -24,10 +24,9 @@ export class DatabaseQuery {
       comparison === 'exists' ? { key } : { key, comparison, value };
     checkIfParamsPresent(requiredParams);
 
-    // if comparison is 'exists', you can add an orderBy clause instead, just to filter it out
-    if (comparison === 'exists') {
-      return this.orderBy(key);
-    }
+    // if comparison is 'exists', you can add an orderBy clause instead, just to filter it out.
+    // First we order by the default field, and then by the exists field
+    if (comparison === 'exists') return this.orderBy().orderBy(key);
 
     const copy = this.clone();
     const officialFieldName = copy.constructor.convertToDatabaseField(key);
@@ -44,8 +43,7 @@ export class DatabaseQuery {
     );
     this.orderByFields?.forEach((field) => {
       const dir = field.desc ? 'desc' : 'asc';
-      const finalField = field.key === null ? '__name__' : field.key;
-      constraints.push(firebaseOrderBy(finalField, dir));
+      constraints.push(firebaseOrderBy(field.key, dir));
     });
 
     if (this.limitNo) constraints.push(firebaseLimit(this.limitNo));
@@ -171,11 +169,14 @@ export class DatabaseQuery {
     );
     if (hasInequalityFilter) {
       copy.orderByFields.splice(0, 0, {
-        field: this.whereField.key,
+        key: hasInequalityFilter.key,
         desc: descending,
       });
       console.warn(
-        `An inequality filter: '${hasInequalityFilter.comparison}' was used. So sequence of orderBy is ${copy.orderByFields}`
+        `An inequality filter: "`,
+        hasInequalityFilter.comparison,
+        `" was used. So sequence of orderBy is`,
+        copy.orderByFields
       );
     }
 
@@ -195,8 +196,13 @@ export class GameDatabaseQuery extends DatabaseQuery {
         return 'discount';
       case 'spotlight':
         return 'spotlight';
+      case undefined: // null is chosen as the handler for the default sorting.
+        return 'Title'; // It will be assigned to __name__ for actual firebase, and 'Title' in mockFirebase
+
       default:
-        return null;
+        throw new Error(
+          `Unknown field: ${field}\n Please request to add this field in DBQueryClasses`
+        );
     }
   }
 

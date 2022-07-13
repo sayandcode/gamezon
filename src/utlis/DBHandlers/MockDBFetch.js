@@ -39,11 +39,7 @@ export async function getDataFromQuery({
   orderByFields?.forEach(({ key, desc }) => {
     filteredOrderedDocs = filteredDocs.sort((doc1, doc2) => {
       const [a, b] = desc ? [doc2, doc1] : [doc1, doc2];
-      const sortField = key === null ? 'Title' : key;
-      const [aVal, bVal] = [
-        getPropertyValue(a, sortField),
-        getPropertyValue(b, sortField),
-      ];
+      const [aVal, bVal] = [getPropertyValue(a, key), getPropertyValue(b, key)];
 
       if (typeof aVal === 'string') return aVal > bVal ? 1 : -1;
       return aVal - bVal;
