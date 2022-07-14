@@ -68,24 +68,16 @@ function SearchBar() {
       }}
       endAdornment={
         <InputAdornment position="end">
-          <IconButton
+          <Button
             sx={{
-              bgcolor: 'secondary.main',
-              borderRadius: (theme) => {
-                const r = `${theme.shape.borderRadius}px`;
-                return `0 ${r} ${r} 0`;
-              },
-              py: 0.75, // thrice the padding of input element
-              '&.Mui-focusVisible': {
-                bgcolor: 'secondary.light',
-              },
-              '&:hover': {
-                bgcolor: 'secondary.light',
-              },
+              borderTopLeftRadius: 0,
+              borderBottomLeftRadius: 0,
             }}
+            color="secondary"
+            variant="contained"
           >
-            <SearchIcon />
-          </IconButton>
+            <SearchIcon sx={{ color: 'text.primary' }} />
+          </Button>
         </InputAdornment>
       }
     />

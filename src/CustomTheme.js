@@ -23,8 +23,12 @@ const customTheme = createTheme({
     MuiButtonBase: {
       styleOverrides: {
         root: {
-          '&.Mui-focusVisible': {
-            outline: '2px solid white',
+          '&.Mui-focusVisible::after': {
+            content: '""',
+            width: '90%',
+            height: '80%',
+            outline: '2px dashed currentcolor',
+            position: 'absolute',
           },
         },
       },
