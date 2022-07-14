@@ -1,11 +1,12 @@
 import { Routes, Route, BrowserRouter } from 'react-router-dom';
-import { Box, Grid } from '@mui/material';
+import { Box } from '@mui/material';
 import Footer from './components/Footer';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import ContextProvidersWrapper from './utlis/Contexts/ContextProvidersWrapper';
 import ConfirmEmailLogin from './pages/ConfirmEmailLogin';
 import NotificationSnackbar from './components/NotificationSnackbar';
+import ProductPage from './pages/ProductPage';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
                   element={<ConfirmEmailLogin />}
                 />
               </Route>
+              <Route path="/product/:productName" element={<ProductPage />} />
               <Route
                 path="*"
                 element={<h1>Error 404: Page doesn&apos;t exist</h1>}
