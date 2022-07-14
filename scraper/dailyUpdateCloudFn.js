@@ -26,7 +26,7 @@ const OFFER_ITEMS_COUNT = 50;
   const batch = writeBatch(firestoreDB);
 
   const metadataDocRef = doc(firestoreDB, 'games', '#metadata');
-  const { allTitles, spotlightTitles, offerTitles } = (
+  const { allTitles, spotlightTitles, offerTitles, unreleasedTitles } = (
     await getDoc(metadataDocRef)
   ).data();
 
@@ -42,7 +42,13 @@ const OFFER_ITEMS_COUNT = 50;
     batch.update(docRef, { discount: deleteField() });
   });
 
-  const randomShuffledGameTitles = allTitles.sort(() => Math.random() - 0.5);
+  const releasedTitles = allTitles.filter(
+    (title) => !unreleasedTitles.includes(title)
+  );
+  const randomShuffledGameTitles = releasedTitles.sort(
+    () => Math.random() - 0.5
+  );
+
   const newSpotlightTitles = randomShuffledGameTitles.slice(
     0,
     SPOTLIGHT_ITEMS_COUNT

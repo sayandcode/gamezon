@@ -50,6 +50,11 @@ const OFFER_ITEMS_COUNT = 50;
     localDB[title].discount = discount;
   });
 
+  // also find unreleased games
+  const unreleasedTitles = Object.values(localDB).filter(
+    (game) => game.startingPrice === null
+  );
+
   // also find all developers, publishers, consoles, and genres for filtering
   const allDevelopers = [];
   const allPublishers = [];
@@ -74,6 +79,7 @@ const OFFER_ITEMS_COUNT = 50;
     allTitles,
     spotlightTitles,
     offerTitles,
+    unreleasedTitles,
     allDevelopers,
     allPublishers,
     allConsoles,
