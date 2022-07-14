@@ -104,4 +104,8 @@ export class ProductPageItem extends RootDatabaseEntity {
     const screenshotUrls = await getScreenshotFor(gameTitle, { count: 4 });
     return new ProductPageItem(doc, { screenshotUrls });
   }
+
+  dispose() {
+    this.imgUrls.forEach((url) => URL.revokeObjectURL(url));
+  }
 }

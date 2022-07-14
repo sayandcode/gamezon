@@ -1,4 +1,5 @@
 import {
+  Close,
   ExpandLess as ExpandLessIcon,
   ExpandMore as ExpandMoreIcon,
 } from '@mui/icons-material';
@@ -6,6 +7,8 @@ import {
   Box,
   Button,
   Chip,
+  IconButton,
+  Modal,
   Paper,
   Skeleton,
   Stack,
@@ -20,7 +23,7 @@ import { ProductPageItem } from '../utlis/DBHandlers/DBDataConverter';
 import { GameDatabaseQuery } from '../utlis/DBHandlers/DBQueryClasses';
 import { getDataFromQuery } from '../utlis/DBHandlers/MockDBFetch';
 
-function ProductPage() {
+export default function ProductPage() {
   const params = useParams();
   const [product, setProduct] = useState();
   const [currVariant, setCurrVariant] = useState();
@@ -38,6 +41,9 @@ function ProductPage() {
       setCurrVariant(Object.keys(pageItem.variants)[0]);
     })();
   }, []);
+
+  // dispose of the data when component is unmounted
+  useEffect(() => () => product?.dispose(), [product]);
 
   return (
     <Stack m={2} spacing={2}>
@@ -147,8 +153,6 @@ function ProductPage() {
   );
 }
 
-export default ProductPage;
-
 function ProductVariantsToggleButton({ value, onChange, variants }) {
   return (
     <ToggleButtonGroup
@@ -205,16 +209,7 @@ function ImageViewer({ imgUrls, trailerUrl }) {
           allowFullScreen
         />
       ) : (
-        <Box
-          sx={{
-            width: '100%',
-            backgroundImage: `url(${currItem.thumbnailUrl})`,
-            backgroundSize: 'contain',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center',
-            border: (theme) => `2px solid ${theme.palette.divider}`,
-          }}
-        />
+        <CurrImgViewer imgUrl={currItem.thumbnailUrl} />
       )}
 
       <Box
@@ -244,6 +239,7 @@ function ImageViewer({ imgUrls, trailerUrl }) {
                 outlineOffset: '-5px',
               },
             }}
+            tabIndex={0}
             key={item.thumbnailUrl}
             onClick={() => setCurrItem(item)}
           />
@@ -260,6 +256,79 @@ ImageViewer.propTypes = {
 
 ImageViewer.defaultProps = {
   trailerUrl: null,
+};
+
+function CurrImgViewer({ imgUrl }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const handleClose = () => {
+    setIsOpen(false);
+  };
+  return (
+    <>
+      <Box
+        sx={{
+          width: '100%',
+          backgroundImage: `url(${imgUrl})`,
+          backgroundSize: 'contain',
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center',
+          border: (theme) => `2px solid ${theme.palette.divider}`,
+          cursor: 'zoom-in',
+        }}
+        onClick={() => setIsOpen(true)}
+        aria-label="Current Game Screenshot"
+      />
+      <Modal
+        open={isOpen}
+        onClose={handleClose}
+        aria-labelledby="Game Screenshot Image Modal"
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100%',
+          width: '100%',
+        }}
+      >
+        <Box
+          sx={{
+            textAlign: 'center',
+            outline: 'none',
+          }}
+        >
+          <Box
+            component="img"
+            src={imgUrl}
+            alt="Game Screenshot"
+            sx={{
+              maxHeight: '90vh',
+              maxWidth: '90vw',
+              borderRadius: (theme) => theme.shape.borderRadius,
+            }}
+          />
+          <IconButton
+            sx={{
+              position: 'fixed',
+              top: '0',
+              right: '0',
+              color: 'white',
+              m: 4,
+              '&:hover, &:focus': {
+                opacity: (theme) => 1 - theme.palette.action.activatedOpacity,
+              },
+            }}
+            onClick={handleClose}
+          >
+            <Close />
+          </IconButton>
+        </Box>
+      </Modal>
+    </>
+  );
+}
+
+CurrImgViewer.propTypes = {
+  imgUrl: PropTypes.string.isRequired,
 };
 
 function ProductDescription({ content }) {
