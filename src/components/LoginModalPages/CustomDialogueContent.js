@@ -5,14 +5,14 @@ import {
 } from '@mui/icons-material';
 import { Box, Divider, IconButton, Stack, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
-import { LoginModalContext } from './LoginModalContext';
+import { LoginModalPageContext } from './LoginModalPageContext';
 
 export default function CustomDialogueContent({
   withBackButton,
   heading,
   children,
 }) {
-  const { setCurrPage, onClose } = useContext(LoginModalContext);
+  const { setCurrPage, onClose } = useContext(LoginModalPageContext);
 
   return (
     <Box

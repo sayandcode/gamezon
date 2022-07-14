@@ -1,17 +1,17 @@
 import PropTypes from 'prop-types';
 import { createContext } from 'react';
 
-export const LoginModalContext = createContext();
+export const LoginModalPageContext = createContext();
 
-export function LoginModalContextProvider({ value, children }) {
+export function LoginModalPageContextProvider({ value, children }) {
   return (
-    <LoginModalContext.Provider value={value}>
+    <LoginModalPageContext.Provider value={value}>
       {children}
-    </LoginModalContext.Provider>
+    </LoginModalPageContext.Provider>
   );
 }
 
-LoginModalContextProvider.propTypes = {
+LoginModalPageContextProvider.propTypes = {
   value: PropTypes.shape({
     setCurrPage: PropTypes.func,
     onClose: PropTypes.func,

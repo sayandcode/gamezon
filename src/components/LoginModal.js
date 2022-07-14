@@ -1,13 +1,13 @@
-import PropTypes from 'prop-types';
-import { useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import useMeasure from 'react-use-measure';
 import { Modal, Paper } from '@mui/material';
-import { LoginModalContextProvider } from './LoginModalPages/LoginModalContext';
+import { LoginModalPageContextProvider } from './LoginModalPages/LoginModalPageContext';
 import customTheme from '../CustomTheme';
 import MainLoginPage from './LoginModalPages/MainLoginPage';
 import SignInWithPhoneNumberPage from './LoginModalPages/SignInWithPhoneNumberPage';
 import SignInWithEmail from './LoginModalPages/SignInWithEmailPage';
+import { LoginModalContext } from '../utlis/Contexts/LoginModalContext';
 
 const pageContent = {
   mainLogin: <MainLoginPage />,
@@ -33,7 +33,8 @@ const ModalContentAnimationVariants = {
   }),
 };
 
-export default function LoginModal({ open, onClose }) {
+export default function LoginModal() {
+  const { open, onClose } = useContext(LoginModalContext);
   const [currPage, setCurrPage] = useState('mainLogin');
   const [
     ModalContentRef,
@@ -56,17 +57,18 @@ export default function LoginModal({ open, onClose }) {
   /* PREVENT ANIMATION ON WINDOW RESIZE */
 
   /* TRACK FIRST MOUNT */
+  // When the modal is opened, behave as if it has been mounted for the first time.
   const [firstMount, setFirstMount] = useState(true);
   useEffect(() => {
-    setFirstMount(false);
-  }, []);
+    setFirstMount(!open);
+  }, [open]);
   /* TRACK FIRST MOUNT */
 
   const swipeDirection = currPage === 'mainLogin' ? -1 : 1;
 
   return (
     <Modal
-      open={open}
+      open={open} // we handle the opening elsewhere as a React-style conditional &&
       onClose={onClose}
       aria-labelledby="modal-login"
       aria-describedby="modal-login-options"
@@ -92,12 +94,12 @@ export default function LoginModal({ open, onClose }) {
         }}
         ref={ModalPaperRef}
       >
-        <LoginModalContextProvider value={{ setCurrPage, onClose }}>
+        <LoginModalPageContextProvider value={{ setCurrPage, onClose }}>
           <AnimatePresence custom={swipeDirection}>
             <motion.div
               key={currPage}
               variants={ModalContentAnimationVariants}
-              initial={firstMount ? false : 'enter'}
+              initial={!firstMount && 'enter'}
               animate="centered"
               exit="exit"
               custom={swipeDirection}
@@ -107,13 +109,8 @@ export default function LoginModal({ open, onClose }) {
               {pageContent[currPage]}
             </motion.div>
           </AnimatePresence>
-        </LoginModalContextProvider>
+        </LoginModalPageContextProvider>
       </Paper>
     </Modal>
   );
 }
-
-LoginModal.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-};

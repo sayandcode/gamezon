@@ -11,7 +11,6 @@ import {
   Button,
   darken,
   Divider,
-  IconButton,
   InputAdornment,
   InputBase,
   ListItemIcon,
@@ -24,11 +23,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import PropTypes from 'prop-types';
 import Logo from './Logo';
-import LoginModal from './LoginModal';
 import { FirebaseContext } from '../utlis/Contexts/FirebaseContext';
 import { auth } from '../utlis/firebase-config';
 import { NotificationSnackbarContext } from '../utlis/Contexts/NotificationSnackbarContext';
 import HideOnScroll from '../utlis/HideOnScroll';
+import { LoginModalContext } from '../utlis/Contexts/LoginModalContext';
 
 const Navbar = React.forwardRef((props, ref) => {
   return (
@@ -86,16 +85,15 @@ function SearchBar() {
 
 function NavbarIcons() {
   const user = useContext(FirebaseContext);
-  const [showLoginModal, setShowLoginModal] = useState(false);
+  const { showLoginModal } = useContext(LoginModalContext);
   const [avatarAnchorEl, setAvatarAnchorEl] = useState(null);
 
   const handleShoppingCartClick = () => {
     // route to shopping cart page
   };
   const handleAvatarClick = (event) => {
-    if (!user) {
-      setShowLoginModal(true);
-    } else {
+    if (!user) showLoginModal();
+    else {
       // open dropdown Menu
       setAvatarAnchorEl(event.currentTarget);
     }
@@ -121,12 +119,6 @@ function NavbarIcons() {
         <Avatar sx={{ mr: 1 }} src={user?.photoURL} />
         {!user && 'Login'}
       </Button>
-      {showLoginModal && (
-        <LoginModal
-          open={showLoginModal}
-          onClose={() => setShowLoginModal(false)}
-        />
-      )}
       <AvatarMenu {...{ avatarAnchorEl, setAvatarAnchorEl }} />
     </Stack>
   );

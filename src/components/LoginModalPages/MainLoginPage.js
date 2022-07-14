@@ -2,11 +2,11 @@ import { Button, Stack } from '@mui/material';
 import { useContext } from 'react';
 import Logo from '../Logo';
 import CustomDialogueContent from './CustomDialogueContent';
-import { LoginModalContext } from './LoginModalContext';
+import { LoginModalPageContext } from './LoginModalPageContext';
 import SignInWithGoogleButton from './SignInWithGoogleButton';
 
 export default function MainLoginPage() {
-  const { setCurrPage } = useContext(LoginModalContext);
+  const { setCurrPage } = useContext(LoginModalPageContext);
 
   return (
     <CustomDialogueContent

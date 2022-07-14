@@ -5,8 +5,8 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import ContextProvidersWrapper from './utlis/Contexts/ContextProvidersWrapper';
 import ConfirmEmailLogin from './pages/ConfirmEmailLogin';
-import NotificationSnackbar from './components/NotificationSnackbar';
 import ProductPage from './pages/ProductPage';
+import PersistentComponents from './components/PersistentComponents';
 
 function App() {
   return (
@@ -19,7 +19,7 @@ function App() {
           }}
         >
           <Navbar />
-          <NotificationSnackbar />
+          <PersistentComponents />
           <main>
             <Routes>
               <Route path="/" element={<Home />}>

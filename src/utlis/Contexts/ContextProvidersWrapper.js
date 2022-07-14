@@ -2,6 +2,7 @@ import { ThemeProvider, CssBaseline } from '@mui/material';
 import PropTypes from 'prop-types';
 import customTheme from '../../CustomTheme';
 import FirebaseContextProvider from './FirebaseContext';
+import { LoginModalContextProvider } from './LoginModalContext';
 import NotificationSnackbarContextProvider from './NotificationSnackbarContext';
 
 export default function ContextProvidersWrapper({ children }) {
@@ -10,7 +11,7 @@ export default function ContextProvidersWrapper({ children }) {
       <CssBaseline />
       <FirebaseContextProvider>
         <NotificationSnackbarContextProvider>
-          {children}
+          <LoginModalContextProvider>{children}</LoginModalContextProvider>
         </NotificationSnackbarContextProvider>
       </FirebaseContextProvider>
     </ThemeProvider>
