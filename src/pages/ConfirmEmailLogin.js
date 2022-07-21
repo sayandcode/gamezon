@@ -74,13 +74,7 @@ function ConfirmEmailLogin() {
       signInWithEmailLink(auth, emailValue, window.location.href)
         .then(() => {
           window.localStorage.removeItem('emailForSignIn');
-          setEndAlert({
-            show: true,
-            textContent: 'Successfully Logged In!',
-            success: true,
-          });
-          setIsSubmitting(false);
-          setTimeout(closeDialog, 1500);
+          closeDialog();
         })
         .catch((err) => {
           setEndAlert({

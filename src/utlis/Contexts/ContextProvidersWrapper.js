@@ -9,11 +9,11 @@ export default function ContextProvidersWrapper({ children }) {
   return (
     <ThemeProvider theme={customTheme}>
       <CssBaseline />
-      <FirebaseContextProvider>
-        <NotificationSnackbarContextProvider>
+      <NotificationSnackbarContextProvider>
+        <FirebaseContextProvider>
           <LoginModalContextProvider>{children}</LoginModalContextProvider>
-        </NotificationSnackbarContextProvider>
-      </FirebaseContextProvider>
+        </FirebaseContextProvider>
+      </NotificationSnackbarContextProvider>
     </ThemeProvider>
   );
 }

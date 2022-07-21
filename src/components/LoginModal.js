@@ -61,6 +61,7 @@ export default function LoginModal() {
   const [firstMount, setFirstMount] = useState(true);
   useEffect(() => {
     setFirstMount(!open);
+    setCurrPage('mainLogin');
   }, [open]);
   /* TRACK FIRST MOUNT */
 
