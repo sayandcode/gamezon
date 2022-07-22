@@ -1,3 +1,4 @@
+import { Cart, Wishlist } from '../Contexts/UserData/UserDataHelperClasses';
 import { getboxArtFor, getScreenshotFor } from './MockDBFetch'; // BEFORE PRODUCTION: change 'MockDBFetch' to 'DBFetch' for production
 
 class RootDatabaseEntity {
@@ -107,5 +108,35 @@ export class ProductPageItem extends RootDatabaseEntity {
 
   dispose() {
     this.imgUrls.forEach((url) => URL.revokeObjectURL(url));
+  }
+}
+
+export class UserDataHandler extends RootDatabaseEntity {
+  constructor(doc) {
+    super(doc);
+    const { data } = doc;
+    this.cart = data.cartItems;
+    this.wishlist = data.wishlistItems;
+  }
+
+  toLocalState() {
+    return {
+      // if the field doesn't exist, it defaults to the empty initialization of the class. So it works anyway
+      cart: new Cart(this.cart),
+      wishlist: new Wishlist(this.wishlist),
+    };
+  }
+
+  static toDBForm(localData) {
+    const [cart, wishlist] = [localData.cart, localData.wishlist];
+
+    // if a field is empty, delete the field
+    const cartItems = cart.isEmpty ? undefined : cart.contents;
+    const wishlistItems = wishlist.isEmpty ? undefined : wishlist.contents;
+
+    return {
+      ...(cartItems && { cartItems }),
+      ...(wishlistItems && { wishlistItems }),
+    };
   }
 }

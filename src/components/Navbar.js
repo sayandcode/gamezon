@@ -23,7 +23,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import PropTypes from 'prop-types';
 import Logo from './Logo';
-import { FirebaseContext } from '../utlis/Contexts/FirebaseContext';
+import { UserContext } from '../utlis/Contexts/UserData/UserContext';
 import { auth } from '../utlis/firebase-config';
 import { NotificationSnackbarContext } from '../utlis/Contexts/NotificationSnackbarContext';
 import HideOnScroll from '../utlis/HideOnScroll';
@@ -84,7 +84,7 @@ function SearchBar() {
 }
 
 function NavbarIcons() {
-  const user = useContext(FirebaseContext);
+  const { user } = useContext(UserContext);
   const { showLoginModal } = useContext(LoginModalContext);
   const [avatarAnchorEl, setAvatarAnchorEl] = useState(null);
 

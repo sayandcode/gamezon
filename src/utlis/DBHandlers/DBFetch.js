@@ -33,7 +33,7 @@ export async function getScreenshotFor(title, { count } = { count: 1 }) {
 
   const dbItemCount = filteredFileRefs.length;
   if (count > dbItemCount)
-    console.log(
+    console.warn(
       `Database didn't have ${count} files. All ${dbItemCount} files returned`
     );
 

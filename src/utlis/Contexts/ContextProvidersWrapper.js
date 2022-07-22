@@ -1,7 +1,7 @@
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import PropTypes from 'prop-types';
 import customTheme from '../../CustomTheme';
-import FirebaseContextProvider from './FirebaseContext';
+import UserContextProvider from './UserData/UserContext';
 import { LoginModalContextProvider } from './LoginModalContext';
 import NotificationSnackbarContextProvider from './NotificationSnackbarContext';
 
@@ -10,9 +10,9 @@ export default function ContextProvidersWrapper({ children }) {
     <ThemeProvider theme={customTheme}>
       <CssBaseline />
       <NotificationSnackbarContextProvider>
-        <FirebaseContextProvider>
+        <UserContextProvider>
           <LoginModalContextProvider>{children}</LoginModalContextProvider>
-        </FirebaseContextProvider>
+        </UserContextProvider>
       </NotificationSnackbarContextProvider>
     </ThemeProvider>
   );

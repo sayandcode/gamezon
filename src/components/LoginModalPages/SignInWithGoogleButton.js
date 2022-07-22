@@ -14,7 +14,7 @@ export default function SignInWithGoogleButton({ size }) {
     signInWithPopup(auth, provider)
       .then(onClose)
       .catch((error) => {
-        console.log(error.message);
+        console.error(error.message);
       });
   };
   return (

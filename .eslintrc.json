@@ -30,6 +30,7 @@
                 "singleQuote":true
             }
         ],
-        "max-classes-per-file": "off"
+        "max-classes-per-file": "off", 
+        "no-console":["warn", { "allow": [ "warn", "error"] }]
     }
 }

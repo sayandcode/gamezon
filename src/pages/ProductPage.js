@@ -16,12 +16,13 @@ import {
   ToggleButtonGroup,
   Typography,
 } from '@mui/material';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useContext } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { ProductPageItem } from '../utlis/DBHandlers/DBDataConverter';
 import { GameDatabaseQuery } from '../utlis/DBHandlers/DBQueryClasses';
 import { getDataFromQuery } from '../utlis/DBHandlers/MockDBFetch';
+import { UserContext } from '../utlis/Contexts/UserData/UserContext';
 
 export default function ProductPage() {
   const params = useParams();
@@ -31,6 +32,7 @@ export default function ProductPage() {
   let currPrice = product?.variants[currVariant].price;
   if (currPrice === null) currPrice = 'Unreleased';
   const disableButtons = !product || currPrice === 'Unreleased';
+  const { buyNow, addToCart, toggleWishlist } = useContext(UserContext);
 
   useEffect(() => {
     const q = new GameDatabaseQuery().where('title', '==', params.productName);
@@ -131,6 +133,7 @@ export default function ProductPage() {
               size="large"
               variant="contained"
               color="secondary"
+              onClick={() => buyNow(product.title)}
             >
               Buy Now
             </Button>
@@ -139,11 +142,17 @@ export default function ProductPage() {
               size="large"
               variant="contained"
               color="primary"
+              onClick={() => addToCart(product.title)}
             >
               Add to cart
             </Button>
-            <Button size="large" variant="outlined" color="primary">
-              Add to wishlist
+            <Button
+              size="large"
+              variant="outlined"
+              color="primary"
+              onClick={() => toggleWishlist(product.title)}
+            >
+              Toggle wishlist
             </Button>
           </Stack>
         </Box>

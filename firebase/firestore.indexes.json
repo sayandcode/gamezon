@@ -1,0 +1,33 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "games",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "Title",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "discount",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "games",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "Title",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "spotlight",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
