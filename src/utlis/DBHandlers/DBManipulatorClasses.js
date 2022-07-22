@@ -12,14 +12,14 @@ class DatabaseManipulator {
     return undefined;
   }
 
-  static deleteDocument({ docName }) {
+  static async deleteDocument({ docName }) {
     const docRef = doc(firestoreDB, this.collectionName, docName);
-    deleteDoc(docRef);
+    return deleteDoc(docRef);
   }
 
-  static setDocument({ docName, data }) {
+  static async setDocument({ docName, data }) {
     const docRef = doc(firestoreDB, this.collectionName, docName);
-    setDoc(docRef, data);
+    return setDoc(docRef, data);
   }
 }
 
@@ -31,12 +31,12 @@ export class UsersDatabase extends DatabaseManipulator {
     return this.#collectionName;
   }
 
-  static delete({ userID }) {
-    this.deleteDocument({ docName: userID });
+  static async delete({ userID }) {
+    return this.deleteDocument({ docName: userID });
   }
 
-  static set({ userID, data }) {
-    this.setDocument({ docName: userID, data });
+  static async set({ userID, data }) {
+    return this.setDocument({ docName: userID, data });
   }
 
   static async get({ userID }) {

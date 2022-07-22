@@ -16,7 +16,7 @@ import {
   Typography,
 } from '@mui/material';
 import PropTypes from 'prop-types';
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import useMeasure from 'react-use-measure';
 import toPX from 'to-px';
@@ -28,6 +28,7 @@ import { getDataFromQuery } from '../utlis/DBHandlers/MockDBFetch'; // BEFORE PR
 import SequentialExecutionQueue from '../utlis/SequentialExecutionQueue';
 import ContainedIconButton from './ContainedIconButton';
 import ExpandingButton from './ExpandingButton';
+import { NotificationSnackbarContext } from '../utlis/Contexts/NotificationSnackbarContext';
 
 const CAROUSEL_ITEM_HEIGHT = '250px';
 const CAROUSEL_ITEM_WIDTH = '150px';
@@ -65,6 +66,7 @@ function CarouselContainer({ itemsQuery }) {
   const stackRef = useRef(new SequentialExecutionQueue());
   const [fetchInProcess, setFetchInProcess] = useState(false); // this is a flag
 
+  const { showNotificationWith } = useContext(NotificationSnackbarContext);
   useEffect(() => {
     // We run the fetch function only after the previous one has completed
     // That way, the function always has access to the latest state of carouselItems
@@ -90,7 +92,15 @@ function CarouselContainer({ itemsQuery }) {
         .limit(noOfItemsToFetch)
         .startAfter(lastFetchedItem); // startAfter method can also work with undefined. It just ignores the call
 
-      const queriedItems = await getDataFromQuery(subsetQuery);
+      let queriedItems;
+      try {
+        queriedItems = await getDataFromQuery(subsetQuery);
+      } catch (err) {
+        showNotificationWith({
+          message: 'Something went wrong. Please refresh the page.',
+          variant: 'error',
+        });
+      }
       const extraItem = queriedItems[noOfItemsToFetch - 1]; // (noOfItemsToFetch - 1) is the last item cause thats how indexes work
       if (extraItem) setMoreItemsAvailable(true);
       else setMoreItemsAvailable(false);

@@ -23,6 +23,7 @@ import { ProductPageItem } from '../utlis/DBHandlers/DBDataConverter';
 import { GameDatabaseQuery } from '../utlis/DBHandlers/DBQueryClasses';
 import { getDataFromQuery } from '../utlis/DBHandlers/MockDBFetch';
 import { UserContext } from '../utlis/Contexts/UserData/UserContext';
+import { NotificationSnackbarContext } from '../utlis/Contexts/NotificationSnackbarContext';
 
 export default function ProductPage() {
   const params = useParams();
@@ -34,10 +35,20 @@ export default function ProductPage() {
   const disableButtons = !product || currPrice === 'Unreleased';
   const { buyNow, addToCart, toggleWishlist } = useContext(UserContext);
 
+  const { showNotificationWith } = useContext(NotificationSnackbarContext);
   useEffect(() => {
     const q = new GameDatabaseQuery().where('title', '==', params.productName);
     (async () => {
-      const queriedItem = (await getDataFromQuery(q))[0];
+      let queriedItem;
+      try {
+        [queriedItem] = await getDataFromQuery(q);
+      } catch {
+        showNotificationWith({
+          message: 'Something went wrong. Please refresh the page.',
+          variant: 'error',
+        });
+      }
+
       const pageItem = await ProductPageItem.createFrom(queriedItem);
       setProduct(pageItem);
       setCurrVariant(Object.keys(pageItem.variants)[0]);

@@ -9,12 +9,13 @@ import {
   Skeleton,
   Typography,
 } from '@mui/material';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { getDataFromQuery } from '../../utlis/DBHandlers/MockDBFetch'; // BEFORE PRODUCTION: change 'MockDBFetch' to 'DBFetch' for production
 import { ImageCarouselItem } from '../../utlis/DBHandlers/DBDataConverter';
 import { GameDatabaseQuery } from '../../utlis/DBHandlers/DBQueryClasses';
+import { NotificationSnackbarContext } from '../../utlis/Contexts/NotificationSnackbarContext';
 
 const CAROUSEL_HEIGHT = '200px';
 
@@ -33,9 +34,18 @@ export default function ImageCarousel({ itemsQuery }) {
 
   const [carouselItems, setCarouselItems] = useState([{}]);
   // load carousel items
+  const { showNotificationWith } = useContext(NotificationSnackbarContext);
   useEffect(() => {
     (async () => {
-      const queriedItems = await getDataFromQuery(itemsQuery);
+      let queriedItems;
+      try {
+        queriedItems = await getDataFromQuery(itemsQuery);
+      } catch (err) {
+        showNotificationWith({
+          message: 'Something went wrong. Please refresh the page.',
+          variant: 'error',
+        });
+      }
       const newCarouselItems = await Promise.allSettledFiltered(
         queriedItems.map(async (item) => ImageCarouselItem.createFrom(item))
       );
