@@ -21,12 +21,28 @@ export class Cart extends UserDataRoot {
   }
 
   get contents() {
-    return { ...this.#contents };
+    return JSON.parse(JSON.stringify(this.#contents));
   }
 
-  add(productName, { count: additionalCount = 1 }) {
+  get count() {
+    return Object.values(this.#contents).reduce(
+      (sum, currItem) => sum + currItem.count,
+      0
+    );
+  }
+
+  find(productName, variant) {
+    const productID = new URLSearchParams({ productName, variant }).toString();
+    const requiredItem = this.#contents[productID];
+    return requiredItem ? JSON.parse(JSON.stringify(requiredItem)) : undefined;
+  }
+
+  add(productName, variant, { count: additionalCount = 1 } = {}) {
+    if (!variant)
+      throw new Error('Need to specify variant before adding to Cart');
+
     const copy = this.clone();
-    const productID = encodeURIComponent(productName);
+    const productID = new URLSearchParams({ productName, variant }).toString();
 
     // if item is in cart, increment count
     const oldContents = copy.#contents;
@@ -35,16 +51,19 @@ export class Cart extends UserDataRoot {
 
     const updatedContents = {
       ...oldContents,
-      [productID]: { name: productName, count: newCount },
+      [productID]: { name: productName, count: newCount, variant },
     };
     copy.#contents = updatedContents;
 
     return copy;
   }
 
-  remove(productName, { all = false }) {
+  remove(productName, variant, { all = false } = {}) {
+    if (!variant)
+      throw new Error('Need to specify variant before removing from Cart');
+
     const copy = this.clone();
-    const productID = encodeURIComponent(productName);
+    const productID = new URLSearchParams({ productName, variant }).toString();
 
     // check if the product is added or not
     const existingEntry = copy.#contents[productID];
@@ -74,18 +93,27 @@ export class Wishlist extends UserDataRoot {
   }
 
   get contents() {
-    return { ...this.#contents };
+    return JSON.parse(JSON.stringify(this.#contents));
+  }
+
+  get count() {
+    return Object.keys(this.#contents).length;
+  }
+
+  find(productName) {
+    const productID = new URLSearchParams({ productName }).toString();
+    return this.#contents[productID]; // no need to deep copy this one, as content of each item is just a string (productName)
   }
 
   toggle(productName) {
     const copy = this.clone();
-    const productID = encodeURIComponent(productName);
+    const productID = new URLSearchParams({ productName }).toString();
 
     // check if the product is added or not
     const existingEntry = copy.#contents[productID];
     // if it is, delete it, else add it
     if (existingEntry) delete copy.#contents[productID];
-    else copy.#contents[productID] = true;
+    else copy.#contents[productID] = productName;
 
     return copy;
   }

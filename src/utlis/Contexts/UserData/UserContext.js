@@ -19,7 +19,7 @@ export const UserContext = createContext({});
 function UserContextProvider({ children }) {
   const [user, setUser] = useState(auth.currentUser);
 
-  // initialize empty state
+  /* INITIALIZE EMPTY STATE */
   const [userData, setUserData] = useState({
     cart: new Cart(),
     wishlist: new Wishlist(),
@@ -42,9 +42,9 @@ function UserContextProvider({ children }) {
       variant: 'success',
     });
 
-    /* on login, */
+    // on login,
     (async () => {
-      /* check if userData document exists */
+      // check if userData document exists
       let userDataDoc;
       try {
         userDataDoc = await UsersDatabase.get({ userID: user.uid });
@@ -56,47 +56,23 @@ function UserContextProvider({ children }) {
         });
       }
 
-      /* If it exists, extract whatever data's there, and update the corresponding new fields. */
+      // If it exists, extract whatever data's there, and update the corresponding new fields.
       if (userDataDoc) {
         const cloudData = new UserDataHandler(userDataDoc);
         setUserData(cloudData.toLocalState());
         FetchedInitialData.current = true;
       }
-      /* If it doesn't exist, that's fine. Work with the empty instances you have */
+      // If it doesn't exist, that's fine. Work with the empty instances you have
     })();
   }, [user]);
-
-  const addToCart = (productName, { count } = {}) => {
-    setUserData((oldData) => {
-      const oldCart = oldData.cart;
-      const newCart = oldCart.clone().add(productName, { count });
-      return { ...oldData, cart: newCart };
-    });
-  };
-
-  const removeFromCart = (productName, { all } = {}) => {
-    setUserData((oldData) => {
-      const oldCart = oldData.cart;
-      const newCart = oldCart.clone().remove(productName, { all });
-      return { ...oldData, cart: newCart };
-    });
-  };
-
-  const toggleWishlist = (productName) => {
-    setUserData((oldData) => {
-      const oldWishlist = oldData.wishlist;
-      const newWishlist = oldWishlist.clone().toggle(productName);
-      return { ...oldData, wishlist: newWishlist };
-    });
-  };
 
   /* Whenever the userData changes, update the remote document. The local state is the ultimate */
   /* source of truth. The remote is a copy */
   useEffect(() => {
-    if (!user || FetchedInitialData.current) {
-      FetchedInitialData.current = false;
-      return;
-    }
+    const updateIsRedundant = !user || FetchedInitialData.current;
+    // the first backend fetch changes the data, but doesn't require an update, cause it's already in the cloud
+    if (FetchedInitialData.current) FetchedInitialData.current = false;
+    if (updateIsRedundant) return;
 
     if (userData.cart.isEmpty && userData.wishlist.isEmpty)
       // if everything is empty, delete the doc
@@ -120,14 +96,51 @@ function UserContextProvider({ children }) {
     }
   }, [userData]);
 
+  /* GIVE ABILITY TO MANIPULATE USERDATA USING CONTEXT */
   const contextValue = useMemo(
     () => ({
       user,
-      addToCart,
-      removeFromCart,
-      toggleWishlist,
+      cart: {
+        contents: userData.cart.contents,
+        count: userData.cart.count,
+        add(productName, variant, { count } = {}) {
+          setUserData((oldData) => {
+            const oldCart = oldData.cart;
+            const newCart = oldCart
+              .clone()
+              .add(productName, variant, { count });
+            return { ...oldData, cart: newCart };
+          });
+        },
+        remove(productName, variant, { all } = {}) {
+          setUserData((oldData) => {
+            const oldCart = oldData.cart;
+            const newCart = oldCart
+              .clone()
+              .remove(productName, variant, { all });
+            return { ...oldData, cart: newCart };
+          });
+        },
+        find(productName, variant) {
+          return userData.cart.find(productName, variant);
+        },
+      },
+      wishlist: {
+        contents: userData.wishlist.contents,
+        count: userData.wishlist.count,
+        toggle(productName) {
+          setUserData((oldData) => {
+            const oldWishlist = oldData.wishlist;
+            const newWishlist = oldWishlist.clone().toggle(productName);
+            return { ...oldData, wishlist: newWishlist };
+          });
+        },
+        find(productName) {
+          return userData.wishlist.find(productName);
+        },
+      },
     }),
-    [user]
+    [user, userData]
   );
 
   return (

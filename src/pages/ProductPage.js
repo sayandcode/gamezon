@@ -1,13 +1,17 @@
 import {
+  Add as AddIcon,
   Close,
   ExpandLess as ExpandLessIcon,
   ExpandMore as ExpandMoreIcon,
+  Remove as RemoveIcon,
 } from '@mui/icons-material';
 import {
   Box,
   Button,
+  ButtonGroup,
   Chip,
   IconButton,
+  keyframes,
   Modal,
   Paper,
   Skeleton,
@@ -25,19 +29,29 @@ import { getDataFromQuery } from '../utlis/DBHandlers/MockDBFetch';
 import { UserContext } from '../utlis/Contexts/UserData/UserContext';
 import { NotificationSnackbarContext } from '../utlis/Contexts/NotificationSnackbarContext';
 
+const slideUp = keyframes`
+from{
+  transform: translateY(0);
+}
+to{
+  transform: translateY(-90%);
+}
+`;
+
 export default function ProductPage() {
   const params = useParams();
+  const { productName } = params;
   const [product, setProduct] = useState();
   const [currVariant, setCurrVariant] = useState();
 
   let currPrice = product?.variants[currVariant].price;
   if (currPrice === null) currPrice = 'Unreleased';
   const disableButtons = !product || currPrice === 'Unreleased';
-  const { buyNow, addToCart, toggleWishlist } = useContext(UserContext);
 
+  /* FETCH THE PRODUCT DATA FROM BACKEND */
   const { showNotificationWith } = useContext(NotificationSnackbarContext);
   useEffect(() => {
-    const q = new GameDatabaseQuery().where('title', '==', params.productName);
+    const q = new GameDatabaseQuery().where('title', '==', productName);
     (async () => {
       let queriedItem;
       try {
@@ -57,6 +71,11 @@ export default function ProductPage() {
 
   // dispose of the data when component is unmounted
   useEffect(() => () => product?.dispose(), [product]);
+
+  /* SHOW DIFFERENT SCREENS DEPENDING ON WHETHER PRODUCT IS ALREADY IN CART OR NOT */
+  const { cart, wishlist } = useContext(UserContext);
+  const productAlreadyInCart = cart.find(productName, currVariant);
+  const productAlreadyInWishlist = wishlist.find(productName, currVariant);
 
   return (
     <Stack m={2} spacing={2}>
@@ -89,7 +108,7 @@ export default function ProductPage() {
             color="text.primary"
             gutterBottom
           >
-            {params.productName}
+            {productName}
           </Typography>
           <Stack direction="row" alignItems="baseline" spacing={1} mb={2}>
             <Typography variant="subtitle1">Genre:</Typography>
@@ -144,26 +163,82 @@ export default function ProductPage() {
               size="large"
               variant="contained"
               color="secondary"
-              onClick={() => buyNow(product.title)}
+              component={Link}
+              to={`/buy/${productName}`}
             >
               Buy Now
             </Button>
-            <Button
-              disabled={disableButtons}
-              size="large"
-              variant="contained"
-              color="primary"
-              onClick={() => addToCart(product.title)}
-            >
-              Add to cart
-            </Button>
+            {productAlreadyInCart ? (
+              <ButtonGroup sx={{ mb: 2, position: 'relative' }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    zIndex: 1,
+                    transition: 'all 2s',
+                    width: '100%',
+                    textAlign: 'center',
+                    bgcolor: 'primary.light',
+                    color: 'primary.contrastText',
+                    borderTopLeftRadius: (theme) => theme.shape.borderRadius,
+                    borderTopRightRadius: (theme) => theme.shape.borderRadius,
+                    animation: (theme) =>
+                      `${slideUp} ${theme.transitions.duration.standard}ms ${theme.transitions.easing.easeOut} forwards`,
+                  }}
+                >
+                  No in cart
+                </Typography>
+                <Button
+                  variant="contained"
+                  sx={{
+                    zIndex: 2,
+                  }}
+                  onClick={() => cart.remove(productName, currVariant)}
+                >
+                  <RemoveIcon />
+                </Button>
+                <Stack
+                  justifyContent="center"
+                  px={2}
+                  sx={{
+                    color: 'text.primary',
+                    bgcolor: 'white',
+                    zIndex: 2,
+                    borderBlock: '2px solid black',
+                  }}
+                >
+                  {productAlreadyInCart.count}
+                </Stack>
+                <Button
+                  variant="contained"
+                  sx={{
+                    zIndex: 2,
+                  }}
+                  onClick={() => cart.add(productName, currVariant)}
+                >
+                  <AddIcon />
+                </Button>
+              </ButtonGroup>
+            ) : (
+              <Button
+                disabled={disableButtons}
+                size="large"
+                variant="contained"
+                color="primary"
+                onClick={() => cart.add(productName, currVariant)}
+              >
+                Add to cart
+              </Button>
+            )}
+
             <Button
               size="large"
               variant="outlined"
               color="primary"
-              onClick={() => toggleWishlist(product.title)}
+              onClick={() => wishlist.toggle(productName)}
             >
-              Toggle wishlist
+              {productAlreadyInWishlist ? 'Remove from ' : 'Add to '}Wishlist
             </Button>
           </Stack>
         </Box>

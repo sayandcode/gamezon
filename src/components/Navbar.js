@@ -84,13 +84,10 @@ function SearchBar() {
 }
 
 function NavbarIcons() {
-  const { user } = useContext(UserContext);
+  const { user, cart } = useContext(UserContext);
   const { showLoginModal } = useContext(LoginModalContext);
   const [avatarAnchorEl, setAvatarAnchorEl] = useState(null);
 
-  const handleShoppingCartClick = () => {
-    // route to shopping cart page
-  };
   const handleAvatarClick = (event) => {
     if (!user) showLoginModal();
     else {
@@ -102,8 +99,8 @@ function NavbarIcons() {
   return (
     <Stack direction="row" sx={{ ml: 'auto' }}>
       {user && (
-        <Button color="inherit" onClick={handleShoppingCartClick}>
-          <Badge badgeContent={1} color="secondary">
+        <Button color="inherit" component={Link} to="/cart">
+          <Badge badgeContent={cart.count} color="secondary">
             <ShoppingCartIcon />
           </Badge>
         </Button>
