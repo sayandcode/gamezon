@@ -29,6 +29,7 @@ import SequentialExecutionQueue from '../utlis/SequentialExecutionQueue';
 import ContainedIconButton from './ContainedIconButton';
 import ExpandingButton from './ExpandingButton';
 import { NotificationSnackbarContext } from '../utlis/Contexts/NotificationSnackbarContext';
+import { UserContext } from '../utlis/Contexts/UserData/UserContext';
 
 const CAROUSEL_ITEM_HEIGHT = '250px';
 const CAROUSEL_ITEM_WIDTH = '150px';
@@ -204,8 +205,19 @@ CarouselContainer.propTypes = {
 };
 
 function CarouselItem({ item }) {
-  const [clicked, setClicked] = useState(false);
+  const { cart, wishlist } = useContext(UserContext);
 
+  // The component maintains its own clicked state, as we want users to be
+  // able to add an additional item to their cart. It isn't intended to perform
+  // the full functionality of manipulating the cart
+  const [addedToCart, setAddedToCart] = useState(false);
+  const addedToWishlist = wishlist.find(item.title);
+
+  const handleCartClick = () => {
+    if (addedToCart) cart.remove(item.title, item.variant);
+    else cart.add(item.title, item.variant);
+    setAddedToCart((old) => !old);
+  };
   return (
     <Paper
       sx={{
@@ -281,24 +293,24 @@ function CarouselItem({ item }) {
       </Link>
       <Stack direction="row" justifyContent="space-between" p={1}>
         <ExpandingButton
-          clicked={clicked} /* make this dynamic from cart, and wishlist */
-          unclickedText="Add to Cart"
-          clickedText="Remove from Cart"
-          unclickedIcon={<AddShoppingCartIcon />}
-          clickedIcon={<RemoveShoppingCartIcon />}
+          textContent={!addedToCart ? 'Add to Cart' : 'Remove from Cart'}
+          buttonIcon={
+            !addedToCart ? <AddShoppingCartIcon /> : <RemoveShoppingCartIcon />
+          }
           size="large"
           expandDir="right"
-          onClick={() => setClicked((old) => !old)}
+          onClick={handleCartClick}
         />
         <ExpandingButton
-          clicked={clicked} /* make this dynamic from cart, and wishlist */
-          unclickedText="Add to Wishlist"
-          clickedText="Remove from Wishlist"
-          unclickedIcon={<ReceiptLongIcon />}
-          clickedIcon={<PlaylistRemoveIcon />}
+          textContent={
+            !addedToWishlist ? 'Add to Wishlist' : 'Remove from Wishlist'
+          }
+          buttonIcon={
+            !addedToWishlist ? <ReceiptLongIcon /> : <PlaylistRemoveIcon />
+          }
           size="large"
           expandDir="left"
-          onClick={() => setClicked((old) => !old)}
+          onClick={() => wishlist.toggle(item.title)}
         />
       </Stack>
     </Paper>

@@ -1,19 +1,19 @@
-import { Add as AddIcon, Remove as RemoveIcon } from '@mui/icons-material';
-import { Box, Button, IconButton } from '@mui/material';
+import { Add as AddIcon } from '@mui/icons-material';
+import { Box, IconButton } from '@mui/material';
 import PropTypes from 'prop-types';
+import { useMemo } from 'react';
+import { v4 as uuid } from 'uuid';
 
 function ExpandingButton({
-  clicked,
-  unclickedText,
-  clickedText,
-  unclickedIcon,
-  clickedIcon,
+  textContent,
+  buttonIcon,
   size,
   expandDir,
   onClick,
 }) {
-  const textContent = clicked ? clickedText : unclickedText;
-  const buttonIcon = clicked ? clickedIcon : unclickedIcon;
+  const uniqueID = useMemo(() => uuid(), []);
+  const textVarName = `--${uniqueID}-expandingButton-text`;
+  const widthVarName = `--${uniqueID}-expandingButton-width`;
 
   return (
     <IconButton
@@ -28,9 +28,10 @@ function ExpandingButton({
           zIndex: 3,
         },
 
-        '&:after': {
+        // need the extra specificity to counter the content: '' for ButtonBase styling
+        '&&:after': {
           zIndex: 1,
-          content: `"${textContent}"`,
+          content: `var(${textVarName})`,
           whiteSpace: 'nowrap',
           bgcolor: 'primary.main',
           color: 'primary.contrastText',
@@ -52,11 +53,17 @@ function ExpandingButton({
             `${theme.transitions.easing.easeInOut}`,
           boxSizing: 'content-box',
         },
-        '&:hover::after, &:focus::after': {
+        '&:hover::after, &:focus::after, &.Mui-focusVisible::after': {
           px: 2,
           [expandDir === 'right' ? 'pl' : 'pr']: 5,
-          width: `${textContent.length}ch`,
+          width: `var(${widthVarName})`,
         },
+      }}
+      style={{
+        // keep all the dynamic data as a css variable, to avoid creating unnecessary new
+        // classes during program execution
+        [textVarName]: `"${textContent}"`,
+        [widthVarName]: `${textContent.length}ch`,
       }}
       onClick={onClick}
     >
@@ -82,22 +89,16 @@ function ExpandingButton({
 }
 
 ExpandingButton.propTypes = {
-  clicked: PropTypes.bool,
-  unclickedText: PropTypes.string,
-  clickedText: PropTypes.string,
-  unclickedIcon: PropTypes.node,
-  clickedIcon: PropTypes.node,
+  textContent: PropTypes.string,
+  buttonIcon: PropTypes.node,
   size: PropTypes.oneOf(['small', 'medium', 'large']),
   expandDir: PropTypes.oneOf(['left', 'right']),
   onClick: PropTypes.func,
 };
 
 ExpandingButton.defaultProps = {
-  clicked: false,
-  unclickedText: 'Add ', // add this space at the end cause ch doesn't exactly work
-  clickedText: 'Remove ', // add this space at the end cause ch doesn't exactly work
-  unclickedIcon: <AddIcon />,
-  clickedIcon: <RemoveIcon />,
+  textContent: 'Add ', // add this space at the end cause ch doesn't exactly work
+  buttonIcon: <AddIcon />,
   size: 'medium',
   expandDir: 'right',
   onClick: () => {},

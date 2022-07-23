@@ -62,6 +62,7 @@ export class ProductsDisplayCarouselItem extends RootDatabaseEntity {
       };
     }
     this.boxArtUrl = boxArtUrl;
+    this.variant = data.variants[0].consoleName;
   }
 
   static async createFrom(doc) {
