@@ -5,11 +5,12 @@ import { useMemo } from 'react';
 import { v4 as uuid } from 'uuid';
 
 function ExpandingButton({
+  color,
   textContent,
   buttonIcon,
-  size,
   expandDir,
   onClick,
+  sx,
 }) {
   const uniqueID = useMemo(() => uuid(), []);
   const textVarName = `--${uniqueID}-expandingButton-text`;
@@ -18,8 +19,6 @@ function ExpandingButton({
   return (
     <IconButton
       className="ExpandingButton-root"
-      color="secondary"
-      size={size}
       sx={{
         p: 0,
 
@@ -33,8 +32,8 @@ function ExpandingButton({
           zIndex: 1,
           content: `var(${textVarName})`,
           whiteSpace: 'nowrap',
-          bgcolor: 'primary.main',
-          color: 'primary.contrastText',
+          bgcolor: `${color}.main`,
+          color: `${color}.contrastText`,
 
           position: 'absolute',
           [expandDir === 'right' ? 'left' : 'right']: 0,
@@ -58,6 +57,9 @@ function ExpandingButton({
           [expandDir === 'right' ? 'pl' : 'pr']: 5,
           width: `var(${widthVarName})`,
         },
+
+        // add any specific overrides
+        ...sx,
       }}
       style={{
         // keep all the dynamic data as a css variable, to avoid creating unnecessary new
@@ -72,7 +74,7 @@ function ExpandingButton({
         sx={{
           zIndex: 2,
           bgcolor: 'white',
-          color: 'primary.main',
+          color: `${color}.main`,
           borderRadius: '50%',
           aspectRatio: '1',
 
@@ -89,19 +91,30 @@ function ExpandingButton({
 }
 
 ExpandingButton.propTypes = {
+  color: PropTypes.oneOf([
+    'primary',
+    'secondary',
+    'inherit',
+    'error',
+    'success',
+    'info',
+    'warning',
+  ]),
   textContent: PropTypes.string,
   buttonIcon: PropTypes.node,
-  size: PropTypes.oneOf(['small', 'medium', 'large']),
   expandDir: PropTypes.oneOf(['left', 'right']),
   onClick: PropTypes.func,
+  // eslint-disable-next-line react/forbid-prop-types
+  sx: PropTypes.object,
 };
 
 ExpandingButton.defaultProps = {
+  color: 'primary',
   textContent: 'Add ', // add this space at the end cause ch doesn't exactly work
   buttonIcon: <AddIcon />,
-  size: 'medium',
   expandDir: 'right',
   onClick: () => {},
+  sx: {},
 };
 
 export default ExpandingButton;

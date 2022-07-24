@@ -196,8 +196,8 @@ export class GameDatabaseQuery extends DatabaseQuery {
         return 'discount';
       case 'spotlight':
         return 'spotlight';
-      case undefined: // null is chosen as the handler for the default sorting.
-        return 'Title'; // It will be assigned to __name__ for actual firebase, and 'Title' in mockFirebase
+      case undefined:
+        return 'Title'; // Title is chosen as the default sorting for the GameDatabaseQuery
 
       default:
         throw new Error(

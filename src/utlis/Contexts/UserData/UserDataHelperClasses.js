@@ -2,6 +2,8 @@
 /* This helps us to use the new instance in react useState, which recognizes  */
 /* only new objects, not internal changes to old objects */
 
+import getUuidFromString from 'uuid-by-string';
+
 class UserDataRoot {
   clone() {
     return new this.constructor(this.contents);
@@ -10,6 +12,11 @@ class UserDataRoot {
   get isEmpty() {
     return !Object.keys(this.contents).length;
   }
+}
+
+export function generateProductID(productName, variant = '') {
+  // the toString function ensures that the arguments are present, and valid strings
+  return getUuidFromString(productName.toString() + variant.toString());
 }
 
 export class Cart extends UserDataRoot {
@@ -32,7 +39,7 @@ export class Cart extends UserDataRoot {
   }
 
   find(productName, variant) {
-    const productID = new URLSearchParams({ productName, variant }).toString();
+    const productID = generateProductID(productName, variant);
     const requiredItem = this.#contents[productID];
     return requiredItem ? JSON.parse(JSON.stringify(requiredItem)) : undefined;
   }
@@ -42,7 +49,7 @@ export class Cart extends UserDataRoot {
       throw new Error('Need to specify variant before adding to Cart');
 
     const copy = this.clone();
-    const productID = new URLSearchParams({ productName, variant }).toString();
+    const productID = generateProductID(productName, variant);
 
     // if item is in cart, increment count
     const oldContents = copy.#contents;
@@ -63,7 +70,7 @@ export class Cart extends UserDataRoot {
       throw new Error('Need to specify variant before removing from Cart');
 
     const copy = this.clone();
-    const productID = new URLSearchParams({ productName, variant }).toString();
+    const productID = generateProductID(productName, variant);
 
     // check if the product is added or not
     const existingEntry = copy.#contents[productID];
@@ -101,13 +108,13 @@ export class Wishlist extends UserDataRoot {
   }
 
   find(productName) {
-    const productID = new URLSearchParams({ productName }).toString();
+    const productID = generateProductID(productName);
     return this.#contents[productID]; // no need to deep copy this one, as content of each item is just a string (productName)
   }
 
   toggle(productName) {
     const copy = this.clone();
-    const productID = new URLSearchParams({ productName }).toString();
+    const productID = generateProductID(productName);
 
     // check if the product is added or not
     const existingEntry = copy.#contents[productID];

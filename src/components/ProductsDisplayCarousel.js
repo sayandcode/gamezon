@@ -297,7 +297,6 @@ function CarouselItem({ item }) {
           buttonIcon={
             !addedToCart ? <AddShoppingCartIcon /> : <RemoveShoppingCartIcon />
           }
-          size="large"
           expandDir="right"
           onClick={handleCartClick}
         />
@@ -308,7 +307,6 @@ function CarouselItem({ item }) {
           buttonIcon={
             !addedToWishlist ? <ReceiptLongIcon /> : <PlaylistRemoveIcon />
           }
-          size="large"
           expandDir="left"
           onClick={() => wishlist.toggle(item.title)}
         />

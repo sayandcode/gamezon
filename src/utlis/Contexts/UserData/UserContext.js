@@ -95,13 +95,16 @@ function UserContextProvider({ children }) {
       );
     }
   }, [userData]);
-
   /* GIVE ABILITY TO MANIPULATE USERDATA USING CONTEXT */
   const contextValue = useMemo(
     () => ({
       user,
       cart: {
-        contents: userData.cart.contents,
+        // This implementation of contents is an array, which is useful for context consumers.
+        // There is a dedicated find function, if they wish to look at a particular component.
+        // Contents is used mainly to list out the items in the cart. So an array makes more sense
+        contents: Object.values(userData.cart.contents),
+
         count: userData.cart.count,
         add(productName, variant, { count } = {}) {
           setUserData((oldData) => {
@@ -123,6 +126,9 @@ function UserContextProvider({ children }) {
         },
         find(productName, variant) {
           return userData.cart.find(productName, variant);
+        },
+        empty() {
+          setUserData((oldData) => ({ ...oldData, cart: new Cart() }));
         },
       },
       wishlist: {
