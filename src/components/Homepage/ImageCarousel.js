@@ -1,21 +1,25 @@
 import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
+  ErrorOutline as ErrorOutlineIcon,
 } from '@mui/icons-material';
 import {
   Box,
   IconButton,
   keyframes,
   Skeleton,
+  Stack,
   Typography,
 } from '@mui/material';
-import React, { useState, useRef, useEffect, useContext } from 'react';
+import React, { useState, useRef, useEffect, Suspense } from 'react';
 import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { ErrorBoundary } from 'react-error-boundary';
 import { getDataFromQuery } from '../../utlis/DBHandlers/MockDBFetch'; // BEFORE PRODUCTION: change 'MockDBFetch' to 'DBFetch' for production
 import { ImageCarouselItem } from '../../utlis/DBHandlers/DBDataConverter';
 import { GameDatabaseQuery } from '../../utlis/DBHandlers/DBQueryClasses';
-import { NotificationSnackbarContext } from '../../utlis/Contexts/NotificationSnackbarContext';
+import { wrapPromise } from '../../utlis/SuspenseHelpers';
+import { GameDatabase } from '../../utlis/DBHandlers/DBManipulatorClasses';
 
 const CAROUSEL_HEIGHT = '200px';
 
@@ -29,36 +33,101 @@ const scroll = keyframes`
   }
 `;
 
-export default function ImageCarousel({ itemsQuery }) {
-  const navigate = useNavigate();
+export default function ImageCarousel({ items }) {
+  /* DATA STORE */
+  const itemsCache = useRef([]);
 
-  const [carouselItems, setCarouselItems] = useState([{}]);
-  // load carousel items
-  const { showNotificationWith } = useContext(NotificationSnackbarContext);
-  useEffect(() => {
-    (async () => {
-      let queriedItems;
-      try {
-        queriedItems = await getDataFromQuery(itemsQuery);
-      } catch (err) {
-        showNotificationWith({
-          message: 'Something went wrong. Please refresh the page.',
-          variant: 'error',
-        });
-      }
-      const newCarouselItems = await Promise.allSettledFiltered(
-        queriedItems.map(async (item) => ImageCarouselItem.createFrom(item))
+  /* PROVIDE ITEMRESOURCE FOR SUSPENSE */
+  // perpetual promise as initial value of item resource, guarantees suspense fallback on first render
+  const [itemsResource, setItemResource] = useState(
+    wrapPromise(new Promise(() => {}))
+  );
+  useEffect(updateItemResource, [items]);
+  function updateItemResource() {
+    setItemResource(wrapPromise(updateCache()));
+  }
+
+  async function updateCache() {
+    let queriedItems;
+    if (items instanceof GameDatabaseQuery) {
+      queriedItems = await getDataFromQuery(items);
+    } else if (Array.isArray(items)) {
+      queriedItems = await Promise.all(
+        items.map(async (title) => GameDatabase.get({ title }))
       );
-      setCarouselItems(newCarouselItems.length ? newCarouselItems : [{}]);
-    })();
-  }, []);
+    }
+    const newCarouselItems = await Promise.allSettledFiltered(
+      queriedItems.map(async (item) => ImageCarouselItem.createFrom(item))
+    );
+    itemsCache.current = newCarouselItems;
+    return itemsCache.current;
+  }
 
-  // unload carousel Images
+  return (
+    <ErrorBoundary fallback={<ErrorMessage />}>
+      <Suspense
+        fallback={
+          <Skeleton
+            height={CAROUSEL_HEIGHT}
+            variant="rectangular"
+            sx={{
+              bgcolor: 'black',
+            }}
+          />
+        }
+      >
+        <Carousel resource={itemsResource} />
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
+
+ImageCarousel.propTypes = {
+  items: PropTypes.oneOfType([
+    PropTypes.instanceOf(GameDatabaseQuery),
+    PropTypes.array,
+  ]).isRequired,
+};
+
+function ErrorMessage() {
+  return (
+    <Stack
+      alignItems="center"
+      justifyContent="center"
+      width="100%"
+      height={CAROUSEL_HEIGHT}
+      backgroundColor="black"
+    >
+      <Typography
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+        variant="h6"
+        color="error"
+      >
+        <ErrorOutlineIcon sx={{ mr: 1 }} />
+        Oops! Something went wrong...
+      </Typography>
+      <Typography variant="subtitle2" color="error">
+        Refresh the page and try again
+      </Typography>
+    </Stack>
+  );
+}
+
+function Carousel({ resource }) {
+  /* RESOURCE HANDLING */
+  const carouselItems = resource.read();
+
+  /* UNLOAD CAROUSEL IMAGES */
   // clean up the imgBlob URLs to prevent memory leak
   useEffect(() => {
     return () => carouselItems.forEach((item) => item.dispose?.());
-  }, [carouselItems]);
+  }, [resource]);
 
+  /* CURRENT INDEX */
   const [currItemIndex, setCurrItemIndex] = useState(0);
   const changePic = ({ rightDir }) => {
     const itemCount = carouselItems.length;
@@ -86,7 +155,7 @@ export default function ImageCarousel({ itemsQuery }) {
   useEffect(() => {
     startCarouselSwitching();
     return pauseCarouselSwitching;
-  }, [carouselItems]);
+  }, [resource]);
 
   return (
     <Box
@@ -121,41 +190,26 @@ export default function ImageCarousel({ itemsQuery }) {
         title={carouselItems[currItemIndex].title}
         description={carouselItems[currItemIndex].description}
         boxArtSrc={carouselItems[currItemIndex].boxArtUrl}
-        onClick={() =>
-          navigate(
-            `/product/${encodeURIComponent(carouselItems[currItemIndex].title)}`
-          )
-        }
       />
-      {carouselItems[currItemIndex].bgImgUrl ? (
-        <Box
-          component="img"
-          src={carouselItems[currItemIndex].bgImgUrl}
-          alt=""
-          sx={{
-            zIndex: 1,
-            width: '100%',
-            animation: `${scroll} 30s linear infinite alternate`,
-          }}
-        />
-      ) : (
-        <Skeleton
-          height={CAROUSEL_HEIGHT}
-          variant="rectangular"
-          sx={{
-            bgcolor: 'black',
-          }}
-        />
-      )}
+      <Box
+        component="img"
+        src={carouselItems[currItemIndex].bgImgUrl}
+        alt=""
+        sx={{
+          zIndex: 1,
+          width: '100%',
+          animation: `${scroll} 30s linear infinite alternate`,
+        }}
+      />
     </Box>
   );
 }
 
-ImageCarousel.propTypes = {
-  itemsQuery: PropTypes.instanceOf(GameDatabaseQuery).isRequired,
+Carousel.propTypes = {
+  resource: PropTypes.shape({ read: PropTypes.func }).isRequired,
 };
 
-function InfoOverlay({ title, description, boxArtSrc, onClick }) {
+function InfoOverlay({ title, description, boxArtSrc }) {
   return (
     <Box
       className="InfoOverlay"
@@ -177,8 +231,10 @@ function InfoOverlay({ title, description, boxArtSrc, onClick }) {
         height: '100%',
         display: 'flex',
         cursor: 'pointer',
+        textDecoration: 'none',
       }}
-      onClick={onClick}
+      component={Link}
+      to={`product/${encodeURIComponent(title)}`}
     >
       <Box
         className="InfoOverlayContentContainer"
@@ -192,21 +248,11 @@ function InfoOverlay({ title, description, boxArtSrc, onClick }) {
           marginInline: '25% 10%',
         }}
       >
-        {boxArtSrc ? (
-          <Box
-            component="img"
-            src={boxArtSrc}
-            sx={{ height: `calc(${CAROUSEL_HEIGHT}/1.5)` }}
-          />
-        ) : (
-          <Skeleton
-            sx={{
-              height: `calc(${CAROUSEL_HEIGHT}/1.5)`,
-              width: '100px',
-              bgcolor: 'white',
-            }}
-          />
-        )}
+        <Box
+          component="img"
+          src={boxArtSrc}
+          sx={{ height: `calc(${CAROUSEL_HEIGHT}/1.5)` }}
+        />
         <div style={{ color: 'white' }}>
           <Typography variant="h4">{title}</Typography>
           <Typography variant="subtitle2">{description}</Typography>
@@ -217,17 +263,9 @@ function InfoOverlay({ title, description, boxArtSrc, onClick }) {
 }
 
 InfoOverlay.propTypes = {
-  title: PropTypes.string,
-  description: PropTypes.string,
-  boxArtSrc: PropTypes.string,
-  onClick: PropTypes.func,
-};
-
-InfoOverlay.defaultProps = {
-  title: 'Loading...',
-  description: 'Loading...',
-  boxArtSrc: '',
-  onClick: () => {},
+  title: PropTypes.string.isRequired,
+  description: PropTypes.string.isRequired,
+  boxArtSrc: PropTypes.string.isRequired,
 };
 
 function CarouselControls({

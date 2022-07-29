@@ -9,14 +9,10 @@ export default function Home() {
     'exists'
   );
   const offerItemsQuery = new GameDatabaseQuery().where('discount', 'exists');
-
   return (
     <>
-      <ImageCarousel itemsQuery={spotlightItemsQuery} />
-      <ProductsDisplayCarousel
-        title="Today's Offers"
-        itemsQuery={offerItemsQuery}
-      />
+      <ImageCarousel items={spotlightItemsQuery} />
+      <ProductsDisplayCarousel title="Today's Offers" items={offerItemsQuery} />
       <Outlet />
     </>
   );
