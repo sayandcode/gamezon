@@ -34,33 +34,34 @@ const scroll = keyframes`
 `;
 
 export default function ImageCarousel({ items }) {
-  /* DATA STORE */
-  const itemsCache = useRef([]);
-
   /* PROVIDE ITEMRESOURCE FOR SUSPENSE */
-  // perpetual promise as initial value of item resource, guarantees suspense fallback on first render
   const [itemsResource, setItemResource] = useState(
+    // perpetual promise as initial value of item resource, guarantees suspense fallback on first render
     wrapPromise(new Promise(() => {}))
   );
   useEffect(updateItemResource, [items]);
   function updateItemResource() {
-    setItemResource(wrapPromise(updateCache()));
+    setItemResource(wrapPromise(getNewCarouselItems()));
   }
 
-  async function updateCache() {
-    let queriedItems;
-    if (items instanceof GameDatabaseQuery) {
-      queriedItems = await getDataFromQuery(items);
-    } else if (Array.isArray(items)) {
-      queriedItems = await Promise.all(
-        items.map(async (title) => GameDatabase.get({ title }))
-      );
-    }
+  async function getNewCarouselItems() {
+    const queriedItems = await getDataFromDB();
     const newCarouselItems = await Promise.allSettledFiltered(
       queriedItems.map(async (item) => ImageCarouselItem.createFrom(item))
     );
-    itemsCache.current = newCarouselItems;
-    return itemsCache.current;
+    return newCarouselItems;
+
+    async function getDataFromDB() {
+      if (items instanceof GameDatabaseQuery) {
+        return getDataFromQuery(items);
+      }
+      if (Array.isArray(items)) {
+        return Promise.all(
+          items.map(async (title) => GameDatabase.get({ title }))
+        );
+      }
+      throw new Error('Items is neither a query or a predetermined list');
+    }
   }
 
   return (

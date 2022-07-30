@@ -62,67 +62,71 @@ export default function ProductsDisplayCarousel({ title, items }) {
   /* FLAGS */
   const [flags, setFlags] = useState({ moreItemsAvailable: true });
 
-  function getDataFromCache() {
-    async function fetchingFn() {
-      // if the required data is already in cache, return it.
+  async function getCarouselItems() {
+    // if the required data isn't already in cache, fetch it.
+    if (rangeEnd > highestIndex) await updateCache();
+
+    // finally return the required items
+    return itemsCache.current.slice(rangeStart, rangeEnd + 1); // +1 for how slice works
+
+    async function updateCache() {
       // else wait for us to fetch it from database
-      if (rangeEnd <= highestIndex)
-        return itemsCache.current.slice(rangeStart, rangeEnd + 1); // +1 for how slice works
-
-      let queriedItems;
-
-      /* FUNCTION OVERLOADING V1: ITEMS IS A DBQUERY */
-      if (items instanceof GameDatabaseQuery) {
-        // take the last item in the carouselItems array, and start at that one.
-        // That way, we query only the ones that are extra
-        const lastFetchedItem = itemsCache.current.slice(-1)[0];
-        const noOfItemsToFetch = rangeEnd - highestIndex + 1; // fetch one extra, to see if there are more items available
-        const subsetQuery = items
-          .limit(noOfItemsToFetch)
-          .startAfter(lastFetchedItem); // startAfter method can also work with undefined. It just ignores the call
-        queriedItems = await getDataFromQuery(subsetQuery);
-
-        const extraItem = queriedItems[noOfItemsToFetch - 1]; // (noOfItemsToFetch - 1) is the last item cause thats how indexes work
-        setFlags((old) => ({ ...old, moreItemsAvailable: !!extraItem }));
-      }
-
-      /* FUNCTION OVERLOADING V2: ITEMS IS AN ARRAY */
-      // eslint-disable-next-line prettier/prettier
-      else if (Array.isArray(items)) {
-        const startIndex = highestIndex === -1 ? 0 : highestIndex + 1;
-        queriedItems = await Promise.all(
-          items
-            .slice(startIndex, rangeEnd + 1)
-            .map((_title) => GameDatabase.get({ title: _title }))
-        );
-
-        const finalArrayLength =
-          itemsCache.current.length + queriedItems.length;
-        const moreItemsAvailable = items.length > finalArrayLength;
-        setFlags((old) => ({ ...old, moreItemsAvailable }));
-      }
-
+      const [queriedItems, { moreAvailable: moreItemsAvailable }] =
+        await getDataFromDB();
       const newCarouselItems = await Promise.allSettledFiltered(
         queriedItems.map(async (item) =>
           ProductsDisplayCarouselItem.createFrom(item)
         )
       );
       itemsCache.current.push(...newCarouselItems);
-      // finally return the fetched items
-      return itemsCache.current.slice(rangeStart, rangeEnd + 1); // +1 for how slice works
-    }
+      setFlags((old) => ({ ...old, moreItemsAvailable }));
 
-    return wrapPromise(fetchingFn());
+      async function getDataFromDB() {
+        let data;
+        let moreAvailable;
+
+        /* FUNCTION OVERLOADING V1: ITEMS IS A DBQUERY */
+        if (items instanceof GameDatabaseQuery) {
+          // take the last item in the carouselItems array, and start at that one.
+          // That way, we query only the ones that are extra
+          const lastFetchedItem = itemsCache.current.slice(-1)[0];
+          const noOfItemsToFetch = rangeEnd - highestIndex + 1; // fetch one extra, to see if there are more items available
+          const subsetQuery = items
+            .limit(noOfItemsToFetch)
+            .startAfter(lastFetchedItem); // startAfter method can also work with undefined. It just ignores the call
+          data = await getDataFromQuery(subsetQuery);
+
+          const extraItem = data[noOfItemsToFetch - 1]; // (noOfItemsToFetch - 1) is the last item cause thats how indexes work
+          moreAvailable = Boolean(extraItem);
+        }
+
+        /* FUNCTION OVERLOADING V2: ITEMS IS AN ARRAY */
+        // eslint-disable-next-line prettier/prettier
+      else if (Array.isArray(items)) {
+          const startIndex = highestIndex === -1 ? 0 : highestIndex + 1;
+          data = await Promise.all(
+            items
+              .slice(startIndex, rangeEnd + 1)
+              .map((_title) => GameDatabase.get({ title: _title }))
+          );
+
+          const finalArrayLength = itemsCache.current.length + data.length;
+          moreAvailable = items.length > finalArrayLength;
+        }
+
+        return [data, { moreAvailable }];
+      }
+    }
   }
 
   /* PROVIDE ITEMSRESOURCE */
   const [itemsResource, setItemsResource] = useState(
     wrapPromise(new Promise(() => {}))
   );
-  useEffect(updateCache, [rangeStart, itemCount, manualUpdateCounter]);
-  function updateCache() {
+  useEffect(updateResource, [rangeStart, itemCount, manualUpdateCounter]);
+  function updateResource() {
     if (itemCount === 0) return;
-    const newResource = getDataFromCache();
+    const newResource = wrapPromise(getCarouselItems());
     setItemsResource(newResource);
   }
 
