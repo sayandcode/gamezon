@@ -23,7 +23,7 @@ const noAlertConfig = {
 };
 
 export default function SignInWithPhoneNumberPage() {
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneNumberVal, setPhoneNumberVal] = useState('');
   const [OTPValue, setOTPValue] = useState('');
   const [errorChecking, setErrorChecking] = useState(false);
   const [phoneInputProps, setPhoneInputProps] = useState({
@@ -34,17 +34,17 @@ export default function SignInWithPhoneNumberPage() {
 
   useEffect(() => {
     if (errorChecking) {
-      const newPhoneInputProps = getInputPropsFrom(phoneNumber);
+      const newPhoneInputProps = getInputPropsFrom(phoneNumberVal);
       setPhoneInputProps(newPhoneInputProps);
     }
-  }, [errorChecking, phoneNumber]);
+  }, [errorChecking, phoneNumberVal]);
 
   const [showOTPScreen, setShowOTPScreen] = useState(false);
 
   /* Handle Submit */
   const [isSubmitting, setIsSubmitting] = useState(false);
   const handleSubmit = () => {
-    if (!isPossiblePhoneNumber(phoneNumber)) {
+    if (!isPossiblePhoneNumber(phoneNumberVal)) {
       setErrorChecking(true);
       return;
     }
@@ -57,7 +57,7 @@ export default function SignInWithPhoneNumberPage() {
       },
       auth
     );
-    signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifier)
+    signInWithPhoneNumber(auth, phoneNumberVal, recaptchaVerifier)
       .then((confirmationResult) => {
         // SMS sent. Now verify the OTP.
         window.confirmationResult = confirmationResult;
@@ -127,7 +127,9 @@ export default function SignInWithPhoneNumberPage() {
             required
             helperText={phoneInputProps.helperText}
             error={phoneInputProps.error}
-            onChange={(newVal) => setPhoneNumber(newVal)}
+            value={phoneNumberVal}
+            onChange={(newVal) => setPhoneNumberVal(newVal)}
+            sx={{ display: 'block' }}
           />
         )}
         <Button
