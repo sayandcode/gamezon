@@ -124,6 +124,7 @@ export default function SignInWithPhoneNumberPage() {
           />
         ) : (
           <MuiPhoneNumberInput
+            label="Enter Phone Number"
             required
             helperText={phoneInputProps.helperText}
             error={phoneInputProps.error}
