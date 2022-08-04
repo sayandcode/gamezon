@@ -1,18 +1,12 @@
 import { onAuthStateChanged } from 'firebase/auth';
 import PropTypes from 'prop-types';
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { auth } from '../../firebase-config';
 import { NotificationSnackbarContext } from '../NotificationSnackbarContext';
 import { UserDataHandler } from '../../DBHandlers/DBDataConverter';
 import { Cart, Wishlist } from './UserDataHelperClasses';
 import { UsersDatabase } from '../../DBHandlers/DBManipulatorClasses';
+import { CartHandler, WishlistHandler } from './UserContextHandlerClasses';
 
 export const UserContext = createContext({});
 
@@ -23,31 +17,54 @@ function UserContextProvider({ children }) {
   const [userData, setUserData] = useState({
     cart: new Cart(),
     wishlist: new Wishlist(),
+    isFromCloud: null,
   });
 
+  /* UTILITIES */
+  const { showNotificationWith } = useContext(NotificationSnackbarContext);
+
+  /* CHANGES IN USER LOGIN STATE */
+  // Subscribe to changes
   useEffect(() => {
     onAuthStateChanged(auth, (newUser) => setUser(newUser));
   }, []);
-
-  const { showNotificationWith } = useContext(NotificationSnackbarContext);
-  const FetchedInitialData = useRef(false);
+  // React to user state changes
   useEffect(() => {
-    // only run if theres a user
-    if (!user) return;
+    if (!user) return; // If a user logged in
+    welcomeUser();
+    syncUserDataFromCloud();
+  }, [user]);
 
+  /* CHANGES IN USERDATA */
+  // Whenever the local userData changes, update the remote document. The local state is the ultimate
+  // source of truth. The remote is a copy
+  useEffect(() => {
+    // The first backend fetch changes the data, but doesn't require an update, cause it's already in the cloud.
+    // If the data is from the cloud, theres not need to update it after fetching the changes locally
+    const updateIsValid = user && !userData.isFromCloud;
+    if (updateIsValid) updateCloudData();
+  }, [userData]);
+
+  function welcomeUser() {
     // welcome the user with notification snackbar
     const welcomeName = user.displayName || user.email || user.phoneNumber;
     showNotificationWith({
       message: `Logged in as: ${welcomeName}`,
       variant: 'success',
     });
+  }
 
-    // on login,
-    (async () => {
-      // check if userData document exists
-      let userDataDoc;
+  async function syncUserDataFromCloud() {
+    // check if userData document exists
+    const userDataDoc = await fetchUserDataFromCloud();
+
+    // If it exists, extract whatever data's there, and update the corresponding new fields.
+    // If it doesn't exist, that's fine. Work with the empty instances you have
+    if (userDataDoc) setUserDataLocally(userDataDoc);
+
+    async function fetchUserDataFromCloud() {
       try {
-        userDataDoc = await UsersDatabase.get({ userID: user.uid });
+        return await UsersDatabase.get({ userID: user.uid });
       } catch {
         showNotificationWith({
           message:
@@ -55,26 +72,22 @@ function UserContextProvider({ children }) {
           variant: 'error',
         });
       }
+      // if data doesn't exist
+      return null;
+    }
 
-      // If it exists, extract whatever data's there, and update the corresponding new fields.
-      if (userDataDoc) {
-        const cloudData = new UserDataHandler(userDataDoc);
-        setUserData(cloudData.toLocalState());
-        FetchedInitialData.current = true;
-      }
-      // If it doesn't exist, that's fine. Work with the empty instances you have
-    })();
-  }, [user]);
+    function setUserDataLocally(_userDataDoc) {
+      const cloudData = new UserDataHandler(_userDataDoc);
+      const localData = { ...cloudData.toLocalState(), isFromCloud: true };
+      setUserData(localData);
+    }
+  }
 
-  /* Whenever the userData changes, update the remote document. The local state is the ultimate */
-  /* source of truth. The remote is a copy */
-  useEffect(() => {
-    const updateIsRedundant = !user || FetchedInitialData.current;
-    // the first backend fetch changes the data, but doesn't require an update, cause it's already in the cloud
-    if (FetchedInitialData.current) FetchedInitialData.current = false;
-    if (updateIsRedundant) return;
+  function updateCloudData() {
+    /* todo: add address isempty check with this */
+    const userDataIsEmpty = userData.cart.isEmpty && userData.wishlist.isEmpty;
 
-    if (userData.cart.isEmpty && userData.wishlist.isEmpty)
+    if (userDataIsEmpty)
       // if everything is empty, delete the doc
       UsersDatabase.delete({ userID: user.uid }).catch(() =>
         showNotificationWith({
@@ -94,57 +107,17 @@ function UserContextProvider({ children }) {
         })
       );
     }
-  }, [userData]);
+  }
+
   /* GIVE ABILITY TO MANIPULATE USERDATA USING CONTEXT */
+  // Handlers expose the functionality of the base classes, while having access to the
+  // react state of the context provider, thereby extending the functionality
+  // a la dependency injection
   const contextValue = useMemo(
     () => ({
       user,
-      cart: {
-        // This implementation of contents is an array, which is useful for context consumers.
-        // There is a dedicated find function, if they wish to look at a particular component.
-        // Contents is used mainly to list out the items in the cart. So an array makes more sense
-        contents: Object.values(userData.cart.contents),
-
-        count: userData.cart.count,
-        add(productName, variant, { count } = {}) {
-          setUserData((oldData) => {
-            const oldCart = oldData.cart;
-            const newCart = oldCart
-              .clone()
-              .add(productName, variant, { count });
-            return { ...oldData, cart: newCart };
-          });
-        },
-        remove(productName, variant, { all } = {}) {
-          setUserData((oldData) => {
-            const oldCart = oldData.cart;
-            const newCart = oldCart
-              .clone()
-              .remove(productName, variant, { all });
-            return { ...oldData, cart: newCart };
-          });
-        },
-        find(productName, variant) {
-          return userData.cart.find(productName, variant);
-        },
-        empty() {
-          setUserData((oldData) => ({ ...oldData, cart: new Cart() }));
-        },
-      },
-      wishlist: {
-        contents: userData.wishlist.contents,
-        count: userData.wishlist.count,
-        toggle(productName) {
-          setUserData((oldData) => {
-            const oldWishlist = oldData.wishlist;
-            const newWishlist = oldWishlist.clone().toggle(productName);
-            return { ...oldData, wishlist: newWishlist };
-          });
-        },
-        find(productName) {
-          return userData.wishlist.find(productName);
-        },
-      },
+      cart: new CartHandler(userData.cart, setUserData),
+      wishlist: new WishlistHandler(userData.wishlist, setUserData),
     }),
     [user, userData]
   );
