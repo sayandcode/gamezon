@@ -57,6 +57,7 @@ const customTheme = createTheme({
         root: ({ ownerState, theme }) => ({
           marginBottom: theme.spacing(2),
           '.MuiOutlinedInput-root': {
+            backgroundColor: 'white',
             marginTop: ownerState.label && theme.spacing(2.5),
             fieldset: {
               legend: {
@@ -66,7 +67,6 @@ const customTheme = createTheme({
               },
             },
             '&.Mui-focused': {
-              backgroundColor: 'transparent',
               fieldset: {
                 border: '2px solid',
                 borderColor: alpha(theme.palette.primary.light, 0.75),
