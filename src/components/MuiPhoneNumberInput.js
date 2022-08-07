@@ -40,6 +40,7 @@ const TextFieldWithProps = forwardRef(
       disabled,
       readOnly,
       error,
+      placeholder,
       // design
       fullWidth,
       size,
@@ -66,6 +67,7 @@ const TextFieldWithProps = forwardRef(
           disabled,
           readOnly,
           error,
+          placeholder,
           // design
           fullWidth,
           size,
@@ -96,6 +98,7 @@ TextFieldWithProps.propTypes = {
   disabled: PropTypes.bool,
   readOnly: PropTypes.bool,
   error: PropTypes.bool,
+  placeholder: PropTypes.string,
 
   // design
   size: PropTypes.string,
@@ -118,6 +121,7 @@ TextFieldWithProps.defaultProps = {
   disabled: false,
   readOnly: false,
   error: false,
+  placeholder: '',
 
   // design
   fullWidth: false,
@@ -228,6 +232,7 @@ export default function MuiPhoneNumberInput({
   required,
   helperText,
   error,
+  placeholder,
   // design
   fullWidth,
   size,
@@ -269,7 +274,7 @@ export default function MuiPhoneNumberInput({
               onKeyDown,
             }}
             // html attributes and form helpers
-            {...{ name, id, value, required }}
+            {...{ name, id, value, required, placeholder }}
             international
             inputComponent={TextFieldWithProps}
             numberInputProps={{ error, fullWidth, size }}
@@ -308,6 +313,7 @@ MuiPhoneNumberInput.propTypes = {
   required: PropTypes.bool,
   helperText: PropTypes.string,
   error: PropTypes.bool,
+  placeholder: PropTypes.string,
 
   // design
   fullWidth: PropTypes.bool,
@@ -331,6 +337,7 @@ MuiPhoneNumberInput.defaultProps = {
   required: false,
   helperText: '',
   error: false,
+  placeholder: '',
 
   // design
   fullWidth: false,

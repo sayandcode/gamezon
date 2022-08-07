@@ -22,7 +22,7 @@
     ],
     "rules": {
         "no-unused-vars": "warn",
-        "no-use-before-define": ["error", { "functions": false }],
+        "no-use-before-define": ["error", { "functions": false, "variables": false }],
         "react/jsx-filename-extension": ["warn", { "extensions": [".js", ".jsx"] }],
         "prettier/prettier":[
             "error",
