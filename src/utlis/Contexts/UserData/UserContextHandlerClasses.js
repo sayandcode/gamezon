@@ -1,4 +1,4 @@
-import { Cart, Wishlist } from './UserDataHelperClasses';
+import { AddressList, Cart, Wishlist } from './UserDataHelperClasses';
 
 /* HANDLERS EXPOSE THE FUNCTIONALITY VIA CONTEXT API */
 // Handlers extend the base class by adding access to react hooks,
@@ -18,7 +18,7 @@ class CartHandler extends Cart {
   #updateCartInUserData(fnName, ...args) {
     this.#setUserData((oldData) => {
       const oldCart = oldData.cart;
-      const newCart = oldCart.clone()[fnName](...args);
+      const newCart = oldCart[fnName](...args);
       return { ...oldData, cart: newCart, isFromCloud: false };
     });
   }
@@ -69,10 +69,44 @@ class WishlistHandler extends Wishlist {
   toggle(productName) {
     this.#setUserData((oldData) => {
       const oldWishlist = oldData.wishlist;
-      const newWishlist = oldWishlist.clone().toggle(productName);
+      const newWishlist = oldWishlist.toggle(productName);
       return { ...oldData, wishlist: newWishlist, isFromCloud: false };
     });
   }
 }
 
-export { CartHandler, WishlistHandler };
+class AddressListHandler extends AddressList {
+  #origContents;
+
+  #setUserData;
+
+  constructor(wishlist, setUserDataFn) {
+    super(wishlist.contents);
+    this.#origContents = wishlist.contents;
+    this.#setUserData = setUserDataFn;
+  }
+
+  #updateAddressListInUserData(fnName, ...args) {
+    this.#setUserData((oldData) => {
+      const oldAddressList = oldData.addressList;
+      const newAddressList = oldAddressList[fnName](...args);
+      return { ...oldData, addressList: newAddressList, isFromCloud: false };
+    });
+  }
+
+  /* 👇 public methods 👇 */
+
+  get contents() {
+    return Object.values(this.#origContents);
+  }
+
+  add(addressObj) {
+    this.#updateAddressListInUserData('add', addressObj);
+  }
+
+  remove(address) {
+    this.#updateAddressListInUserData('remove', address);
+  }
+}
+
+export { CartHandler, WishlistHandler, AddressListHandler };

@@ -4,9 +4,13 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { auth } from '../../firebase-config';
 import { NotificationSnackbarContext } from '../NotificationSnackbarContext';
 import { UserDataHandler } from '../../DBHandlers/DBDataConverter';
-import { Cart, Wishlist } from './UserDataHelperClasses';
+import { AddressList, Cart, Wishlist } from './UserDataHelperClasses';
 import { UsersDatabase } from '../../DBHandlers/DBManipulatorClasses';
-import { CartHandler, WishlistHandler } from './UserContextHandlerClasses';
+import {
+  AddressListHandler,
+  CartHandler,
+  WishlistHandler,
+} from './UserContextHandlerClasses';
 
 export const UserContext = createContext({});
 
@@ -17,6 +21,7 @@ function UserContextProvider({ children }) {
   const [userData, setUserData] = useState({
     cart: new Cart(),
     wishlist: new Wishlist(),
+    addressList: new AddressList(),
     isFromCloud: null,
   });
 
@@ -84,8 +89,10 @@ function UserContextProvider({ children }) {
   }
 
   function updateCloudData() {
-    /* todo: add address isempty check with this */
-    const userDataIsEmpty = userData.cart.isEmpty && userData.wishlist.isEmpty;
+    const userDataIsEmpty =
+      userData.cart.isEmpty &&
+      userData.wishlist.isEmpty &&
+      userData.addressList.isEmpty;
 
     if (userDataIsEmpty)
       // if everything is empty, delete the doc
@@ -118,6 +125,7 @@ function UserContextProvider({ children }) {
       user,
       cart: new CartHandler(userData.cart, setUserData),
       wishlist: new WishlistHandler(userData.wishlist, setUserData),
+      addressList: new AddressListHandler(userData.addressList, setUserData),
     }),
     [user, userData]
   );

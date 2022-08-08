@@ -1,4 +1,5 @@
 import {
+  AddressList,
   Cart,
   generateProductID,
   Wishlist,
@@ -120,28 +121,38 @@ export class UserDataHandler extends RootDatabaseEntity {
   constructor(doc) {
     super(doc);
     const { data } = doc;
-    this.cart = data.cartItems;
-    this.wishlist = data.wishlistItems;
+    this.cartItems = data.cartItems;
+    this.wishlistItems = data.wishlistItems;
+    this.addressListItems = data.addressListItems;
   }
 
   toLocalState() {
     return {
       // if the field doesn't exist, it defaults to the empty initialization of the class. So it works anyway
-      cart: new Cart(this.cart),
-      wishlist: new Wishlist(this.wishlist),
+      cart: new Cart(this.cartItems),
+      wishlist: new Wishlist(this.wishlistItems),
+      addressList: AddressList.createFromObject(this.addressListItems),
     };
   }
 
   static toDBForm(localData) {
-    const [cart, wishlist] = [localData.cart, localData.wishlist];
+    const [cart, wishlist, addressList] = [
+      localData.cart,
+      localData.wishlist,
+      localData.addressList,
+    ];
 
     // if a field is empty, delete the field
     const cartItems = cart.isEmpty ? undefined : cart.contents;
     const wishlistItems = wishlist.isEmpty ? undefined : wishlist.contents;
+    const addressListItems = addressList.isEmpty
+      ? undefined
+      : addressList.objectifiedContents;
 
     return {
       ...(cartItems && { cartItems }),
       ...(wishlistItems && { wishlistItems }),
+      ...(addressListItems && { addressListItems }),
     };
   }
 }
