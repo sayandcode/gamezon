@@ -194,6 +194,10 @@ class AddressList extends UserDataRoot {
   edit(oldAddress, newAddress) {
     return this.remove(oldAddress).add(newAddress);
   }
+
+  find(addressID) {
+    return this.#contents[addressID];
+  }
 }
 
 export { generateProductID, Cart, Wishlist, AddressList };

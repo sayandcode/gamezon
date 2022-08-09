@@ -12,13 +12,10 @@ function ScrollingSelect({
 }) {
   return (
     <Box
-      direction="row"
       sx={{
         overflowX: 'auto',
         p: 4,
         bgcolor: 'grey.100',
-        position: 'relative',
-        // scrollbar styles
         ...ScrollbarStyles,
       }}
     >
@@ -29,7 +26,7 @@ function ScrollingSelect({
             flexDirection: 'row',
             flexWrap: 'nowrap',
             columnGap: spacing,
-            alignItems: 'center',
+            alignItems: 'stretch',
           }}
           name={name}
           onChange={handleChange}
@@ -52,7 +49,7 @@ function ScrollingSelect({
 ScrollingSelect.propTypes = {
   name: PropTypes.string.isRequired,
   children: PropTypes.node.isRequired,
-  value: PropTypes.string,
+  value: PropTypes.oneOf([PropTypes.string, null]),
   onChange: PropTypes.func,
   spacing: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
 };
@@ -67,7 +64,7 @@ export default ScrollingSelect;
 
 function LabelOnlyRadioButton({ id, value, label }) {
   if (!Object.hasOwn(label.props, 'selected'))
-    console.warn(
+    throw new Error(
       "LabelOnlyRadioButton was given a child which doesn't have selected prop. Add it to show differing styles when selected",
       label
     );
@@ -108,11 +105,12 @@ LabelOnlyRadioButton.defaultProps = {
 const StyleWrapper = styled('div')(({ theme }) => ({
   'input[type="radio"]': {
     position: 'absolute',
-    // opacity: 0,
-    '&:focus-visible + label': {
-      display: 'block',
-      outline: `3px dashed ${theme.palette.secondary.light}`,
-      outlineOffset: theme.spacing(1),
-    },
+    opacity: 0,
+  },
+  'input[type="radio"]:focus-visible + label': {
+    display: 'block',
+    height: '100%',
+    outline: `3px dashed ${theme.palette.secondary.light}`,
+    outlineOffset: theme.spacing(1),
   },
 }));
