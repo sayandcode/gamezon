@@ -12,6 +12,7 @@ import {
 import PropTypes from 'prop-types';
 import { Formik, Form } from 'formik';
 import { object as YupObject, string as YupString } from 'yup';
+import { useContext } from 'react';
 import extendWithFormik from '../../utlis/FormHelpers/extendWithFormik';
 import MuiPhoneNumberInput from '../MuiPhoneNumberInput';
 import {
@@ -21,6 +22,9 @@ import {
   getStateOptions,
 } from './countryStateCityHelpers';
 import MuiAutocomplete from '../MuiAutocomplete';
+import { UserContext } from '../../utlis/Contexts/UserData/UserContext';
+import '../../utlis/FormHelpers/newYupMethods';
+import Address from './addressClass';
 
 const FormikTextField = extendWithFormik(TextField);
 const FormikAutocomplete = extendWithFormik(MuiAutocomplete, {
@@ -30,7 +34,7 @@ const FormikPhoneNumber = extendWithFormik(MuiPhoneNumberInput, {
   onChangeGivesValue: true,
 });
 
-const initialFormValues = {
+const defaultInitialFormValues = {
   firstName: '',
   lastName: '',
   addressLine1: '',
@@ -78,7 +82,28 @@ const placeholders = {
   phoneNumber: '+1 570 343 3400',
 };
 
-function NewAddressModal({ open, onClose: handleClose }) {
+function AddressFormModal({
+  open,
+  onClose: handleClose,
+  edit: addressToBeEdited,
+}) {
+  const { addressList } = useContext(UserContext);
+
+  // If the edit prop is passed with an Address, then fetch the initial value of the form from it.
+  const initialFormValues =
+    addressToBeEdited?.content || defaultInitialFormValues;
+
+  const dialogTitleText = addressToBeEdited
+    ? 'Edit address'
+    : 'Add new address';
+
+  const handleSubmit = (formValues) => {
+    const newAddress = new Address(formValues);
+    if (addressToBeEdited) addressList.edit(addressToBeEdited, newAddress);
+    else addressList.add(newAddress);
+    handleClose();
+  };
+
   return (
     <Dialog
       open={open}
@@ -88,9 +113,7 @@ function NewAddressModal({ open, onClose: handleClose }) {
       <Formik
         initialValues={initialFormValues}
         validationSchema={validationSchema}
-        onSubmit={(values, { setSubmitting }) => {
-          alert(JSON.stringify(values, null, 2));
-        }}
+        onSubmit={handleSubmit}
       >
         {({ values: formValues, setFieldValue }) => {
           const selectedCountry = formValues.country;
@@ -111,7 +134,7 @@ function NewAddressModal({ open, onClose: handleClose }) {
 
           return (
             <Form>
-              <DialogTitle>Add New address</DialogTitle>
+              <DialogTitle>{dialogTitleText}</DialogTitle>
               <IconButton
                 sx={{
                   position: 'absolute',
@@ -216,14 +239,16 @@ function NewAddressModal({ open, onClose: handleClose }) {
   );
 }
 
-NewAddressModal.propTypes = {
+AddressFormModal.propTypes = {
   open: PropTypes.bool,
   onClose: PropTypes.func,
+  edit: PropTypes.instanceOf(Address),
 };
 
-NewAddressModal.defaultProps = {
+AddressFormModal.defaultProps = {
   open: false,
   onClose: () => {},
+  edit: undefined,
 };
 
-export default NewAddressModal;
+export default AddressFormModal;
