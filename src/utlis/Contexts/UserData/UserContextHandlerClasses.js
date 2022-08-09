@@ -80,9 +80,9 @@ class AddressListHandler extends AddressList {
 
   #setUserData;
 
-  constructor(wishlist, setUserDataFn) {
-    super(wishlist.contents);
-    this.#origContents = wishlist.contents;
+  constructor(addressList, setUserDataFn) {
+    super(addressList.contents);
+    this.#origContents = addressList.contents;
     this.#setUserData = setUserDataFn;
   }
 
@@ -106,6 +106,10 @@ class AddressListHandler extends AddressList {
 
   remove(address) {
     this.#updateAddressListInUserData('remove', address);
+  }
+
+  edit(oldAddress, newAddress) {
+    this.#updateAddressListInUserData('edit', oldAddress, newAddress);
   }
 }
 

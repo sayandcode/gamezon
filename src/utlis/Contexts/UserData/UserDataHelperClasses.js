@@ -3,7 +3,7 @@
 /* only new objects, not internal changes to old objects */
 
 import getUuidFromString from 'uuid-by-string';
-import { v4 as generateUuid } from 'uuid';
+import Address from '../../../components/Address/addressClass';
 
 class UserDataRoot {
   clone() {
@@ -127,25 +127,6 @@ class Wishlist extends UserDataRoot {
   }
 }
 
-class Address {
-  #addressID;
-
-  #content;
-
-  constructor(addressObj, addressID) {
-    this.#addressID = addressID || generateUuid();
-    this.#content = JSON.parse(JSON.stringify(addressObj));
-  }
-
-  get id() {
-    return this.#addressID;
-  }
-
-  get content() {
-    return JSON.parse(JSON.stringify(this.#content));
-  }
-}
-
 class AddressList extends UserDataRoot {
   #contents;
 
@@ -192,13 +173,9 @@ class AddressList extends UserDataRoot {
     return objectifiedContents;
   }
 
-  add(addressObj) {
+  add(address) {
     const copy = this.clone();
-
-    const newAddress = new Address(addressObj);
-    const addressID = newAddress.id;
-    copy.#contents[addressID] = newAddress;
-
+    copy.#contents[address.id] = address;
     return copy;
   }
 
@@ -212,6 +189,10 @@ class AddressList extends UserDataRoot {
     const copy = this.clone();
     delete copy.#contents[address.id];
     return copy;
+  }
+
+  edit(oldAddress, newAddress) {
+    return this.remove(oldAddress).add(newAddress);
   }
 }
 
