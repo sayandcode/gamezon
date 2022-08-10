@@ -132,10 +132,18 @@ export default function ProductsDisplayCarousel({ title, items }) {
 
   /* EMPTY CACHE ON ITEMS PROP CHANGE */
   useEffect(() => {
-    itemsCache.current = [];
+    clearCacheData();
     setRangeStart(0);
     manualUpdate();
   }, [items]);
+
+  /* DISPOSE OF THE DATA WHEN COMPONENT IS UNMOUNTED */
+  useEffect(() => clearCacheData, []);
+
+  function clearCacheData() {
+    itemsCache.current.forEach((item) => item.dispose());
+    itemsCache.current = [];
+  }
 
   /* RUNTIME CALCULATIONS */
   const showArrow = {
