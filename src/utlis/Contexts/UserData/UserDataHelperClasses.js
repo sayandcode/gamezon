@@ -150,6 +150,13 @@ class AddressList extends UserDataRoot {
     this.#contents = { ...items };
   }
 
+  #confirmPreExisting(address) {
+    // Check if entry exists
+    const existingEntry = this.#contents[address.id];
+    if (!existingEntry)
+      throw new Error("Can't remove address that wasn't added");
+  }
+
   get contents() {
     // We need to provide the contents, which is an object of <Address> instances.
     // But at the same time, we cannot let the user mutate the #contents obj, with his actions.
@@ -181,9 +188,7 @@ class AddressList extends UserDataRoot {
 
   remove(address) {
     // Check if entry exists
-    const existingEntry = this.#contents[address.id];
-    if (!existingEntry)
-      throw new Error("Can't remove address that wasn't added");
+    this.#confirmPreExisting(address);
 
     // Then delete it from the new address list
     const copy = this.clone();
@@ -192,7 +197,11 @@ class AddressList extends UserDataRoot {
   }
 
   edit(oldAddress, newAddress) {
-    return this.remove(oldAddress).add(newAddress);
+    this.#confirmPreExisting(oldAddress);
+    const origID = oldAddress.id;
+    const copy = this.clone();
+    copy.#contents[origID] = new Address(newAddress.content, origID);
+    return copy;
   }
 
   find(addressID) {

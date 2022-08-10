@@ -1,14 +1,25 @@
-import { alpha, Stack, Typography } from '@mui/material';
+import { Add as AddIcon } from '@mui/icons-material';
+import { alpha, Box, Button, Stack, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { formatPhoneNumberIntl } from 'react-phone-number-input';
 import { UserContext } from '../../utlis/Contexts/UserData/UserContext';
 import ScrollingSelect from '../ScrollingSelect/ScrollingSelect';
 import Address from './addressClass';
+import AddressFormModal from './AddressFormModal';
 
 function AddressSelector({ onSelect }) {
+  /* DATA */
   const { addressList } = useContext(UserContext);
   const addresses = addressList.contents;
+
+  /* STATE */
+  const [addressModalProps, setAddressModalProps] = useState({
+    open: false,
+    edit: null,
+  });
+
+  /* RUNTIME CALCULATIONS */
   const readOnly = !onSelect;
 
   // `value=null` fixes the selected address as nothing; i.e. the address cannot be selected.
@@ -26,22 +37,68 @@ function AddressSelector({ onSelect }) {
         onSelect(selectedAddress);
       };
 
+  /* EVENT HANDLERS */
+  const handleEdit = (address) => {
+    setAddressModalProps({ open: true, edit: address });
+  };
+  const handleRemove = (address) => {
+    addressList.remove(address);
+  };
+
   return (
-    <ScrollingSelect
-      name="addresses"
-      value={addressValue}
-      onChange={handleChange}
-    >
-      {addresses.map((address) => (
-        <AddressItem
-          address={address}
-          value={address.id}
-          id={address.id}
-          key={address.id}
-          readOnly={readOnly}
-        />
-      ))}
-    </ScrollingSelect>
+    <Box sx={{ position: 'relative' }}>
+      {addresses.length > 0 ? (
+        <ScrollingSelect
+          name="addresses"
+          value={addressValue}
+          onChange={handleChange}
+        >
+          {addresses.map((address) => (
+            <AddressItem
+              address={address}
+              value={address.id}
+              id={address.id}
+              key={address.id}
+              readOnly={readOnly}
+              edit={handleEdit}
+              remove={handleRemove}
+            />
+          ))}
+        </ScrollingSelect>
+      ) : (
+        <Stack
+          alignItems="center"
+          justifyContent="center"
+          sx={{ height: '250px', bgcolor: 'grey.100' }}
+        >
+          <Typography variant="h5" component="h3" align="center">
+            No addresses to show
+          </Typography>
+        </Stack>
+      )}
+
+      <Button
+        variant="contained"
+        size="large"
+        color="primary"
+        sx={{
+          borderRadius: (theme) => theme.shape.borderRadius * 2,
+          position: 'absolute',
+          bottom: (theme) => theme.spacing(3),
+          right: (theme) => theme.spacing(5),
+          zIndex: 20,
+        }}
+        endIcon={<AddIcon />}
+        onClick={() => setAddressModalProps({ open: true, edit: null })}
+      >
+        New Address
+      </Button>
+      <AddressFormModal
+        open={addressModalProps.open}
+        edit={addressModalProps.edit}
+        onClose={() => setAddressModalProps({ open: false, edit: null })}
+      />
+    </Box>
   );
 }
 
@@ -76,7 +133,7 @@ class AddressItemDataHandler {
   }
 }
 
-function AddressItem({ address, selected, readOnly }) {
+function AddressItem({ address, selected, readOnly, edit, remove }) {
   const addressData = new AddressItemDataHandler(address);
   const outlineColorPalette = selected ? 'secondary' : 'primary';
   return (
@@ -105,6 +162,10 @@ function AddressItem({ address, selected, readOnly }) {
       >
         {addressData.line[2]}
       </Typography>
+      <Box sx={{ mt: 'auto' }}>
+        <Button onClick={() => edit(address)}>Edit</Button>
+        <Button onClick={() => remove(address)}>Delete</Button>
+      </Box>
     </Stack>
   );
 }
@@ -113,6 +174,8 @@ AddressItem.propTypes = {
   address: PropTypes.instanceOf(Address).isRequired,
   selected: PropTypes.bool,
   readOnly: PropTypes.bool,
+  edit: PropTypes.func.isRequired,
+  remove: PropTypes.func.isRequired,
 };
 
 AddressItem.defaultProps = {
