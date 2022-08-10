@@ -7,7 +7,8 @@ import ContextProvidersWrapper from './utlis/Contexts/ContextProvidersWrapper';
 import ConfirmEmailLogin from './pages/ConfirmEmailLogin';
 import ProductPage from './pages/ProductPage';
 import PersistentComponents from './components/PersistentComponents';
-import Cart from './pages/Cart';
+import Cart from './pages/CartPage';
+import Account from './pages/Account';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
               </Route>
               <Route path="/product/:productName" element={<ProductPage />} />
               <Route path="/cart" element={<Cart />} />
+              <Route path="/account" element={<Account />} />
               <Route
                 path="*"
                 element={<h1>Error 404: Page doesn&apos;t exist</h1>}
