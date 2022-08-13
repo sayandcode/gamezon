@@ -18,8 +18,9 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { getDataFromQuery } from '../../utlis/DBHandlers/MockDBFetch'; // BEFORE PRODUCTION: change 'MockDBFetch' to 'DBFetch' for production
 import { ImageCarouselItem } from '../../utlis/DBHandlers/DBDataConverter';
 import { GameDatabaseQuery } from '../../utlis/DBHandlers/DBQueryClasses';
-import { wrapPromise } from '../../utlis/SuspenseHelpers';
+import { promiseToResource } from '../../utlis/SuspenseHelpers';
 import { GameDatabase } from '../../utlis/DBHandlers/DBManipulatorClasses';
+import ErrorMessage from '../ErrorMessage';
 
 const CAROUSEL_HEIGHT = '200px';
 
@@ -37,11 +38,11 @@ export default function ImageCarousel({ items }) {
   /* PROVIDE ITEMRESOURCE FOR SUSPENSE */
   const [itemsResource, setItemResource] = useState(
     // perpetual promise as initial value of item resource, guarantees suspense fallback on first render
-    wrapPromise(new Promise(() => {}))
+    promiseToResource(new Promise(() => {}))
   );
   useEffect(updateItemResource, [items]);
   function updateItemResource() {
-    setItemResource(wrapPromise(getNewCarouselItems()));
+    setItemResource(promiseToResource(getNewCarouselItems()));
   }
 
   async function getNewCarouselItems() {
@@ -65,7 +66,7 @@ export default function ImageCarousel({ items }) {
   }
 
   return (
-    <ErrorBoundary fallback={<ErrorMessage />}>
+    <ErrorBoundary fallback={<ErrorFallback />}>
       <Suspense
         fallback={
           <Skeleton
@@ -90,7 +91,7 @@ ImageCarousel.propTypes = {
   ]).isRequired,
 };
 
-function ErrorMessage() {
+function ErrorFallback() {
   return (
     <Stack
       alignItems="center"
@@ -99,21 +100,7 @@ function ErrorMessage() {
       height={CAROUSEL_HEIGHT}
       backgroundColor="black"
     >
-      <Typography
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-        variant="h6"
-        color="error"
-      >
-        <ErrorOutlineIcon sx={{ mr: 1 }} />
-        Oops! Something went wrong...
-      </Typography>
-      <Typography variant="subtitle2" color="error">
-        Refresh the page and try again
-      </Typography>
+      <ErrorMessage />
     </Stack>
   );
 }

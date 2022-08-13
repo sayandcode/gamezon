@@ -1,4 +1,4 @@
-function wrapPromise(promise) {
+function promiseToResource(promise) {
   let status = 'pending';
   let result;
   const suspender = promise.then(
@@ -22,4 +22,4 @@ function wrapPromise(promise) {
 }
 
 // eslint-disable-next-line import/prefer-default-export
-export { wrapPromise };
+export { promiseToResource };

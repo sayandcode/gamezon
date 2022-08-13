@@ -5,7 +5,6 @@ import {
   RemoveShoppingCart as RemoveShoppingCartIcon,
   ReceiptLong as ReceiptLongIcon,
   PlaylistRemove as PlaylistRemoveIcon,
-  ErrorOutline as ErrorOutlineIcon,
 } from '@mui/icons-material';
 import {
   Box,
@@ -37,7 +36,8 @@ import ContainedIconButton from './ContainedIconButton';
 import ExpandingButton from './ExpandingButton';
 import { UserContext } from '../utlis/Contexts/UserData/UserContext';
 import { GameDatabase } from '../utlis/DBHandlers/DBManipulatorClasses';
-import { wrapPromise } from '../utlis/SuspenseHelpers';
+import { promiseToResource } from '../utlis/SuspenseHelpers';
+import ErrorMessage from './ErrorMessage';
 
 const CAROUSEL_ITEM_HEIGHT = '250px';
 const CAROUSEL_ITEM_WIDTH = '150px';
@@ -121,12 +121,12 @@ export default function ProductsDisplayCarousel({ title, items }) {
 
   /* PROVIDE ITEMSRESOURCE */
   const [itemsResource, setItemsResource] = useState(
-    wrapPromise(new Promise(() => {}))
+    promiseToResource(new Promise(() => {}))
   );
   useEffect(updateResource, [rangeStart, itemCount, manualUpdateCounter]);
   function updateResource() {
     if (itemCount === 0) return;
-    const newResource = wrapPromise(getCarouselItems());
+    const newResource = promiseToResource(getCarouselItems());
     setItemsResource(newResource);
   }
 
@@ -171,7 +171,7 @@ export default function ProductsDisplayCarousel({ title, items }) {
         alignItems="center"
         ref={CarouselStackRef}
       >
-        <ErrorBoundary fallback={<Error />}>
+        <ErrorBoundary fallback={<ErrorFallback />}>
           <Suspense fallback={<CarouselSkeletons count={itemCount} />}>
             <CarouselItems
               resource={itemsResource}
@@ -384,24 +384,10 @@ CarouselItem.propTypes = {
   item: PropTypes.instanceOf(ProductsDisplayCarouselItem).isRequired,
 };
 
-function Error() {
+function ErrorFallback() {
   return (
     <Stack alignItems="center" width="100%">
-      <Typography
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-        variant="h6"
-        color="error"
-      >
-        <ErrorOutlineIcon sx={{ mr: 1 }} />
-        Oops! Something went wrong...
-      </Typography>
-      <Typography variant="subtitle2" color="error">
-        Refresh the page and try again
-      </Typography>
+      <ErrorMessage />
     </Stack>
   );
 }
