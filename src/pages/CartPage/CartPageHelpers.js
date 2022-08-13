@@ -1,6 +1,6 @@
-import { CartItemDataHandler } from '../utlis/DBHandlers/DBDataConverter';
-import { GameDatabase } from '../utlis/DBHandlers/DBManipulatorClasses';
-import { getboxArtFor } from '../utlis/DBHandlers/MockDBFetch';
+import { CartItemDataHandler } from '../../utlis/DBHandlers/DBDataConverter';
+import { GameDatabase } from '../../utlis/DBHandlers/DBManipulatorClasses';
+import { getboxArtFor } from '../../utlis/DBHandlers/MockDBFetch';
 
 class CartProductDataCache {
   #cache = {};

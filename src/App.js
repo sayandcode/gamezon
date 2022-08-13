@@ -7,7 +7,7 @@ import ContextProvidersWrapper from './utlis/Contexts/ContextProvidersWrapper';
 import ConfirmEmailLogin from './pages/ConfirmEmailLogin';
 import ProductPage from './pages/ProductPage';
 import PersistentComponents from './components/PersistentComponents';
-import Cart from './pages/CartPage';
+import Cart from './pages/CartPage/CartPage';
 import Account from './pages/Account';
 
 function App() {

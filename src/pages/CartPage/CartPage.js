@@ -19,11 +19,11 @@ import {
   RemoveShoppingCart as RemoveShoppingCartIcon,
 } from '@mui/icons-material';
 import { ErrorBoundary } from 'react-error-boundary';
-import { UserContext } from '../utlis/Contexts/UserData/UserContext';
-import { CartItemDataHandler } from '../utlis/DBHandlers/DBDataConverter';
-import ExpandingButton from '../components/ExpandingButton';
-import { promiseToResource } from '../utlis/SuspenseHelpers';
-import ErrorMessage from '../components/ErrorMessage';
+import { UserContext } from '../../utlis/Contexts/UserData/UserContext';
+import { CartItemDataHandler } from '../../utlis/DBHandlers/DBDataConverter';
+import ExpandingButton from '../../components/ExpandingButton';
+import { promiseToResource } from '../../utlis/SuspenseHelpers';
+import ErrorMessage from '../../components/ErrorMessage';
 import { CartProductDataCache } from './CartPageHelpers';
 
 function CartPage() {
