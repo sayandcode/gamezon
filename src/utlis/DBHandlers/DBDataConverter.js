@@ -1,7 +1,6 @@
 import {
   AddressList,
   Cart,
-  generateProductID,
   Wishlist,
 } from '../Contexts/UserData/UserDataHelperClasses';
 import { getboxArtFor, getScreenshotFor } from './MockDBFetch'; // BEFORE PRODUCTION: change 'MockDBFetch' to 'DBFetch' for production
@@ -158,31 +157,25 @@ export class UserDataHandler extends RootDatabaseEntity {
 }
 
 export class CartItemDataHandler extends RootDatabaseEntity {
-  constructor(doc, { boxArtUrl, variant: requiredVariant, count }) {
+  constructor(cartItem, productData) {
+    const { doc } = productData;
     super(doc);
     const { data } = doc;
     this.title = data.Title;
-    this.productID = generateProductID(data.Title, requiredVariant);
+    this.productID = cartItem.productID;
 
     const requiredVariantDetails = data.variants.find(
-      (variant) => variant.consoleName === requiredVariant
+      (variant) => variant.consoleName === cartItem.variant
     );
-    this.variant = requiredVariant;
-    this.count = count;
+    this.variant = cartItem.variant;
+    this.count = cartItem.count;
     this.price =
       requiredVariantDetails.price.currency +
       requiredVariantDetails.price.value.toFixed(2);
     this.totalPrice =
       requiredVariantDetails.price.currency +
-      (count * requiredVariantDetails.price.value).toFixed(2);
-    this.boxArtUrl = boxArtUrl;
-  }
-
-  static async createFrom(cartItemDoc, variant, count = 1) {
-    const gameTitle = cartItemDoc.data.Title;
-    const boxArtUrl = await getboxArtFor(gameTitle);
-
-    return new CartItemDataHandler(cartItemDoc, { boxArtUrl, variant, count });
+      (cartItem.count * requiredVariantDetails.price.value).toFixed(2);
+    this.boxArtUrl = productData.boxArtUrl;
   }
 
   dispose() {

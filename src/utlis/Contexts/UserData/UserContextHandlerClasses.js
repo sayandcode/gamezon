@@ -5,13 +5,10 @@ import { AddressList, Cart, Wishlist } from './UserDataHelperClasses';
 // and editing the state of the context
 
 class CartHandler extends Cart {
-  #origContents;
-
   #setUserData;
 
   constructor(cart, setUserData) {
     super(cart.contents);
-    this.#origContents = cart.contents;
     this.#setUserData = setUserData;
   }
 
@@ -24,13 +21,6 @@ class CartHandler extends Cart {
   }
 
   /* 👇 public methods 👇 */
-
-  get contents() {
-    // This implementation of contents is an array, which is useful for context consumers.
-    // There is a dedicated find function, if they wish to look at a particular component.
-    // Contents is used mainly to list out the items in the cart. So an array makes more sense
-    return Object.values(this.#origContents);
-  }
 
   add(productName, variant, { count } = {}) {
     this.#updateCartInUserData('add', productName, variant, { count });
@@ -63,6 +53,9 @@ class WishlistHandler extends Wishlist {
   /* 👇 public methods 👇 */
 
   get contents() {
+    // This implementation of contents is an array, which is useful for context consumers.
+    // There is a dedicated find function, if they wish to look at a particular component.
+    // Contents is used mainly to list out the items in the cart. So an array makes more sense
     return Object.values(this.#origContents);
   }
 

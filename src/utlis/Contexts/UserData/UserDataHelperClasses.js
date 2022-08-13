@@ -13,11 +13,11 @@ class UserDataRoot {
   get isEmpty() {
     return !Object.keys(this.contents).length;
   }
-}
 
-function generateProductID(productName, variant = '') {
-  // the toString function ensures that the arguments are present, and valid strings
-  return getUuidFromString(productName.toString() + variant.toString());
+  static generateProductID(productName, variant = '') {
+    // the toString function ensures that the arguments are present, and valid strings
+    return getUuidFromString(productName.toString() + variant.toString());
+  }
 }
 
 class Cart extends UserDataRoot {
@@ -40,7 +40,7 @@ class Cart extends UserDataRoot {
   }
 
   find(productName, variant) {
-    const productID = generateProductID(productName, variant);
+    const productID = this.constructor.generateProductID(productName, variant);
     const requiredItem = this.#contents[productID];
     return requiredItem ? JSON.parse(JSON.stringify(requiredItem)) : undefined;
   }
@@ -50,7 +50,7 @@ class Cart extends UserDataRoot {
       throw new Error('Need to specify variant before adding to Cart');
 
     const copy = this.clone();
-    const productID = generateProductID(productName, variant);
+    const productID = this.constructor.generateProductID(productName, variant);
 
     // if item is in cart, increment count
     const oldContents = copy.#contents;
@@ -59,7 +59,7 @@ class Cart extends UserDataRoot {
 
     const updatedContents = {
       ...oldContents,
-      [productID]: { name: productName, count: newCount, variant },
+      [productID]: { variant, productID, name: productName, count: newCount },
     };
     copy.#contents = updatedContents;
 
@@ -73,7 +73,7 @@ class Cart extends UserDataRoot {
       throw new Error('Need to specify variant before removing from Cart');
 
     const copy = this.clone();
-    const productID = generateProductID(productName, variant);
+    const productID = this.constructor.generateProductID(productName, variant);
 
     // check if the product is added or not
     const existingEntry = copy.#contents[productID];
@@ -109,13 +109,13 @@ class Wishlist extends UserDataRoot {
   }
 
   find(productName) {
-    const productID = generateProductID(productName);
+    const productID = this.constructor.generateProductID(productName);
     return this.#contents[productID]; // no need to deep copy this one, as content of each item is just a string (productName)
   }
 
   toggle(productName) {
     const copy = this.clone();
-    const productID = generateProductID(productName);
+    const productID = this.constructor.generateProductID(productName);
 
     // check if the product is added or not
     const existingEntry = copy.#contents[productID];
@@ -205,8 +205,9 @@ class AddressList extends UserDataRoot {
   }
 
   find(addressID) {
+    // dont need to copy this, as we are providing an <Address> instance. It can protect itself from mutation
     return this.#contents[addressID];
   }
 }
 
-export { generateProductID, Cart, Wishlist, AddressList };
+export { Cart, Wishlist, AddressList };

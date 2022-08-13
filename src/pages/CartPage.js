@@ -8,72 +8,27 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import { useState, useEffect, useContext, useRef } from 'react';
+import { useState, useEffect, useContext, useRef, Suspense } from 'react';
 import PropTypes from 'prop-types';
 import {
   Add as AddIcon,
   ArrowForward as ArrowForwardIcon,
   Delete as DeleteIcon,
+  Error as ErrorIcon,
   Remove,
   RemoveShoppingCart as RemoveShoppingCartIcon,
 } from '@mui/icons-material';
-import { NotificationSnackbarContext } from '../utlis/Contexts/NotificationSnackbarContext';
+import { ErrorBoundary } from 'react-error-boundary';
 import { UserContext } from '../utlis/Contexts/UserData/UserContext';
 import { CartItemDataHandler } from '../utlis/DBHandlers/DBDataConverter';
-import { GameDatabase } from '../utlis/DBHandlers/DBManipulatorClasses';
 import ExpandingButton from '../components/ExpandingButton';
+import { promiseToResource } from '../utlis/SuspenseHelpers';
+import ErrorMessage from '../components/ErrorMessage';
+import { CartProductDataCache } from './CartPageHelpers';
 
-function Cart() {
-  // We depend on the local state for cart instead of fetching it again in this component.
-  // This is because there is the task is done anyway by the UserContext.
+function CartPage() {
   const { cart } = useContext(UserContext);
-  const [cartData, setCartData] = useState();
-  const cartDataRef = useRef();
-
-  const { showNotificationWith } = useContext(NotificationSnackbarContext);
-
-  /* INITIAL CART ITEMS DATA FETCH */
-  const fetchedDataFLAG = useRef(false);
-  useEffect(() => {
-    //  If we have already fetched the data, then ignore any subsequent fetch requests.
-    //  No new items can be added from Cart(this) page, so the initial fetch includes the superset
-    //  of all needed items
-    const needToFetchItems =
-      !fetchedDataFLAG.current && cart.contents.length > 0; // no point fetching if cart is empty
-
-    if (needToFetchItems) getCartData();
-
-    async function getCartData() {
-      let newCartItems;
-      try {
-        newCartItems = await Promise.all(
-          cart.contents.map(async (item) => {
-            const cartItemDoc = await GameDatabase.get({ title: item.name });
-            const cartItem = await CartItemDataHandler.createFrom(
-              cartItemDoc,
-              item.variant,
-              item.count
-            );
-            return cartItem;
-          })
-        );
-      } catch (err) {
-        showNotificationWith({
-          message:
-            'Could not fetch cart items. Please refresh the page, and try again',
-          variant: 'error',
-        });
-      }
-
-      cartDataRef.current = newCartItems;
-      setCartData(newCartItems);
-    }
-
-    // The ref allows us to access the state that was set above, as the (async)fetch
-    // runs after the useEffect cleanup is set
-    return () => cartDataRef.current?.forEach((item) => item.dispose());
-  }, [cart]);
-
+  const cartContents = Object.values(cart.contents);
   return (
     <Stack m={2} spacing={2}>
       <Paper sx={{ p: 4 }}>
@@ -88,7 +43,7 @@ function Cart() {
           >
             My Cart
           </Typography>
-          {cart.contents.length !== 0 && (
+          {cartContents.length !== 0 && (
             <ExpandingButton
               buttonIcon={<RemoveShoppingCartIcon />}
               textContent="Empty Cart "
@@ -99,58 +54,8 @@ function Cart() {
             />
           )}
         </Stack>
-        {cart.contents.length ? (
-          <>
-            <Stack divider={<Divider />} spacing={2}>
-              {cartData
-                ? cartData.map((item) => (
-                    <CartItem key={item.productID} item={item} />
-                  ))
-                : cart.contents.map((_, i) => (
-                    // eslint-disable-next-line react/no-array-index-key
-                    <Skeleton key={i} height="150px" />
-                  ))}
-            </Stack>
-            <Divider sx={{ my: 2 }} />
-            <Typography
-              variant="h4"
-              color="text.primary"
-              fontWeight="bold"
-              gutterBottom
-              textAlign="right"
-            >
-              Cart Total: $
-              {cartData ? (
-                cartData
-                  .reduce(
-                    (sum, currItem) =>
-                      sum + Number(currItem.totalPrice.slice(1)),
-                    0
-                  )
-                  .toFixed(2) // cause JS is bad at math
-              ) : (
-                <Skeleton sx={{ display: 'inline-block' }} width="100px" />
-              )}
-            </Typography>
-            <Button
-              variant="contained"
-              size="large"
-              color="secondary"
-              sx={{
-                borderRadius: (theme) => theme.shape.borderRadius * 2,
-                position: 'fixed',
-                bottom: (theme) => theme.spacing(5),
-                right: (theme) => theme.spacing(5),
-                zIndex: 20,
-                fontSize: (theme) => theme.typography.h6.fontSize,
-              }}
-              endIcon={<ArrowForwardIcon />}
-              /* TODO:  Handle checkout */
-              onClick={() => console.log('Handle Checkout')}
-            >
-              Checkout
-            </Button>
-          </>
+        {cartContents.length > 0 ? (
+          <CartContents />
         ) : (
           <Typography
             variant="h6"
@@ -164,6 +69,151 @@ function Cart() {
     </Stack>
   );
 }
+
+function CartContents() {
+  const { cart } = useContext(UserContext);
+  const productDataCache = useRef(new CartProductDataCache());
+
+  /* CART DATA RESOURCE */
+  const [cartDataResource, setCartDataResource] = useState(
+    promiseToResource(new Promise(() => {}))
+  );
+  useEffect(updateCartDataResource, [cart]);
+
+  /* CLEAN UP MEMORY LEAKS WHEN COMPONENT IS UNMOUNTED */
+  useEffect(() => {
+    return () => productDataCache.current.dispose();
+  }, []);
+
+  /* FUNCTION DECLARATIONS */
+  function updateCartDataResource() {
+    const newResource = promiseToResource(getCartItemsData());
+    setCartDataResource(newResource);
+  }
+
+  async function getCartItemsData() {
+    const cartProductsIDs = Object.keys(cart.contents);
+    const cachedProductsIDs = productDataCache.current.productIDs;
+    const nonCachedProductsIDs = cartProductsIDs.filter(
+      (id) => !cachedProductsIDs.includes(id)
+    );
+
+    if (nonCachedProductsIDs.length > 0) await updateCache();
+    return generateCartItemsData();
+
+    async function updateCache() {
+      filterCache(cartProductsIDs);
+      await addToCache(nonCachedProductsIDs);
+
+      function filterCache(requiredIDs) {
+        const requiredCartItems = requiredIDs.map((id) => cart.contents[id]);
+        productDataCache.current.filter(requiredCartItems);
+      }
+
+      async function addToCache(requiredIDs) {
+        const requiredCartItems = requiredIDs.map((id) => cart.contents[id]);
+        await Promise.all(
+          requiredCartItems.map(async (item) =>
+            productDataCache.current.addToCache(item)
+          )
+        );
+      }
+    }
+
+    function generateCartItemsData() {
+      // The cartItemsData has two parts: The productData and cartData.
+      // Since cart data is updated anyway, and is driving the whole thing, nothing to optimise there.
+      // But productData doesn't change, so we can cache it locally.
+      // Hence the cartItemsData is generated dynamically, with the constant productData, and the changing cartData
+      const cartItems = Object.values(cart.contents);
+      return cartItems.map((item) =>
+        productDataCache.current.generateHandlerFor(item)
+      );
+    }
+  }
+  return (
+    <>
+      <Stack divider={<Divider />} spacing={2}>
+        <ErrorBoundary
+          fallback={
+            <Stack py={2}>
+              <ErrorMessage />
+            </Stack>
+          }
+        >
+          <Suspense
+            fallback={Object.keys(cart.contents).map((key) => (
+              <Skeleton key={key} height="150px" />
+            ))}
+          >
+            <CartItems cartDataResource={cartDataResource} />
+          </Suspense>
+        </ErrorBoundary>
+      </Stack>
+      <Divider sx={{ my: 2 }} />
+      <Typography
+        variant="h4"
+        color="text.primary"
+        fontWeight="bold"
+        gutterBottom
+        textAlign="right"
+      >
+        Cart Total: $
+        <ErrorBoundary fallback={<ErrorIcon sx={{ color: 'error.main' }} />}>
+          <Suspense
+            fallback={
+              <Skeleton sx={{ display: 'inline-block' }} width="100px" />
+            }
+          >
+            <CartTotal cartDataResource={cartDataResource} />
+          </Suspense>
+        </ErrorBoundary>
+      </Typography>
+      <Button
+        variant="contained"
+        size="large"
+        color="secondary"
+        sx={{
+          borderRadius: (theme) => theme.shape.borderRadius * 2,
+          position: 'fixed',
+          bottom: (theme) => theme.spacing(5),
+          right: (theme) => theme.spacing(5),
+          zIndex: 20,
+          fontSize: (theme) => theme.typography.h6.fontSize,
+        }}
+        endIcon={<ArrowForwardIcon />}
+        /* TODO:  Handle checkout */
+        onClick={() => console.log('Handle Checkout')}
+      >
+        Checkout
+      </Button>
+    </>
+  );
+}
+
+function CartItems({ cartDataResource }) {
+  const cartData = cartDataResource.read();
+  return cartData.map((item) => <CartItem key={item.productID} item={item} />);
+}
+
+CartItems.propTypes = {
+  cartDataResource: PropTypes.shape({ read: PropTypes.func }).isRequired,
+};
+
+function CartTotal({ cartDataResource }) {
+  const cartData = cartDataResource.read();
+  const totalAmt = cartData
+    .reduce((sum, currItem) => {
+      const currTotalPrice = Number(currItem.totalPrice.slice(1));
+      return sum + currTotalPrice;
+    }, 0)
+    .toFixed(2); // cause JS is bad at math
+  return totalAmt;
+}
+
+CartTotal.propTypes = {
+  cartDataResource: PropTypes.shape({ read: PropTypes.func }).isRequired,
+};
 
 function CartItem({ item }) {
   const { cart } = useContext(UserContext);
@@ -256,4 +306,4 @@ CartItem.propTypes = {
   item: PropTypes.instanceOf(CartItemDataHandler).isRequired,
 };
 
-export default Cart;
+export default CartPage;
