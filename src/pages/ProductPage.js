@@ -28,7 +28,7 @@ import { GameDatabaseQuery } from '../utlis/DBHandlers/DBQueryClasses';
 import { getDataFromQuery } from '../utlis/DBHandlers/MockDBFetch';
 import { UserContext } from '../utlis/Contexts/UserData/UserContext';
 import { NotificationSnackbarContext } from '../utlis/Contexts/NotificationSnackbarContext';
-import { Cart } from '../utlis/Contexts/UserData/UserDataHelperClasses';
+import Cart from '../utlis/Contexts/UserData/UserDataHelperClasses/Cart';
 
 const slideUp = keyframes`
 from{

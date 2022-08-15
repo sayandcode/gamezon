@@ -1,5 +1,5 @@
-import Address from '../../../../components/Address/addressClass';
-import UserDataRoot from './UserDataRoot';
+import Address from './AddressClass';
+import UserDataRoot from '../UserDataRoot';
 
 class AddressList extends UserDataRoot {
   #contents;

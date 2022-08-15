@@ -4,7 +4,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { Navigate, useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import ErrorMessage from '../../components/ErrorMessage';
-import { Cart } from '../../utlis/Contexts/UserData/UserDataHelperClasses';
+import Cart from '../../utlis/Contexts/UserData/UserDataHelperClasses/Cart';
 import { promiseToResource } from '../../utlis/SuspenseHelpers';
 import { CheckoutDataHandler } from './CheckoutPageHelpers';
 import DeliveryForm from './DeliveryForm';

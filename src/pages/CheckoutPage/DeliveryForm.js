@@ -10,7 +10,7 @@ import {
 import PropTypes from 'prop-types';
 import { useReducer, useState } from 'react';
 import AddressSelector from '../../components/Address/AddressSelector';
-import { Cart } from '../../utlis/Contexts/UserData/UserDataHelperClasses';
+import Cart from '../../utlis/Contexts/UserData/UserDataHelperClasses/Cart';
 import {
   confirmOrder,
   defaultDeliveryOptions as initialFormValues,

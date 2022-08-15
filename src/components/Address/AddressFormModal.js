@@ -24,7 +24,7 @@ import {
 import MuiAutocomplete from '../MuiAutocomplete';
 import { UserContext } from '../../utlis/Contexts/UserData/UserContext';
 import '../../utlis/FormHelpers/newYupMethods';
-import Address from './addressClass';
+import Address from '../../utlis/Contexts/UserData/UserDataHelperClasses/AddressList/AddressClass';
 
 const FormikTextField = extendWithFormik(TextField);
 const FormikAutocomplete = extendWithFormik(MuiAutocomplete, {

@@ -1,5 +1,6 @@
-import { AddressList, Cart, Wishlist } from './UserDataHelperClasses';
-
+import AddressList from './UserDataHelperClasses/AddressList/AddressList';
+import Cart from './UserDataHelperClasses/Cart';
+import Wishlist from './UserDataHelperClasses/Wishlist';
 /* HANDLERS EXPOSE THE FUNCTIONALITY VIA CONTEXT API */
 // Handlers extend the base class by adding access to react hooks,
 // and editing the state of the context

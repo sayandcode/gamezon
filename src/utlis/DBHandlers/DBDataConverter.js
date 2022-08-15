@@ -1,8 +1,6 @@
-import {
-  AddressList,
-  Cart,
-  Wishlist,
-} from '../Contexts/UserData/UserDataHelperClasses';
+import AddressList from '../Contexts/UserData/UserDataHelperClasses/AddressList/AddressList';
+import Cart from '../Contexts/UserData/UserDataHelperClasses/Cart';
+import Wishlist from '../Contexts/UserData/UserDataHelperClasses/Wishlist';
 import { getboxArtFor, getScreenshotFor } from './MockDBFetch'; // BEFORE PRODUCTION: change 'MockDBFetch' to 'DBFetch' for production
 
 class RootDatabaseEntity {

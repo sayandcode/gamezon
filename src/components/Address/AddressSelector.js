@@ -4,8 +4,8 @@ import PropTypes from 'prop-types';
 import { useContext, useState } from 'react';
 import { formatPhoneNumberIntl } from 'react-phone-number-input';
 import { UserContext } from '../../utlis/Contexts/UserData/UserContext';
+import Address from '../../utlis/Contexts/UserData/UserDataHelperClasses/AddressList/AddressClass';
 import ScrollingSelect from '../ScrollingSelect/ScrollingSelect';
-import Address from './addressClass';
 import AddressFormModal from './AddressFormModal';
 
 function AddressSelector({

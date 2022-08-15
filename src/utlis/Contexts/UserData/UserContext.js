@@ -5,7 +5,9 @@ import { useNavigate } from 'react-router-dom';
 import { auth } from '../../firebase-config';
 import { NotificationSnackbarContext } from '../NotificationSnackbarContext';
 import { UserDataHandler } from '../../DBHandlers/DBDataConverter';
-import { AddressList, Cart, Wishlist } from './UserDataHelperClasses';
+import Cart from './UserDataHelperClasses/Cart';
+import Wishlist from './UserDataHelperClasses/Wishlist';
+import AddressList from './UserDataHelperClasses/AddressList/AddressList';
 import { UsersDatabase } from '../../DBHandlers/DBManipulatorClasses';
 import {
   AddressListHandler,
