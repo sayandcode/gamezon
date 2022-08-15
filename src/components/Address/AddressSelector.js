@@ -8,7 +8,10 @@ import ScrollingSelect from '../ScrollingSelect/ScrollingSelect';
 import Address from './addressClass';
 import AddressFormModal from './AddressFormModal';
 
-function AddressSelector({ onSelect }) {
+function AddressSelector({
+  onSelect: handleSelect,
+  name: wrapperComponentName,
+}) {
   /* DATA */
   const { addressList } = useContext(UserContext);
   const addresses = addressList.contents;
@@ -20,7 +23,7 @@ function AddressSelector({ onSelect }) {
   });
 
   /* RUNTIME CALCULATIONS */
-  const readOnly = !onSelect;
+  const readOnly = !handleSelect;
 
   // `value=null` fixes the selected address as nothing; i.e. the address cannot be selected.
   // But `value = undefined` makes the component store the state internally like an HTML radio storing its state.
@@ -34,7 +37,11 @@ function AddressSelector({ onSelect }) {
     : (event) => {
         const selectedAddressID = event.target.value;
         const selectedAddress = addressList.find(selectedAddressID);
-        onSelect(selectedAddress);
+        // lets follow the standard format of event.target.value, and event.target.name
+        const returnVal = {
+          target: { value: selectedAddress, name: wrapperComponentName },
+        };
+        handleSelect(returnVal);
       };
 
   /* EVENT HANDLERS */
@@ -49,7 +56,7 @@ function AddressSelector({ onSelect }) {
     <Box sx={{ position: 'relative' }}>
       {addresses.length > 0 ? (
         <ScrollingSelect
-          name="addresses"
+          name={wrapperComponentName}
           value={addressValue}
           onChange={handleChange}
         >
@@ -104,10 +111,12 @@ function AddressSelector({ onSelect }) {
 
 AddressSelector.propTypes = {
   onSelect: PropTypes.func,
+  name: PropTypes.string,
 };
 
 AddressSelector.defaultProps = {
   onSelect: undefined,
+  name: 'addresses',
 };
 
 class AddressItemDataHandler {

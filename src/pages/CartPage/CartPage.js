@@ -71,7 +71,7 @@ function CartPage() {
 }
 
 function CartContents() {
-  const { cart } = useContext(UserContext);
+  const { cart, checkout } = useContext(UserContext);
   const productDataCache = useRef(new CartProductDataCache());
 
   /* CART DATA RESOURCE */
@@ -182,8 +182,7 @@ function CartContents() {
           fontSize: (theme) => theme.typography.h6.fontSize,
         }}
         endIcon={<ArrowForwardIcon />}
-        /* TODO:  Handle checkout */
-        onClick={() => console.log('Handle Checkout')}
+        onClick={() => checkout(cart)}
       >
         Checkout
       </Button>

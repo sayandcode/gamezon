@@ -1,6 +1,7 @@
 import { onAuthStateChanged } from 'firebase/auth';
 import PropTypes from 'prop-types';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { auth } from '../../firebase-config';
 import { NotificationSnackbarContext } from '../NotificationSnackbarContext';
 import { UserDataHandler } from '../../DBHandlers/DBDataConverter';
@@ -116,6 +117,14 @@ function UserContextProvider({ children }) {
     }
   }
 
+  /* ALLOW USERS TO CHECKOUT THEIR CARTS */
+  const navigate = useNavigate();
+  function checkout(cart) {
+    // serializing and deserializing is necessary because of the nature of navigate-state/useLocation
+    const serializedCart = cart.contents;
+    navigate('/checkout', { state: { serializedCart } });
+  }
+
   /* GIVE ABILITY TO MANIPULATE USERDATA USING CONTEXT */
   // Handlers expose the functionality of the base classes, while having access to the
   // react state of the context provider, thereby extending the functionality
@@ -126,6 +135,7 @@ function UserContextProvider({ children }) {
       cart: new CartHandler(userData.cart, setUserData),
       wishlist: new WishlistHandler(userData.wishlist, setUserData),
       addressList: new AddressListHandler(userData.addressList, setUserData),
+      checkout,
     }),
     [user, userData]
   );

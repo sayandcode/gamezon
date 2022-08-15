@@ -23,11 +23,13 @@ class UserDataRoot {
 class Cart extends UserDataRoot {
   #contents;
 
+  // This doubles as a deserializer function.
   constructor(items = {}) {
     super();
     this.#contents = { ...items };
   }
 
+  // This doubles as a serializer function
   get contents() {
     return JSON.parse(JSON.stringify(this.#contents));
   }

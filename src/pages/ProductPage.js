@@ -28,6 +28,7 @@ import { GameDatabaseQuery } from '../utlis/DBHandlers/DBQueryClasses';
 import { getDataFromQuery } from '../utlis/DBHandlers/MockDBFetch';
 import { UserContext } from '../utlis/Contexts/UserData/UserContext';
 import { NotificationSnackbarContext } from '../utlis/Contexts/NotificationSnackbarContext';
+import { Cart } from '../utlis/Contexts/UserData/UserDataHelperClasses';
 
 const slideUp = keyframes`
 from{
@@ -73,9 +74,15 @@ export default function ProductPage() {
   useEffect(() => () => product?.dispose(), [product]);
 
   /* SHOW DIFFERENT SCREENS DEPENDING ON WHETHER PRODUCT IS ALREADY IN CART OR NOT */
-  const { cart, wishlist } = useContext(UserContext);
+  const { cart, wishlist, checkout } = useContext(UserContext);
   const productAlreadyInCart = cart.find(productName, currVariant);
   const productAlreadyInWishlist = wishlist.find(productName, currVariant);
+
+  /* FUNCTION DECLARATION */
+  const handleCheckout = () => {
+    const cartWithOnlyThisProduct = new Cart().add(productName, currVariant);
+    checkout(cartWithOnlyThisProduct);
+  };
 
   return (
     <Stack m={2} spacing={2}>
@@ -163,8 +170,7 @@ export default function ProductPage() {
               size="large"
               variant="contained"
               color="secondary"
-              component={Link}
-              to={`/buy/${productName}`}
+              onClick={handleCheckout}
             >
               Buy Now
             </Button>
