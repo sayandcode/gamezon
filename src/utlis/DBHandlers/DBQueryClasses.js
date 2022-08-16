@@ -14,8 +14,8 @@ import { firestoreDB } from '../firebase-config';
 const GAMES_DB_COLLECTION_NAME = 'games';
 
 export class DatabaseQuery {
-  constructor(collectionName) {
-    this.collectionName = collectionName;
+  constructor(collectionPath) {
+    this.collectionPath = collectionPath;
   }
 
   where(key, comparison, value) {
@@ -55,7 +55,10 @@ export class DatabaseQuery {
     if (this.endBeforeDoc)
       constraints.push(firebaseEndBefore(this.endBeforeDoc));
 
-    return query(collection(firestoreDB, this.collectionName), ...constraints);
+    return query(
+      collection(firestoreDB, ...this.collectionPath),
+      ...constraints
+    );
   }
 
   clone() {
@@ -207,7 +210,8 @@ export class GameDatabaseQuery extends DatabaseQuery {
   }
 
   constructor() {
-    super(GAMES_DB_COLLECTION_NAME);
+    const collectionPath = [GAMES_DB_COLLECTION_NAME];
+    super(collectionPath);
   }
 }
 

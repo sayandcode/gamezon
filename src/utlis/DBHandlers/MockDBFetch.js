@@ -9,7 +9,7 @@ const STORAGE_DB_URL = 'http://127.0.0.1:5500/storage';
 const GAME_PICS_ROOT_FOLDER = 'gameListPics';
 
 export async function getDataFromQuery({
-  collectionName,
+  collectionPath,
   whereFields,
   limitNo,
   startAtDoc,
@@ -19,7 +19,9 @@ export async function getDataFromQuery({
   orderByFields,
 }) {
   await sleep(1000);
-  const response = await fetch(`${JSON_DATABASE_URL}/${collectionName}.json`);
+  const response = await fetch(
+    `${JSON_DATABASE_URL}/${collectionPath.join('/')}.json`
+  );
   const dataObj = await response.json();
 
   // filter by where clause, and also any orderBy fields
