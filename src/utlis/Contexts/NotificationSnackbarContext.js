@@ -2,10 +2,13 @@ import PropTypes from 'prop-types';
 import { createContext, useMemo, useState } from 'react';
 
 export const NotificationSnackbarContext = createContext({
-  open: false,
-  closeSnackbar: () => {},
-  message: '',
-  variant: '',
+  notificationSnackbarConfig: {
+    open: false,
+    closeSnackbar: () => {},
+    message: '',
+    variant: '',
+  },
+  showNotificationWith: () => {},
 });
 
 export default function NotificationSnackbarContextProvider({ children }) {

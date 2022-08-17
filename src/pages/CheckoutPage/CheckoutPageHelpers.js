@@ -56,34 +56,22 @@ class CheckoutDataHandler {
       return totalPriceForEachItem.reduce((total, thisPrice) =>
         addPrices(total, thisPrice)
       );
-
-      function addPrices(firstPrice, secondPrice) {
-        // You may add a currency converter here if the need arises
-        if (firstPrice.currency !== secondPrice.currency)
-          throw new Error('Incompatible currencies');
-        const { currency } = firstPrice;
-
-        const totalValue = firstPrice.value + secondPrice.value;
-        const formattedValue = Number(totalValue.toFixed(2)); // to fix floating point errors
-
-        return { currency, value: formattedValue };
-      }
     }
   }
 }
 
-const defaultDeliveryOptions = {
-  giftWrap: false,
-  oneDayShipping: false,
-  address: null,
-};
+function addPrices(firstPrice, secondPrice) {
+  // If either prices are not null/undefined, return the one that is defined.
+  if (!firstPrice || !secondPrice) return firstPrice || secondPrice;
+  // You may add a currency converter here if the need arises
+  if (firstPrice.currency !== secondPrice.currency)
+    throw new Error('Incompatible currencies');
 
-async function confirmOrder(cart, deliveryOptions) {
-  // Things I need to pass to backend:
-  // 1. Cart
-  // 2. Delivery Options(Address, giftWrap, 1-day vs standard shipping)
-  /* TODO: ADD THIS DATA TO USERDATA */
-  console.log({ cart, deliveryOptions });
+  const { currency } = firstPrice;
+  const totalValue = firstPrice.value + secondPrice.value;
+  const formattedValue = Number(totalValue.toFixed(2)); // to fix floating point errors
+
+  return { currency, value: formattedValue };
 }
-// eslint-disable-next-line import/prefer-default-export
-export { CheckoutDataHandler, defaultDeliveryOptions, confirmOrder };
+
+export { CheckoutDataHandler, addPrices };
