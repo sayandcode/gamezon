@@ -37,6 +37,16 @@ const customTheme = createTheme({
         disableRipple: true, // No more ripple, on the whole application 💣!
       },
     },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          '&.Mui-disabled': {
+            color: 'rgba(0, 0, 0, 1)',
+            backgroundColor: 'rgba(128, 128, 128, 1)',
+          },
+        },
+      },
+    },
     MuiIconButton: {
       styleOverrides: {
         root: ({ theme }) => ({

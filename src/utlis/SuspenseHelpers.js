@@ -18,6 +18,9 @@ function promiseToResource(promise) {
       else if (status === 'rejected') throw result;
       else return result;
     },
+    get promise() {
+      return suspender;
+    },
   };
 }
 

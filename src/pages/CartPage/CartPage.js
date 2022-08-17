@@ -80,6 +80,10 @@ function CartContents() {
   );
   useEffect(updateCartDataResource, [cart]);
 
+  /* CHECKOUT BUTTON STATUS */
+  const [isCheckoutDisabled, setIsCheckoutDisabled] = useState(true);
+  useEffect(updateCheckoutStatus, [cartDataResource]);
+
   /* CLEAN UP MEMORY LEAKS WHEN COMPONENT IS UNMOUNTED */
   useEffect(() => {
     return () => productDataCache.current.dispose();
@@ -89,6 +93,11 @@ function CartContents() {
   function updateCartDataResource() {
     const newResource = promiseToResource(getCartItemsData());
     setCartDataResource(newResource);
+  }
+
+  function updateCheckoutStatus() {
+    setIsCheckoutDisabled(true);
+    cartDataResource.promise.then(() => setIsCheckoutDisabled(false));
   }
 
   async function getCartItemsData() {
@@ -183,6 +192,7 @@ function CartContents() {
         }}
         endIcon={<ArrowForwardIcon />}
         onClick={() => checkout(cart)}
+        disabled={isCheckoutDisabled}
       >
         Checkout
       </Button>
