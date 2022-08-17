@@ -10,8 +10,11 @@ import {
   where as firebaseWhere,
 } from 'firebase/firestore';
 import { firestoreDB } from '../firebase-config';
-
-const GAMES_DB_COLLECTION_NAME = 'games';
+import {
+  GAME_DB_COLLECTION_NAME,
+  ORDER_DB_COLLECTION_NAME,
+  USERS_DB_COLLECTION_NAME,
+} from './DBNames';
 
 export class DatabaseQuery {
   constructor(collectionPath) {
@@ -210,7 +213,33 @@ export class GameDatabaseQuery extends DatabaseQuery {
   }
 
   constructor() {
-    const collectionPath = [GAMES_DB_COLLECTION_NAME];
+    const collectionPath = [GAME_DB_COLLECTION_NAME];
+    super(collectionPath);
+  }
+}
+
+export class OrderDatabaseQuery extends DatabaseQuery {
+  static convertToDatabaseField(field) {
+    const processedFieldName = field?.toLowerCase();
+    switch (processedFieldName) {
+      case 'date':
+        return 'timeStamp';
+      case undefined:
+        return 'orderID'; // Title is chosen as the default sorting for the GameDatabaseQuery
+
+      default:
+        throw new Error(
+          `Unknown field: ${field}\n Please request to add this field in DBQueryClasses`
+        );
+    }
+  }
+
+  constructor({ userID }) {
+    const collectionPath = [
+      USERS_DB_COLLECTION_NAME,
+      userID,
+      ORDER_DB_COLLECTION_NAME,
+    ];
     super(collectionPath);
   }
 }

@@ -6,8 +6,16 @@ service cloud.firestore {
     }
 
     match /users/{userID} {
-      allow read, update, delete: if request.auth != null && request.auth.uid == userID
+      allow read, update, delete: if userIsAccessingOwnDoc();
       allow create: if request.auth != null
+      
+      match /orders/{orderID}{
+        allow read, create: if userIsAccessingOwnDoc();
+      }
+      
+      function userIsAccessingOwnDoc(){
+        return request.auth != null && request.auth.uid == userID;
+      }
     }
   }
 }

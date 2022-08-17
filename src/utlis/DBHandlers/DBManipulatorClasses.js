@@ -1,8 +1,10 @@
 import { doc, deleteDoc, setDoc, getDoc } from 'firebase/firestore';
 import { firestoreDB } from '../firebase-config';
-
-const USERS_DB_COLLECTION_NAME = 'users';
-const GAME_DB_COLLECTION_NAME = 'games';
+import {
+  GAME_DB_COLLECTION_NAME,
+  ORDER_DB_COLLECTION_NAME,
+  USERS_DB_COLLECTION_NAME,
+} from './DBNames';
 
 class DBManipulator {
   #collectionNames;
@@ -55,5 +57,9 @@ class DBManipulator {
 
 const UsersDatabase = new DBManipulator([USERS_DB_COLLECTION_NAME], ['userID']);
 const GameDatabase = new DBManipulator([GAME_DB_COLLECTION_NAME], ['title']);
+const OrderDatabase = new DBManipulator(
+  [USERS_DB_COLLECTION_NAME, ORDER_DB_COLLECTION_NAME],
+  ['userID', 'orderID']
+);
 
-export { UsersDatabase, GameDatabase };
+export { UsersDatabase, GameDatabase, OrderDatabase };
