@@ -270,7 +270,7 @@ CarouselSkeletons.propTypes = {
 };
 
 function CarouselItem({ item }) {
-  const { cart, wishlist } = useContext(UserContext);
+  const { user, cart, wishlist } = useContext(UserContext);
 
   // The component maintains its own clicked state, as we want users to be
   // able to add an additional item to their cart. It isn't intended to perform
@@ -279,9 +279,11 @@ function CarouselItem({ item }) {
   const addedToWishlist = wishlist.find(item.title);
 
   const handleCartClick = () => {
+    // The cart will handle logging the user in
     if (addedToCart) cart.remove(item.title, item.variant);
     else cart.add(item.title, item.variant);
-    setAddedToCart((old) => !old);
+    // This prevents the button state from being changed, unless theres no user
+    if (user) setAddedToCart((old) => !old);
   };
   return (
     <Paper

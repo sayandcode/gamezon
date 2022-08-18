@@ -10,9 +10,9 @@ export default function ContextProvidersWrapper({ children }) {
     <ThemeProvider theme={customTheme}>
       <CssBaseline />
       <NotificationSnackbarContextProvider>
-        <UserContextProvider>
-          <LoginModalContextProvider>{children}</LoginModalContextProvider>
-        </UserContextProvider>
+        <LoginModalContextProvider>
+          <UserContextProvider>{children}</UserContextProvider>
+        </LoginModalContextProvider>
       </NotificationSnackbarContextProvider>
     </ThemeProvider>
   );

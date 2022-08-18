@@ -8,9 +8,15 @@ import Wishlist from './UserDataHelperClasses/Wishlist';
 class CartHandler extends Cart {
   #setUserData;
 
-  constructor(cart, setUserData) {
+  #user;
+
+  #showLoginModal;
+
+  constructor({ cart, setUserData, user, showLoginModal }) {
     super(cart.contents);
     this.#setUserData = setUserData;
+    this.#user = user;
+    this.#showLoginModal = showLoginModal;
   }
 
   #updateCartInUserData(fnName, ...args) {
@@ -24,7 +30,8 @@ class CartHandler extends Cart {
   /* 👇 public methods 👇 */
 
   add(productName, variant, { count } = {}) {
-    this.#updateCartInUserData('add', productName, variant, { count });
+    if (!this.#user) this.#showLoginModal();
+    else this.#updateCartInUserData('add', productName, variant, { count });
   }
 
   remove(productName, variant, { all } = {}) {
@@ -45,10 +52,16 @@ class WishlistHandler extends Wishlist {
 
   #setUserData;
 
-  constructor(wishlist, setUserDataFn) {
+  #user;
+
+  #showLoginModal;
+
+  constructor({ wishlist, setUserData, user, showLoginModal }) {
     super(wishlist.contents);
     this.#origContents = wishlist.contents;
-    this.#setUserData = setUserDataFn;
+    this.#setUserData = setUserData;
+    this.#user = user;
+    this.#showLoginModal = showLoginModal;
   }
 
   /* 👇 public methods 👇 */
@@ -61,11 +74,14 @@ class WishlistHandler extends Wishlist {
   }
 
   toggle(productName) {
-    this.#setUserData((oldData) => {
-      const oldWishlist = oldData.wishlist;
-      const newWishlist = oldWishlist.toggle(productName);
-      return { ...oldData, wishlist: newWishlist, isFromCloud: false };
-    });
+    if (!this.#user) this.#showLoginModal();
+    else {
+      this.#setUserData((oldData) => {
+        const oldWishlist = oldData.wishlist;
+        const newWishlist = oldWishlist.toggle(productName);
+        return { ...oldData, wishlist: newWishlist, isFromCloud: false };
+      });
+    }
   }
 }
 
@@ -74,10 +90,16 @@ class AddressListHandler extends AddressList {
 
   #setUserData;
 
-  constructor(addressList, setUserDataFn) {
+  #user;
+
+  #showLoginModal;
+
+  constructor({ addressList, setUserData, user, showLoginModal }) {
     super(addressList.contents);
     this.#origContents = addressList.contents;
-    this.#setUserData = setUserDataFn;
+    this.#setUserData = setUserData;
+    this.#user = user;
+    this.#showLoginModal = showLoginModal;
   }
 
   #updateAddressListInUserData(fnName, ...args) {
@@ -95,7 +117,8 @@ class AddressListHandler extends AddressList {
   }
 
   add(addressObj) {
-    this.#updateAddressListInUserData('add', addressObj);
+    if (!this.#user) this.#showLoginModal();
+    else this.#updateAddressListInUserData('add', addressObj);
   }
 
   remove(address) {

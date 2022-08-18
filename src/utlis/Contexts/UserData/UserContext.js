@@ -14,21 +14,25 @@ import {
   CartHandler,
   WishlistHandler,
 } from './UserContextHandlerClasses';
+import { LoginModalContext } from '../LoginModalContext';
 
 export const UserContext = createContext({});
+
+const emptyUserData = {
+  cart: new Cart(),
+  wishlist: new Wishlist(),
+  addressList: new AddressList(),
+  isFromCloud: null,
+};
 
 function UserContextProvider({ children }) {
   const [user, setUser] = useState(auth.currentUser);
 
   /* INITIALIZE EMPTY STATE */
-  const [userData, setUserData] = useState({
-    cart: new Cart(),
-    wishlist: new Wishlist(),
-    addressList: new AddressList(),
-    isFromCloud: null,
-  });
+  const [userData, setUserData] = useState(emptyUserData);
 
   /* UTILITIES */
+  const { showLoginModal } = useContext(LoginModalContext);
   const { showNotificationWith } = useContext(NotificationSnackbarContext);
 
   /* CHANGES IN USER LOGIN STATE */
@@ -38,9 +42,8 @@ function UserContextProvider({ children }) {
   }, []);
   // React to user state changes
   useEffect(() => {
-    if (!user) return; // If a user logged in
-    welcomeUser();
-    syncUserDataFromCloud();
+    if (user) loginPath();
+    else logoutPath();
   }, [user]);
 
   /* CHANGES IN USERDATA */
@@ -52,6 +55,15 @@ function UserContextProvider({ children }) {
     const updateIsValid = user && !userData.isFromCloud;
     if (updateIsValid) updateCloudData();
   }, [userData]);
+
+  function loginPath() {
+    welcomeUser();
+    syncUserDataFromCloud();
+  }
+
+  function logoutPath() {
+    setUserData(emptyUserData);
+  }
 
   function welcomeUser() {
     // welcome the user with notification snackbar
@@ -122,6 +134,10 @@ function UserContextProvider({ children }) {
   /* ALLOW USERS TO CHECKOUT THEIR CARTS */
   const navigate = useNavigate();
   function checkout(cart) {
+    if (!user) {
+      showLoginModal();
+      return;
+    }
     // serializing and deserializing is necessary because of the nature of navigate-state/useLocation
     const serializedCart = cart.contents;
     navigate('/checkout', { state: { serializedCart } });
@@ -134,9 +150,24 @@ function UserContextProvider({ children }) {
   const contextValue = useMemo(
     () => ({
       user,
-      cart: new CartHandler(userData.cart, setUserData),
-      wishlist: new WishlistHandler(userData.wishlist, setUserData),
-      addressList: new AddressListHandler(userData.addressList, setUserData),
+      cart: new CartHandler({
+        cart: userData.cart,
+        user,
+        setUserData,
+        showLoginModal,
+      }),
+      wishlist: new WishlistHandler({
+        wishlist: userData.wishlist,
+        user,
+        setUserData,
+        showLoginModal,
+      }),
+      addressList: new AddressListHandler({
+        addressList: userData.addressList,
+        user,
+        setUserData,
+        showLoginModal,
+      }),
       checkout,
     }),
     [user, userData]

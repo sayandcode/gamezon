@@ -1,7 +1,11 @@
 import { useState, createContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
 
-export const LoginModalContext = createContext();
+export const LoginModalContext = createContext({
+  open: false,
+  onClose: () => {},
+  showLoginModal: () => {},
+});
 
 export function LoginModalContextProvider({ children }) {
   const [open, setOpen] = useState(false);
