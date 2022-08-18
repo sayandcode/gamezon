@@ -10,6 +10,7 @@ import PersistentComponents from './components/PersistentComponents';
 import Cart from './pages/CartPage/CartPage';
 import Account from './pages/Account';
 import CheckoutPage from './pages/CheckoutPage/CheckoutPage';
+import RedirectIfNotLoggedIn from './utlis/RedirectIfNotLoggedIn';
 
 function App() {
   return (
@@ -32,9 +33,30 @@ function App() {
                 />
               </Route>
               <Route path="/product/:productName" element={<ProductPage />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/account" element={<Account />} />
-              <Route path="/checkout" element={<CheckoutPage />} />
+              <Route
+                path="/cart"
+                element={
+                  <RedirectIfNotLoggedIn>
+                    <Cart />
+                  </RedirectIfNotLoggedIn>
+                }
+              />
+              <Route
+                path="/account"
+                element={
+                  <RedirectIfNotLoggedIn>
+                    <Account />
+                  </RedirectIfNotLoggedIn>
+                }
+              />
+              <Route
+                path="/checkout"
+                element={
+                  <RedirectIfNotLoggedIn>
+                    <CheckoutPage />
+                  </RedirectIfNotLoggedIn>
+                }
+              />
               <Route
                 path="*"
                 element={<h1>Error 404: Page doesn&apos;t exist</h1>}
