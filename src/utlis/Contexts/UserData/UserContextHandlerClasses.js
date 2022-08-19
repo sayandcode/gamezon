@@ -1,133 +1,72 @@
-import AddressList from './UserDataHelperClasses/AddressList/AddressList';
-import Cart from './UserDataHelperClasses/Cart';
-import Wishlist from './UserDataHelperClasses/Wishlist';
 /* HANDLERS EXPOSE THE FUNCTIONALITY VIA CONTEXT API */
 // Handlers extend the base class by adding access to react hooks,
 // and editing the state of the context
 
-class CartHandler extends Cart {
-  #setUserData;
-
+class UserContextHandler {
   #user;
+
+  #userData;
+
+  #setUserData;
 
   #showLoginModal;
 
-  constructor({ cart, setUserData, user, showLoginModal }) {
-    super(cart.contents);
-    this.#setUserData = setUserData;
+  constructor({ user, userData, setUserData, showLoginModal }) {
+    // This provides the handler generator access to the context hooks
     this.#user = user;
+    this.#userData = userData;
+    this.#setUserData = setUserData;
     this.#showLoginModal = showLoginModal;
   }
 
-  #updateCartInUserData(fnName, ...args) {
+  #updateItemInUserData(baseName, fnName, ...args) {
     this.#setUserData((oldData) => {
-      const oldCart = oldData.cart;
-      const newCart = oldCart[fnName](...args);
-      return { ...oldData, cart: newCart, isFromCloud: false };
+      const oldItem = oldData[baseName];
+      const newItem = oldItem[fnName](...args);
+      return { ...oldData, [baseName]: newItem, isFromCloud: false };
     });
   }
 
-  /* 👇 public methods 👇 */
+  extend({
+    baseName,
+    updateFor: propsNeedingUpdate,
+    requireAuthFor: propsNeedingAuth,
+    contentsIsArray = false,
+  }) {
+    // The extended instance has brand new handler properties,
+    // but also has the properties and methods of the base class
+    const origHandler = this;
+    const baseInstance = origHandler.#userData[baseName];
 
-  add(productName, variant, { count } = {}) {
-    if (!this.#user) this.#showLoginModal();
-    else this.#updateCartInUserData('add', productName, variant, { count });
-  }
+    const handler = {
+      get(target, prop) {
+        if (propsNeedingAuth.includes(prop))
+          if (!origHandler.#user) {
+            // if not authorized, just show the login modal and return nothing
+            origHandler.#showLoginModal();
 
-  remove(productName, variant, { all } = {}) {
-    this.#updateCartInUserData('remove', productName, variant, { all });
-  }
+            /* The calling of method/key expects the return of a consistent datatype for processing.
+            Whether or not you're going to allow the request, or start off another series of actions,
+            the closure that's calling the fn deserves the correct return type */
+            if (target[prop] instanceof Function) return () => {};
+            return null;
+          }
 
-  empty() {
-    this.#setUserData((oldData) => ({
-      ...oldData,
-      cart: new Cart(),
-      isFromCloud: false,
-    }));
-  }
-}
+        if (propsNeedingUpdate.includes(prop))
+          return (...args) =>
+            origHandler.#updateItemInUserData(baseName, prop, ...args);
 
-class WishlistHandler extends Wishlist {
-  #origContents;
+        if (prop === 'contents' && contentsIsArray)
+          return Object.values(target[prop]);
 
-  #setUserData;
+        // If none of the above matches just do the normal behaviour
+        return target[prop];
+      },
+    };
 
-  #user;
-
-  #showLoginModal;
-
-  constructor({ wishlist, setUserData, user, showLoginModal }) {
-    super(wishlist.contents);
-    this.#origContents = wishlist.contents;
-    this.#setUserData = setUserData;
-    this.#user = user;
-    this.#showLoginModal = showLoginModal;
-  }
-
-  /* 👇 public methods 👇 */
-
-  get contents() {
-    // This implementation of contents is an array, which is useful for context consumers.
-    // There is a dedicated find function, if they wish to look at a particular component.
-    // Contents is used mainly to list out the items in the cart. So an array makes more sense
-    return Object.values(this.#origContents);
-  }
-
-  toggle(productName) {
-    if (!this.#user) this.#showLoginModal();
-    else {
-      this.#setUserData((oldData) => {
-        const oldWishlist = oldData.wishlist;
-        const newWishlist = oldWishlist.toggle(productName);
-        return { ...oldData, wishlist: newWishlist, isFromCloud: false };
-      });
-    }
+    const extendedInstance = new Proxy(baseInstance, handler);
+    return extendedInstance;
   }
 }
 
-class AddressListHandler extends AddressList {
-  #origContents;
-
-  #setUserData;
-
-  #user;
-
-  #showLoginModal;
-
-  constructor({ addressList, setUserData, user, showLoginModal }) {
-    super(addressList.contents);
-    this.#origContents = addressList.contents;
-    this.#setUserData = setUserData;
-    this.#user = user;
-    this.#showLoginModal = showLoginModal;
-  }
-
-  #updateAddressListInUserData(fnName, ...args) {
-    this.#setUserData((oldData) => {
-      const oldAddressList = oldData.addressList;
-      const newAddressList = oldAddressList[fnName](...args);
-      return { ...oldData, addressList: newAddressList, isFromCloud: false };
-    });
-  }
-
-  /* 👇 public methods 👇 */
-
-  get contents() {
-    return Object.values(this.#origContents);
-  }
-
-  add(addressObj) {
-    if (!this.#user) this.#showLoginModal();
-    else this.#updateAddressListInUserData('add', addressObj);
-  }
-
-  remove(address) {
-    this.#updateAddressListInUserData('remove', address);
-  }
-
-  edit(oldAddress, newAddress) {
-    this.#updateAddressListInUserData('edit', oldAddress, newAddress);
-  }
-}
-
-export { CartHandler, WishlistHandler, AddressListHandler };
+export default UserContextHandler;

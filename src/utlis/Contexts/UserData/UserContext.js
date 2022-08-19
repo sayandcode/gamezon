@@ -9,11 +9,7 @@ import Cart from './UserDataHelperClasses/Cart';
 import Wishlist from './UserDataHelperClasses/Wishlist';
 import AddressList from './UserDataHelperClasses/AddressList/AddressList';
 import { UsersDatabase } from '../../DBHandlers/DBManipulatorClasses';
-import {
-  AddressListHandler,
-  CartHandler,
-  WishlistHandler,
-} from './UserContextHandlerClasses';
+import UserContextHandler from './UserContextHandlerClasses';
 import { LoginModalContext } from '../LoginModalContext';
 
 export const UserContext = createContext({});
@@ -147,27 +143,41 @@ function UserContextProvider({ children }) {
   // Handlers expose the functionality of the base classes, while having access to the
   // react state of the context provider, thereby extending the functionality
   // a la dependency injection
+  const userContextHandler = useMemo(
+    () =>
+      new UserContextHandler({
+        user,
+        userData,
+        setUserData,
+        showLoginModal,
+      }),
+    [user, userData]
+  );
+
+  const cartHandler = userContextHandler.extend({
+    baseName: 'cart',
+    updateFor: ['add', 'remove', 'empty'],
+    requireAuthFor: ['add', 'remove'],
+  });
+  const wishlistHandler = userContextHandler.extend({
+    baseName: 'wishlist',
+    updateFor: ['toggle'],
+    requireAuthFor: ['toggle'],
+    contentsIsArray: true,
+  });
+  const addressListHandler = userContextHandler.extend({
+    baseName: 'addressList',
+    updateFor: ['add', 'remove', 'edit'],
+    requireAuthFor: ['add', 'remove', 'edit'],
+    contentsIsArray: true,
+  });
+
   const contextValue = useMemo(
     () => ({
       user,
-      cart: new CartHandler({
-        cart: userData.cart,
-        user,
-        setUserData,
-        showLoginModal,
-      }),
-      wishlist: new WishlistHandler({
-        wishlist: userData.wishlist,
-        user,
-        setUserData,
-        showLoginModal,
-      }),
-      addressList: new AddressListHandler({
-        addressList: userData.addressList,
-        user,
-        setUserData,
-        showLoginModal,
-      }),
+      cart: cartHandler,
+      wishlist: wishlistHandler,
+      addressList: addressListHandler,
       checkout,
     }),
     [user, userData]
