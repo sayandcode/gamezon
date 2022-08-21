@@ -1,19 +1,16 @@
-import { GameDatabase } from '../../utlis/DBHandlers/DBManipulatorClasses';
+import CheckoutOrderItem from './CheckoutOrderItem';
 
 class CheckoutDataHandler {
-  static async prepareFor(cartItems) {
-    const cartItemsWithData = await Promise.all(
-      cartItems.map(getCheckoutDataForCartItem)
+  static async createFor(cartItems) {
+    const orderItems = await Promise.all(
+      cartItems.map(async (cartItem) => CheckoutOrderItem.createFor(cartItem))
     );
-    return new CheckoutDataHandler(cartItemsWithData);
-
-    async function getCheckoutDataForCartItem(itemCartData) {
-      const doc = await GameDatabase.get({ title: itemCartData.name });
-      return { itemCartData, itemProductData: doc.data };
-    }
+    return new this(orderItems);
   }
 
-  constructor(cartItemsWithData) {
+  #items;
+
+  constructor(orderItems) {
     // Things I need from each item
     // > Name
     // > Variant
@@ -21,42 +18,18 @@ class CheckoutDataHandler {
     // > Price
     // Things I need from the overall cart
     // > Total Price
-    this.items = cartItemsWithData.map(extractCheckoutItems);
-    this.cartTotalPrice = findCartTotalPrice(this.items);
+    this.#items = orderItems;
+  }
 
-    function extractCheckoutItems({ itemProductData, itemCartData }) {
-      const { productID, variant, count, name } = itemCartData;
-      // Extract Price from the required variant in itemProductData
-      const price = extractPriceFor(variant, itemProductData);
-      const totalPrice = findItemTotalPrice(price, count);
+  get items() {
+    return this.#items;
+  }
 
-      return { name, variant, count, price, totalPrice, productID };
-
-      function extractPriceFor(_variant, _data) {
-        const requiredVariantData = _data.variants.find(
-          (thisVariant) => thisVariant.consoleName === _variant
-        );
-        return requiredVariantData.price;
-      }
-
-      function findItemTotalPrice(_price, _count) {
-        const unprocessedTotalPriceValue = _count * _price.value;
-        const processedTotalPriceValue = Number(
-          unprocessedTotalPriceValue.toFixed(2) // to fix floating point errors
-        );
-        return {
-          currency: _price.currency,
-          value: processedTotalPriceValue,
-        };
-      }
-    }
-
-    function findCartTotalPrice(allItems) {
-      const totalPriceForEachItem = allItems.map((item) => item.totalPrice);
-      return totalPriceForEachItem.reduce((total, thisPrice) =>
-        addPrices(total, thisPrice)
-      );
-    }
+  get cartTotalPrice() {
+    const totalPriceForEachItem = this.#items.map((item) => item.totalPrice);
+    return totalPriceForEachItem.reduce((total, thisPrice) =>
+      addPrices(total, thisPrice)
+    );
   }
 }
 

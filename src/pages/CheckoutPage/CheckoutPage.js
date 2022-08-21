@@ -23,7 +23,7 @@ function CheckoutPage() {
   /* FUNCTION DEFINITIONS */
   async function getCheckoutData() {
     const cartItems = Object.values(cart.contents);
-    return CheckoutDataHandler.prepareFor(cartItems);
+    return CheckoutDataHandler.createFor(cartItems);
   }
 
   return (
