@@ -72,6 +72,10 @@ class Cart extends UserDataRoot {
 
     return copy;
   }
+
+  empty() {
+    return new this.constructor();
+  }
 }
 
 export default Cart;

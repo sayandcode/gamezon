@@ -225,7 +225,7 @@ export class OrderDatabaseQuery extends DatabaseQuery {
       case 'date':
         return 'timeStamp';
       case undefined:
-        return 'orderID'; // Title is chosen as the default sorting for the GameDatabaseQuery
+        return 'orderID'; // orderID is chosen as the default sorting for the OrderDatabaseQuery
 
       default:
         throw new Error(
