@@ -3,7 +3,7 @@ import Cart from '../Contexts/UserData/UserDataHelperClasses/Cart';
 import Wishlist from '../Contexts/UserData/UserDataHelperClasses/Wishlist';
 import { getboxArtFor, getScreenshotFor } from './MockDBFetch'; // BEFORE PRODUCTION: change 'MockDBFetch' to 'DBFetch' for production
 
-class RootDatabaseEntity {
+export class RootDatabaseEntity {
   #ref;
 
   constructor(doc) {
@@ -151,32 +151,5 @@ export class UserDataHandler extends RootDatabaseEntity {
       ...(wishlistItems && { wishlistItems }),
       ...(addressListItems && { addressListItems }),
     };
-  }
-}
-
-export class CartItemDataHandler extends RootDatabaseEntity {
-  constructor(cartItem, productData) {
-    const { doc } = productData;
-    super(doc);
-    const { data } = doc;
-    this.title = data.Title;
-    this.productID = cartItem.productID;
-
-    const requiredVariantDetails = data.variants.find(
-      (variant) => variant.consoleName === cartItem.variant
-    );
-    this.variant = cartItem.variant;
-    this.count = cartItem.count;
-    this.price =
-      requiredVariantDetails.price.currency +
-      requiredVariantDetails.price.value.toFixed(2);
-    this.totalPrice =
-      requiredVariantDetails.price.currency +
-      (cartItem.count * requiredVariantDetails.price.value).toFixed(2);
-    this.boxArtUrl = productData.boxArtUrl;
-  }
-
-  dispose() {
-    URL.revokeObjectURL(this.boxArtUrl);
   }
 }

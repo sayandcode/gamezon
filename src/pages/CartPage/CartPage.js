@@ -8,7 +8,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import { useState, useEffect, useContext, useRef, Suspense } from 'react';
+import { useState, useEffect, useContext, Suspense } from 'react';
 import PropTypes from 'prop-types';
 import {
   Add as AddIcon,
@@ -20,11 +20,11 @@ import {
 } from '@mui/icons-material';
 import { ErrorBoundary } from 'react-error-boundary';
 import { UserContext } from '../../utlis/Contexts/UserData/UserContext';
-import { CartItemDataHandler } from '../../utlis/DBHandlers/DBDataConverter';
 import ExpandingButton from '../../components/ExpandingButton';
-import { promiseToResource } from '../../utlis/SuspenseHelpers';
+import { useResource } from '../../utlis/SuspenseHelpers';
 import ErrorMessage from '../../components/ErrorMessage';
-import { CartProductDataCache } from './CartPageHelpers';
+import CartPageDataHandler from './CartPageHelpers/CartPageDataHandler';
+import CartPageItemHandler from './CartPageHelpers/CartPageItemHandler';
 
 function CartPage() {
   const { cart } = useContext(UserContext);
@@ -72,13 +72,9 @@ function CartPage() {
 
 function CartContents() {
   const { cart, checkout } = useContext(UserContext);
-  const productDataCache = useRef(new CartProductDataCache());
 
   /* CART DATA RESOURCE */
-  const [cartDataResource, setCartDataResource] = useState(
-    promiseToResource(new Promise(() => {}))
-  );
-  useEffect(updateCartDataResource, [cart]);
+  const cartDataResource = useResource(getCartItemsData, [cart]);
 
   /* CHECKOUT BUTTON STATUS */
   const [isCheckoutDisabled, setIsCheckoutDisabled] = useState(true);
@@ -86,59 +82,18 @@ function CartContents() {
 
   /* CLEAN UP MEMORY LEAKS WHEN COMPONENT IS UNMOUNTED */
   useEffect(() => {
-    return () => productDataCache.current.dispose();
+    return () => CartPageDataHandler.dispose();
   }, []);
 
   /* FUNCTION DECLARATIONS */
-  function updateCartDataResource() {
-    const newResource = promiseToResource(getCartItemsData());
-    setCartDataResource(newResource);
-  }
-
   function updateCheckoutStatus() {
     setIsCheckoutDisabled(true);
     cartDataResource.promise.then(() => setIsCheckoutDisabled(false));
   }
 
   async function getCartItemsData() {
-    const cartProductsIDs = Object.keys(cart.contents);
-    const cachedProductsIDs = productDataCache.current.productIDs;
-    const nonCachedProductsIDs = cartProductsIDs.filter(
-      (id) => !cachedProductsIDs.includes(id)
-    );
-
-    if (nonCachedProductsIDs.length > 0) await updateCache();
-    return generateCartItemsData();
-
-    async function updateCache() {
-      filterCache(cartProductsIDs);
-      await addToCache(nonCachedProductsIDs);
-
-      function filterCache(requiredIDs) {
-        const requiredCartItems = requiredIDs.map((id) => cart.contents[id]);
-        productDataCache.current.filter(requiredCartItems);
-      }
-
-      async function addToCache(requiredIDs) {
-        const requiredCartItems = requiredIDs.map((id) => cart.contents[id]);
-        await Promise.all(
-          requiredCartItems.map(async (item) =>
-            productDataCache.current.addToCache(item)
-          )
-        );
-      }
-    }
-
-    function generateCartItemsData() {
-      // The cartItemsData has two parts: The productData and cartData.
-      // Since cart data is updated anyway, and is driving the whole thing, nothing to optimise there.
-      // But productData doesn't change, so we can cache it locally.
-      // Hence the cartItemsData is generated dynamically, with the constant productData, and the changing cartData
-      const cartItems = Object.values(cart.contents);
-      return cartItems.map((item) =>
-        productDataCache.current.generateHandlerFor(item)
-      );
-    }
+    const cartItems = Object.values(cart.contents);
+    return CartPageDataHandler.createFor(cartItems);
   }
   return (
     <>
@@ -167,14 +122,14 @@ function CartContents() {
         gutterBottom
         textAlign="right"
       >
-        Cart Total: $
+        Cart Total:&nbsp;
         <ErrorBoundary fallback={<ErrorIcon sx={{ color: 'error.main' }} />}>
           <Suspense
             fallback={
               <Skeleton sx={{ display: 'inline-block' }} width="100px" />
             }
           >
-            <CartTotal cartDataResource={cartDataResource} />
+            <CartTotalPrice cartDataResource={cartDataResource} />
           </Suspense>
         </ErrorBoundary>
       </Typography>
@@ -202,25 +157,21 @@ function CartContents() {
 
 function CartItems({ cartDataResource }) {
   const cartData = cartDataResource.read();
-  return cartData.map((item) => <CartItem key={item.productID} item={item} />);
+  const cartItems = cartData.items;
+  return cartItems.map((item) => <CartItem key={item.productID} item={item} />);
 }
 
 CartItems.propTypes = {
   cartDataResource: PropTypes.shape({ read: PropTypes.func }).isRequired,
 };
 
-function CartTotal({ cartDataResource }) {
+function CartTotalPrice({ cartDataResource }) {
   const cartData = cartDataResource.read();
-  const totalAmt = cartData
-    .reduce((sum, currItem) => {
-      const currTotalPrice = Number(currItem.totalPrice.slice(1));
-      return sum + currTotalPrice;
-    }, 0)
-    .toFixed(2); // cause JS is bad at math
-  return totalAmt;
+  const totalPrice = cartData.cartTotalPrice;
+  return `${totalPrice.currency}${totalPrice.value}`;
 }
 
-CartTotal.propTypes = {
+CartTotalPrice.propTypes = {
   cartDataResource: PropTypes.shape({ read: PropTypes.func }).isRequired,
 };
 
@@ -255,7 +206,7 @@ function CartItem({ item }) {
           Variant: {item.variant}
         </Typography>
         <Typography variant="body2" gutterBottom>
-          Price: {item.price}
+          Price: {`${item.price.currency}${item.price.value}`}
         </Typography>
         <ButtonGroup sx={{ mt: '1em', position: 'relative' }}>
           <Button
@@ -295,7 +246,7 @@ function CartItem({ item }) {
         >
           Item Total:&nbsp;
           <Typography display="inline" variant="h6" component="span">
-            {item.totalPrice}
+            {`${item.totalPrice.currency}${item.totalPrice.value}`}
           </Typography>
         </Typography>
         <ExpandingButton
@@ -312,7 +263,7 @@ function CartItem({ item }) {
 }
 
 CartItem.propTypes = {
-  item: PropTypes.instanceOf(CartItemDataHandler).isRequired,
+  item: PropTypes.instanceOf(CartPageItemHandler).isRequired,
 };
 
 export default CartPage;
