@@ -1,10 +1,10 @@
 import { Paper, Stack, Typography } from '@mui/material';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Navigate, useLocation } from 'react-router-dom';
 import ErrorMessage from '../../components/ErrorMessage';
 import Cart from '../../utlis/Contexts/UserData/UserDataHelperClasses/Cart';
-import { promiseToResource } from '../../utlis/SuspenseHelpers';
+import { useResource } from '../../utlis/SuspenseHelpers';
 import { CheckoutDataHandler } from './CheckoutPageHelpers';
 import DeliveryForm from './DeliveryForm';
 import CheckoutList, { CheckoutItemsListFallback } from './CheckoutList';
@@ -18,19 +18,11 @@ function CheckoutPage() {
   const cart = new Cart(reactRouterState.serializedCart);
 
   /* CHECKOUT DATA RESOURCE */
-  const [checkoutDataResource, setCheckoutDataResource] = useState(
-    promiseToResource(new Promise(() => {}))
-  );
-  useEffect(fetchCartDataResource, []);
+  const checkoutDataResource = useResource(getCheckoutData, []);
 
   /* FUNCTION DEFINITIONS */
-  function fetchCartDataResource() {
-    const newResource = promiseToResource(getCheckoutData(cart));
-    setCheckoutDataResource(newResource);
-  }
-
-  async function getCheckoutData(_cart) {
-    const cartItems = Object.values(_cart.contents);
+  async function getCheckoutData() {
+    const cartItems = Object.values(cart.contents);
     return CheckoutDataHandler.prepareFor(cartItems);
   }
 
