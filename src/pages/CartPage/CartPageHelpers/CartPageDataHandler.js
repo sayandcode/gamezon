@@ -1,5 +1,5 @@
+import Price from '../../../utlis/HelperClasses/Price';
 import ProductDataCache from '../../../utlis/HelperClasses/ProductDataCache';
-import { addPrices } from '../../CheckoutPage/Helpers/CheckoutPageHelpers';
 import CartPageItemHandler from './CartPageItemHandler';
 
 class CartPageDataHandler {
@@ -36,7 +36,7 @@ class CartPageDataHandler {
   get cartTotalPrice() {
     const totalPriceOfEachItem = this.#items.map((item) => item.totalPrice);
     const cartTotalPrice = totalPriceOfEachItem.reduce((currTotal, thisPrice) =>
-      addPrices(currTotal, thisPrice)
+      Price.add(currTotal, thisPrice)
     );
     return cartTotalPrice;
   }

@@ -168,7 +168,7 @@ CartItems.propTypes = {
 function CartTotalPrice({ cartDataResource }) {
   const cartData = cartDataResource.read();
   const totalPrice = cartData.cartTotalPrice;
-  return `${totalPrice.currency}${totalPrice.value}`;
+  return totalPrice.print();
 }
 
 CartTotalPrice.propTypes = {
@@ -206,7 +206,7 @@ function CartItem({ item }) {
           Variant: {item.variant}
         </Typography>
         <Typography variant="body2" gutterBottom>
-          Price: {`${item.price.currency}${item.price.value}`}
+          Price: {item.price.print()}
         </Typography>
         <ButtonGroup sx={{ mt: '1em', position: 'relative' }}>
           <Button
@@ -246,7 +246,7 @@ function CartItem({ item }) {
         >
           Item Total:&nbsp;
           <Typography display="inline" variant="h6" component="span">
-            {`${item.totalPrice.currency}${item.totalPrice.value}`}
+            {item.totalPrice.print()}
           </Typography>
         </Typography>
         <ExpandingButton

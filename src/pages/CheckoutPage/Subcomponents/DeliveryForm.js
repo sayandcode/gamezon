@@ -9,8 +9,8 @@ import { NotificationSnackbarContext } from '../../../utlis/Contexts/Notificatio
 import { UserContext } from '../../../utlis/Contexts/UserData/UserContext';
 import Cart from '../../../utlis/Contexts/UserData/UserDataHelperClasses/Cart';
 import Order from '../../../utlis/DBHandlers/DBDataConverters/OrderClass';
+import Price from '../../../utlis/HelperClasses/Price';
 import sleep from '../../../utlis/sleep';
-import { addPrices } from '../Helpers/CheckoutPageHelpers';
 import DeliveryOptionsCheckboxes, {
   defaultDeliveryOptions as initialFormValues,
   deliveryOptionsBooleans,
@@ -145,10 +145,10 @@ function TotalPrice({ checkoutDataResource, formValues }) {
   const checkoutData = checkoutDataResource.read();
   const totalPrice = Object.values(deliveryOptionsBooleans).reduce(
     (currTotal, option) =>
-      formValues[option.name] ? addPrices(option.price, currTotal) : currTotal,
+      formValues[option.name] ? Price.add(option.price, currTotal) : currTotal,
     checkoutData.cartTotalPrice
   );
-  return `${totalPrice.currency}${totalPrice.value}`;
+  return totalPrice.print();
 }
 
 export default DeliveryForm;

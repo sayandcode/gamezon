@@ -1,3 +1,5 @@
+import Price from '../../../utlis/HelperClasses/Price';
+
 class CartPageItemHandler {
   static async createFor(cartItem, { productDataCache }) {
     const productData = await productDataCache.get({
@@ -30,7 +32,7 @@ class CartPageItemHandler {
     const requiredVariantDetails = allVariantsDetails.find(
       (variant) => variant.consoleName === itemCartData.variant
     );
-    this.#price = requiredVariantDetails.price;
+    this.#price = new Price(requiredVariantDetails.price);
     this.#boxArtUrl = itemProductData.boxArtUrl;
   }
 
@@ -59,14 +61,7 @@ class CartPageItemHandler {
   }
 
   get totalPrice() {
-    const totalPriceVal = this.#count * this.#price.value;
-    const totalPriceValFixedTo2 = Number(
-      totalPriceVal.toFixed(2) // to fix floating point errors
-    );
-    return {
-      currency: this.#price.currency,
-      value: totalPriceValFixedTo2,
-    };
+    return this.#price.multiply(this.#count);
   }
 }
 export default CartPageItemHandler;

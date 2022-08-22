@@ -1,7 +1,8 @@
 import { GameDatabase } from '../../../utlis/DBHandlers/DBManipulatorClasses';
+import Price from '../../../utlis/HelperClasses/Price';
 
 class CheckoutOrderItem {
-  static #extractPriceFor(variant, data) {
+  static #extractPriceObjFor(variant, data) {
     const requiredVariantData = data.variants.find(
       (thisVariant) => thisVariant.consoleName === variant
     );
@@ -13,9 +14,12 @@ class CheckoutOrderItem {
   static async createFor(cartItem) {
     const itemProductDataDoc = await GameDatabase.get({ title: cartItem.name });
     const itemProductData = itemProductDataDoc.data;
-    const price = this.#extractPriceFor(cartItem.variant, itemProductData);
+    const priceObj = this.#extractPriceObjFor(
+      cartItem.variant,
+      itemProductData
+    );
 
-    return new this({ ...cartItem, price });
+    return new this({ ...cartItem, priceObj });
   }
 
   #name;
@@ -28,23 +32,16 @@ class CheckoutOrderItem {
 
   #productID;
 
-  constructor({ variant, productID, name, count, price }) {
+  constructor({ variant, productID, name, count, priceObj }) {
     this.#name = name;
     this.#variant = variant;
     this.#count = count;
-    this.#price = price;
+    this.#price = new Price(priceObj);
     this.#productID = productID;
   }
 
   get totalPrice() {
-    const totalPriceVal = this.#count * this.#price.value;
-    const totalPriceValFixedTo2 = Number(
-      totalPriceVal.toFixed(2) // to fix floating point errors
-    );
-    return {
-      currency: this.#price.currency,
-      value: totalPriceValFixedTo2,
-    };
+    return this.#price.multiply(this.#count);
   }
 
   get name() {

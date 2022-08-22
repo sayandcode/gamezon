@@ -1,17 +1,18 @@
 import { Checkbox, FormControlLabel, FormGroup } from '@mui/material';
 import PropTypes from 'prop-types';
+import Price from '../../../utlis/HelperClasses/Price';
 
 // You may source this data from cloud, from some delivery database, if the need arises
 const deliveryOptionsBooleans = {
   giftWrap: {
     label: 'I want to gift wrap my order (+$5.00)',
     name: 'giftWrap',
-    price: { currency: '$', value: 5 },
+    price: new Price({ currency: '$', value: 5 }),
   },
   oneDayShipping: {
     label: 'I want my order in one day (+$10.00)',
     name: 'oneDayShipping',
-    price: { currency: '$', value: 10 },
+    price: new Price({ currency: '$', value: 10 }),
   },
   businessHours: {
     label: 'Deliver only during business hours(10 a.m to 5 p.m)',

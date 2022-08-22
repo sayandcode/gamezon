@@ -30,8 +30,7 @@ function CheckoutList({ checkoutDataResource }) {
             x {item.count}nos
           </Typography>
           <Typography variant="subtitle1" fontWeight="bold" ml="auto">
-            {item.totalPrice.currency}
-            {item.totalPrice.value}
+            {item.totalPrice.print()}
           </Typography>
         </Stack>
       ))}
@@ -48,8 +47,7 @@ function CheckoutList({ checkoutDataResource }) {
           Total
         </Typography>
         <Typography variant="subtitle1" fontWeight="bold">
-          {checkoutData.cartTotalPrice.currency}
-          {checkoutData.cartTotalPrice.value}
+          {checkoutData.cartTotalPrice.print()}
         </Typography>
       </Stack>
     </Stack>
