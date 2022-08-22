@@ -1,6 +1,6 @@
 import { Divider, Skeleton, Stack, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
-import Cart from '../../utlis/Contexts/UserData/UserDataHelperClasses/Cart';
+import Cart from '../../../utlis/Contexts/UserData/UserDataHelperClasses/Cart';
 
 function CheckoutList({ checkoutDataResource }) {
   const checkoutData = checkoutDataResource.read();

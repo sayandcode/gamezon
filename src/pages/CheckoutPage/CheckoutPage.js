@@ -5,9 +5,11 @@ import { Navigate, useLocation } from 'react-router-dom';
 import ErrorMessage from '../../components/ErrorMessage';
 import Cart from '../../utlis/Contexts/UserData/UserDataHelperClasses/Cart';
 import { useResource } from '../../utlis/SuspenseHelpers';
-import { CheckoutDataHandler } from './CheckoutPageHelpers';
-import DeliveryForm from './DeliveryForm';
-import CheckoutList, { CheckoutItemsListFallback } from './CheckoutList';
+import { CheckoutDataHandler } from './Helpers/CheckoutPageHelpers';
+import DeliveryForm from './Subcomponents/DeliveryForm';
+import CheckoutList, {
+  CheckoutItemsListFallback,
+} from './Subcomponents/CheckoutList';
 
 function CheckoutPage() {
   const { state: reactRouterState } = useLocation();

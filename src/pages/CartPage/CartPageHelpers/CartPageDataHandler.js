@@ -1,5 +1,5 @@
 import ProductDataCache from '../../../utlis/HelperClasses/ProductDataCache';
-import { addPrices } from '../../CheckoutPage/CheckoutPageHelpers';
+import { addPrices } from '../../CheckoutPage/Helpers/CheckoutPageHelpers';
 import CartPageItemHandler from './CartPageItemHandler';
 
 class CartPageDataHandler {

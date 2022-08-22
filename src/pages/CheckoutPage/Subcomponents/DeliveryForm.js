@@ -4,13 +4,13 @@ import PropTypes from 'prop-types';
 import { Suspense, useContext, useReducer, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useNavigate } from 'react-router-dom';
-import AddressSelector from '../../components/Address/AddressSelector';
-import { NotificationSnackbarContext } from '../../utlis/Contexts/NotificationSnackbarContext';
-import { UserContext } from '../../utlis/Contexts/UserData/UserContext';
-import Cart from '../../utlis/Contexts/UserData/UserDataHelperClasses/Cart';
-import Order from '../../utlis/DBHandlers/DBDataConverters/OrderClass';
-import sleep from '../../utlis/sleep';
-import { addPrices } from './CheckoutPageHelpers';
+import AddressSelector from '../../../components/Address/AddressSelector';
+import { NotificationSnackbarContext } from '../../../utlis/Contexts/NotificationSnackbarContext';
+import { UserContext } from '../../../utlis/Contexts/UserData/UserContext';
+import Cart from '../../../utlis/Contexts/UserData/UserDataHelperClasses/Cart';
+import Order from '../../../utlis/DBHandlers/DBDataConverters/OrderClass';
+import sleep from '../../../utlis/sleep';
+import { addPrices } from '../Helpers/CheckoutPageHelpers';
 import DeliveryOptionsCheckboxes, {
   defaultDeliveryOptions as initialFormValues,
   deliveryOptionsBooleans,

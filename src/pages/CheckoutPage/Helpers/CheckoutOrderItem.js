@@ -1,4 +1,4 @@
-import { GameDatabase } from '../../utlis/DBHandlers/DBManipulatorClasses';
+import { GameDatabase } from '../../../utlis/DBHandlers/DBManipulatorClasses';
 
 class CheckoutOrderItem {
   static #extractPriceFor(variant, data) {
