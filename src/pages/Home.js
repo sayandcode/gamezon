@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom';
-import ImageCarousel from '../components/Homepage/ImageCarousel';
+import ImageCarousel from '../components/ImageCarousel/ImageCarousel';
 import ProductsDisplayCarousel from '../components/ProductsDisplayCarousel';
 import { GameDatabaseQuery } from '../utlis/DBHandlers/DBQueryClasses';
 
