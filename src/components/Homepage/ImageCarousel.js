@@ -1,7 +1,6 @@
 import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
-  ErrorOutline as ErrorOutlineIcon,
 } from '@mui/icons-material';
 import {
   Box,
@@ -15,12 +14,10 @@ import React, { useState, useRef, useEffect, Suspense } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { ErrorBoundary } from 'react-error-boundary';
-import { getDataFromQuery } from '../../utlis/DBHandlers/MockDBFetch'; // BEFORE PRODUCTION: change 'MockDBFetch' to 'DBFetch' for production
-import { ImageCarouselItem } from '../../utlis/DBHandlers/DBDataConverter';
 import { GameDatabaseQuery } from '../../utlis/DBHandlers/DBQueryClasses';
-import { promiseToResource } from '../../utlis/SuspenseHelpers';
-import { GameDatabase } from '../../utlis/DBHandlers/DBManipulatorClasses';
 import ErrorMessage from '../ErrorMessage';
+import ImageCarouselDataHandler from './Helpers/ImageCarouselDataHandler';
+import { useResource } from '../../utlis/SuspenseHelpers';
 
 const CAROUSEL_HEIGHT = '200px';
 
@@ -36,33 +33,11 @@ const scroll = keyframes`
 
 export default function ImageCarousel({ items }) {
   /* PROVIDE ITEMRESOURCE FOR SUSPENSE */
-  const [itemsResource, setItemResource] = useState(
-    // perpetual promise as initial value of item resource, guarantees suspense fallback on first render
-    promiseToResource(new Promise(() => {}))
-  );
-  useEffect(updateItemResource, [items]);
-  function updateItemResource() {
-    setItemResource(promiseToResource(getNewCarouselItems()));
-  }
+  const imageCarouselDataResource = useResource(getImageCarouselData, [items]);
 
-  async function getNewCarouselItems() {
-    const queriedItems = await getDataFromDB();
-    const newCarouselItems = await Promise.allSettledFiltered(
-      queriedItems.map(async (item) => ImageCarouselItem.createFrom(item))
-    );
-    return newCarouselItems;
-
-    async function getDataFromDB() {
-      if (items instanceof GameDatabaseQuery) {
-        return getDataFromQuery(items);
-      }
-      if (Array.isArray(items)) {
-        return Promise.all(
-          items.map(async (title) => GameDatabase.get({ title }))
-        );
-      }
-      throw new Error('Items is neither a query or a predetermined list');
-    }
+  /* FUNCTION DEFINITIONS */
+  function getImageCarouselData() {
+    return ImageCarouselDataHandler.createFor(items);
   }
 
   return (
@@ -78,7 +53,7 @@ export default function ImageCarousel({ items }) {
           />
         }
       >
-        <Carousel resource={itemsResource} />
+        <Carousel imageCarouselDataResource={imageCarouselDataResource} />
       </Suspense>
     </ErrorBoundary>
   );
@@ -105,15 +80,16 @@ function ErrorFallback() {
   );
 }
 
-function Carousel({ resource }) {
+function Carousel({ imageCarouselDataResource }) {
   /* RESOURCE HANDLING */
-  const carouselItems = resource.read();
+  const imageCarouselData = imageCarouselDataResource.read();
+  const carouselItems = imageCarouselData.items;
 
   /* UNLOAD CAROUSEL IMAGES */
   // clean up the imgBlob URLs to prevent memory leak
   useEffect(() => {
     return () => carouselItems.forEach((item) => item.dispose?.());
-  }, [resource]);
+  }, [imageCarouselDataResource]);
 
   /* CURRENT INDEX */
   const [currItemIndex, setCurrItemIndex] = useState(0);
@@ -143,7 +119,7 @@ function Carousel({ resource }) {
   useEffect(() => {
     startCarouselSwitching();
     return pauseCarouselSwitching;
-  }, [resource]);
+  }, [imageCarouselDataResource]);
 
   return (
     <Box
@@ -194,7 +170,8 @@ function Carousel({ resource }) {
 }
 
 Carousel.propTypes = {
-  resource: PropTypes.shape({ read: PropTypes.func }).isRequired,
+  imageCarouselDataResource: PropTypes.shape({ read: PropTypes.func })
+    .isRequired,
 };
 
 function InfoOverlay({ title, description, boxArtSrc }) {

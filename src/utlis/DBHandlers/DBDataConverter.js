@@ -12,33 +12,6 @@ class RootDatabaseEntity {
   }
 }
 
-export class ImageCarouselItem extends RootDatabaseEntity {
-  constructor(doc, { bgImgUrl, boxArtUrl }) {
-    super(doc);
-    const { data } = doc;
-    this.title = data.Title;
-    this.description =
-      data.Description.match(/(.*?)\.\s/)?.[0] || data.Description;
-    this.bgImgUrl = bgImgUrl;
-    this.boxArtUrl = boxArtUrl;
-  }
-
-  static async createFrom(doc) {
-    const gameTitle = doc.data.Title;
-    const [bgImgUrl, boxArtUrl] = await Promise.allSettledFiltered([
-      getScreenshotFor(gameTitle),
-      getboxArtFor(gameTitle),
-    ]);
-
-    return new ImageCarouselItem(doc, { bgImgUrl, boxArtUrl });
-  }
-
-  dispose() {
-    URL.revokeObjectURL(this.boxArtUrl);
-    URL.revokeObjectURL(this.bgImgUrl);
-  }
-}
-
 export class ProductsDisplayCarouselItem extends RootDatabaseEntity {
   constructor(doc, { boxArtUrl }) {
     super(doc);
