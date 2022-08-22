@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../../firebase-config';
 import { NotificationSnackbarContext } from '../NotificationSnackbarContext';
-import { UserDataHandler } from '../../DBHandlers/DBDataConverter';
+import UserDataHandler from './UserDataHandler';
 import Cart from './UserDataHelperClasses/Cart';
 import Wishlist from './UserDataHelperClasses/Wishlist';
 import AddressList from './UserDataHelperClasses/AddressList/AddressList';
