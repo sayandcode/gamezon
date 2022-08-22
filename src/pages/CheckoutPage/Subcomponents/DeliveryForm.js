@@ -8,7 +8,7 @@ import AddressSelector from '../../../components/Address/AddressSelector';
 import { NotificationSnackbarContext } from '../../../utlis/Contexts/NotificationSnackbarContext';
 import { UserContext } from '../../../utlis/Contexts/UserData/UserContext';
 import Cart from '../../../utlis/Contexts/UserData/UserDataHelperClasses/Cart';
-import Order from '../../../utlis/DBHandlers/DBDataConverters/OrderClass';
+import Order from '../../../utlis/HelperClasses/OrderClass';
 import Price from '../../../utlis/HelperClasses/Price';
 import sleep from '../../../utlis/sleep';
 import DeliveryOptionsCheckboxes, {

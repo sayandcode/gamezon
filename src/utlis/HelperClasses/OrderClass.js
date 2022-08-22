@@ -1,8 +1,8 @@
 import { Timestamp } from 'firebase/firestore';
 import { v4 as generateUuid } from 'uuid';
-import Address from '../../Contexts/UserData/UserDataHelperClasses/AddressList/AddressClass';
-import Cart from '../../Contexts/UserData/UserDataHelperClasses/Cart';
-import { OrderDatabase } from '../DBManipulatorClasses';
+import Address from '../Contexts/UserData/UserDataHelperClasses/AddressList/AddressClass';
+import Cart from '../Contexts/UserData/UserDataHelperClasses/Cart';
+import { OrderDatabase } from '../DBHandlers/DBManipulatorClasses';
 
 class Order {
   #orderID;
