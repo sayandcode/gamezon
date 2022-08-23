@@ -16,28 +16,20 @@ import {
   Typography,
 } from '@mui/material';
 import PropTypes from 'prop-types';
-import {
-  useRef,
-  useState,
-  useContext,
-  Suspense,
-  useEffect,
-  useReducer,
-} from 'react';
+import { useState, useContext, Suspense, useEffect, useReducer } from 'react';
 import { Link } from 'react-router-dom';
 import useMeasure from 'react-use-measure';
 import toPX from 'to-px';
 import { ErrorBoundary } from 'react-error-boundary';
-import customTheme from '../CustomTheme';
-import { ProductsDisplayCarouselItem } from '../utlis/DBHandlers/DBDataConverter';
-import { GameDatabaseQuery } from '../utlis/DBHandlers/DBQueryClasses';
-import { getDataFromQuery } from '../utlis/DBHandlers/MockDBFetch'; // BEFORE PRODUCTION: change 'MockDBFetch' to 'DBFetch' for production
-import ContainedIconButton from './ContainedIconButton';
-import ExpandingButton from './ExpandingButton';
-import { UserContext } from '../utlis/Contexts/UserData/UserContext';
-import { GameDatabase } from '../utlis/DBHandlers/DBManipulatorClasses';
-import { promiseToResource } from '../utlis/SuspenseHelpers';
-import ErrorMessage from './ErrorMessage';
+import customTheme from '../../CustomTheme';
+import { GameDatabaseQuery } from '../../utlis/DBHandlers/DBQueryClasses';
+import ContainedIconButton from '../ContainedIconButton';
+import ExpandingButton from '../ExpandingButton';
+import { UserContext } from '../../utlis/Contexts/UserData/UserContext';
+import { useResource } from '../../utlis/SuspenseHelpers';
+import ErrorMessage from '../ErrorMessage';
+import ProductsDisplayCarouselDataHandler from './Helpers/ProductsDisplayCarouselDataHandler';
+import ProductsDisplayCarouselItemHandler from './Helpers/ProductsDisplayCarouselItemHandler';
 
 const CAROUSEL_ITEM_HEIGHT = '250px';
 const CAROUSEL_ITEM_WIDTH = '150px';
@@ -48,10 +40,6 @@ export default function ProductsDisplayCarousel({ title, items }) {
   const [CarouselStackRef, { width: carouselStackWidth }] = useMeasure();
   const [manualUpdateCounter, manualUpdate] = useReducer((x) => x + 1, 0);
 
-  /* DATA STORE */
-  const itemsCache = useRef([]);
-  const highestIndex = itemsCache.current.length - 1;
-
   /* COUNTS */
   const itemCount = Math.floor(
     carouselStackWidth / (toPX(CAROUSEL_ITEM_WIDTH) + toPX(CAROUSEL_SPACING))
@@ -59,97 +47,24 @@ export default function ProductsDisplayCarousel({ title, items }) {
   const [rangeStart, setRangeStart] = useState(0);
   const rangeEnd = rangeStart + itemCount - 1;
 
-  /* FLAGS */
-  const [flags, setFlags] = useState({ moreItemsAvailable: true });
-
-  async function getCarouselItems() {
-    // if the required data isn't already in cache, fetch it.
-    if (rangeEnd > highestIndex) await updateCache();
-
-    // finally return the required items
-    return itemsCache.current.slice(rangeStart, rangeEnd + 1); // +1 for how slice works
-
-    async function updateCache() {
-      // else wait for us to fetch it from database
-      const [queriedItems, { moreAvailable: moreItemsAvailable }] =
-        await getDataFromDB();
-      const newCarouselItems = await Promise.allSettledFiltered(
-        queriedItems.map(async (item) =>
-          ProductsDisplayCarouselItem.createFrom(item)
-        )
-      );
-      itemsCache.current.push(...newCarouselItems);
-      setFlags((old) => ({ ...old, moreItemsAvailable }));
-
-      async function getDataFromDB() {
-        let data;
-        let moreAvailable;
-
-        /* FUNCTION OVERLOADING V1: ITEMS IS A DBQUERY */
-        if (items instanceof GameDatabaseQuery) {
-          // take the last item in the carouselItems array, and start at that one.
-          // That way, we query only the ones that are extra
-          const lastFetchedItem = itemsCache.current.slice(-1)[0];
-          const noOfItemsToFetch = rangeEnd - highestIndex + 1; // fetch one extra, to see if there are more items available
-          const subsetQuery = items
-            .limit(noOfItemsToFetch)
-            .startAfter(lastFetchedItem); // startAfter method can also work with undefined. It just ignores the call
-          data = await getDataFromQuery(subsetQuery);
-
-          const extraItem = data[noOfItemsToFetch - 1]; // (noOfItemsToFetch - 1) is the last item cause thats how indexes work
-          moreAvailable = Boolean(extraItem);
-        }
-
-        /* FUNCTION OVERLOADING V2: ITEMS IS AN ARRAY */
-        // eslint-disable-next-line prettier/prettier
-      else if (Array.isArray(items)) {
-          const startIndex = highestIndex === -1 ? 0 : highestIndex + 1;
-          data = await Promise.all(
-            items
-              .slice(startIndex, rangeEnd + 1)
-              .map((_title) => GameDatabase.get({ title: _title }))
-          );
-
-          const finalArrayLength = itemsCache.current.length + data.length;
-          moreAvailable = items.length > finalArrayLength;
-        }
-
-        return [data, { moreAvailable }];
-      }
-    }
-  }
-
   /* PROVIDE ITEMSRESOURCE */
-  const [itemsResource, setItemsResource] = useState(
-    promiseToResource(new Promise(() => {}))
-  );
-  useEffect(updateResource, [rangeStart, itemCount, manualUpdateCounter]);
-  function updateResource() {
-    if (itemCount === 0) return;
-    const newResource = promiseToResource(getCarouselItems());
-    setItemsResource(newResource);
-  }
+  const dataResource = useResource(getProductDisplayCarouselData, [
+    rangeStart,
+    itemCount,
+    manualUpdateCounter,
+  ]);
 
   /* EMPTY CACHE ON ITEMS PROP CHANGE */
   useEffect(() => {
-    clearCacheData();
+    ProductsDisplayCarouselDataHandler.clearCache();
     setRangeStart(0);
     manualUpdate();
   }, [items]);
 
   /* DISPOSE OF THE DATA WHEN COMPONENT IS UNMOUNTED */
-  useEffect(() => clearCacheData, []);
-
-  function clearCacheData() {
-    itemsCache.current.forEach((item) => item.dispose());
-    itemsCache.current = [];
-  }
+  useEffect(() => ProductsDisplayCarouselDataHandler.clearCache(), []);
 
   /* RUNTIME CALCULATIONS */
-  const showArrow = {
-    left: rangeStart !== 0,
-    right: flags.moreItemsAvailable || rangeEnd < highestIndex,
-  };
   const changePage = ({ forward }) => {
     setRangeStart((oldRangeStart) => {
       const offset = (forward ? 1 : -1) * itemCount;
@@ -157,6 +72,14 @@ export default function ProductsDisplayCarousel({ title, items }) {
       return newCurr < 0 ? 0 : newCurr;
     });
   };
+
+  /* FUNCTION DEFINITIONS */
+  function getProductDisplayCarouselData() {
+    return ProductsDisplayCarouselDataHandler.createFor(items, {
+      rangeStart,
+      rangeEnd,
+    });
+  }
 
   return (
     <Box sx={{ bgcolor: 'grey.50', m: 2, py: 1, px: 2 }}>
@@ -174,8 +97,7 @@ export default function ProductsDisplayCarousel({ title, items }) {
         <ErrorBoundary fallback={<ErrorFallback />}>
           <Suspense fallback={<CarouselSkeletons count={itemCount} />}>
             <CarouselItems
-              resource={itemsResource}
-              showArrow={showArrow}
+              dataResource={dataResource}
               changePage={changePage}
             />
           </Suspense>
@@ -193,8 +115,9 @@ ProductsDisplayCarousel.propTypes = {
   ]).isRequired,
 };
 
-function CarouselItems({ resource, showArrow, changePage }) {
-  const data = resource.read();
+function CarouselItems({ dataResource, changePage }) {
+  const dataHandler = dataResource.read();
+  const { showArrow, carouselItems } = dataHandler;
 
   return (
     <>
@@ -209,9 +132,9 @@ function CarouselItems({ resource, showArrow, changePage }) {
       >
         <ChevronLeftIcon />
       </ContainedIconButton>
-      {data.length > 0 ? (
+      {carouselItems.length > 0 ? (
         <Stack direction="row" spacing={CAROUSEL_SPACING} px={3}>
-          {data.map((item) => (
+          {carouselItems.map((item) => (
             <CarouselItem key={item.title} item={item} />
           ))}
         </Stack>
@@ -245,9 +168,7 @@ function CarouselItems({ resource, showArrow, changePage }) {
 }
 
 CarouselItems.propTypes = {
-  showArrow: PropTypes.shape({ left: PropTypes.bool, right: PropTypes.bool })
-    .isRequired,
-  resource: PropTypes.shape({ read: PropTypes.func }).isRequired,
+  dataResource: PropTypes.shape({ read: PropTypes.func }).isRequired,
   changePage: PropTypes.func.isRequired,
 };
 
@@ -296,7 +217,7 @@ function CarouselItem({ item }) {
         },
         '&:hover': {
           '.CarouselItem-discountSticker::after': {
-            content: `"${item.discount.price}"`,
+            content: `"${item.discount.price.print()}"`,
           },
           '.CarouselItem-originalPrice': {
             textDecoration: item.discount && 'line-through',
@@ -354,7 +275,7 @@ function CarouselItem({ item }) {
             }}
             className="CarouselItem-originalPrice"
           >
-            {item.price}
+            {item.price.print()}
           </Box>
         </Box>
       </Link>
@@ -383,7 +304,7 @@ function CarouselItem({ item }) {
 }
 
 CarouselItem.propTypes = {
-  item: PropTypes.instanceOf(ProductsDisplayCarouselItem).isRequired,
+  item: PropTypes.instanceOf(ProductsDisplayCarouselItemHandler).isRequired,
 };
 
 function ErrorFallback() {

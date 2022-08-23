@@ -1,4 +1,4 @@
-import { getboxArtFor, getScreenshotFor } from './MockDBFetch'; // BEFORE PRODUCTION: change 'MockDBFetch' to 'DBFetch' for production
+import { getScreenshotFor } from './MockDBFetch'; // BEFORE PRODUCTION: change 'MockDBFetch' to 'DBFetch' for production
 
 class RootDatabaseEntity {
   #ref;
@@ -9,43 +9,6 @@ class RootDatabaseEntity {
 
   getRef() {
     return this.#ref;
-  }
-}
-
-export class ProductsDisplayCarouselItem extends RootDatabaseEntity {
-  constructor(doc, { boxArtUrl }) {
-    super(doc);
-    const { data } = doc;
-    this.title = data.Title;
-
-    this.price = `${
-      data.startingPrice.currency
-    }${data.startingPrice.value.toFixed(2)}`;
-    const discountFraction = data.discount;
-
-    if (discountFraction) {
-      const discountedPriceVal = (
-        data.startingPrice.value *
-        (1 - discountFraction)
-      ).toFixed(2);
-      this.discount = {
-        percent: (discountFraction * 100).toFixed(0),
-        price: `${data.startingPrice.currency}${discountedPriceVal}`,
-      };
-    }
-    this.boxArtUrl = boxArtUrl;
-    this.variant = data.variants[0].consoleName;
-  }
-
-  static async createFrom(doc) {
-    const gameTitle = doc.data.Title;
-    const boxArtUrl = await getboxArtFor(gameTitle);
-
-    return new ProductsDisplayCarouselItem(doc, { boxArtUrl });
-  }
-
-  dispose() {
-    URL.revokeObjectURL(this.boxArtUrl);
   }
 }
 
