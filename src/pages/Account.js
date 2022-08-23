@@ -1,6 +1,6 @@
 import { Paper, Stack, Typography } from '@mui/material';
 import { useContext } from 'react';
-import ProductsDisplayCarousel from '../components/ProductsDisplayCarousel';
+import ProductsDisplayCarousel from '../components/ProductsDisplayCarousel/ProductsDisplayCarousel';
 import { UserContext } from '../utlis/Contexts/UserData/UserContext';
 import AddressSelector from '../components/Address/AddressSelector';
 

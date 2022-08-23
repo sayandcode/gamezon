@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import ImageCarousel from '../components/ImageCarousel/ImageCarousel';
-import ProductsDisplayCarousel from '../components/ProductsDisplayCarousel';
+import ProductsDisplayCarousel from '../components/ProductsDisplayCarousel/ProductsDisplayCarousel';
 import { GameDatabaseQuery } from '../utlis/DBHandlers/DBQueryClasses';
 
 export default function Home() {
