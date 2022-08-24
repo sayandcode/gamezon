@@ -23,12 +23,12 @@ import {
 import { useEffect, useState, useRef, useContext } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import { ProductPageItem } from '../utlis/DBHandlers/DBDataConverter';
-import { GameDatabaseQuery } from '../utlis/DBHandlers/DBQueryClasses';
-import { getDataFromQuery } from '../utlis/DBHandlers/MockDBFetch';
-import { UserContext } from '../utlis/Contexts/UserData/UserContext';
-import { NotificationSnackbarContext } from '../utlis/Contexts/NotificationSnackbarContext';
-import Cart from '../utlis/Contexts/UserData/UserDataHelperClasses/Cart';
+import { ProductPageItem } from '../../utlis/DBHandlers/DBDataConverter';
+import { GameDatabaseQuery } from '../../utlis/DBHandlers/DBQueryClasses';
+import { getDataFromQuery } from '../../utlis/DBHandlers/MockDBFetch';
+import { UserContext } from '../../utlis/Contexts/UserData/UserContext';
+import { NotificationSnackbarContext } from '../../utlis/Contexts/NotificationSnackbarContext';
+import Cart from '../../utlis/Contexts/UserData/UserDataHelperClasses/Cart';
 
 const slideUp = keyframes`
 from{

@@ -5,7 +5,7 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import ContextProvidersWrapper from './utlis/Contexts/ContextProvidersWrapper';
 import ConfirmEmailLogin from './pages/ConfirmEmailLogin';
-import ProductPage from './pages/ProductPage';
+import ProductPage from './pages/ProductPage/ProductPage';
 import PersistentComponents from './components/PersistentComponents';
 import Cart from './pages/CartPage/CartPage';
 import Account from './pages/Account';
