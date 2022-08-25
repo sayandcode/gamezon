@@ -213,11 +213,11 @@ function CarouselItem({ item }) {
         height: CAROUSEL_ITEM_HEIGHT,
         position: 'relative',
         '.CarouselItem-discountSticker::after': {
-          content: `"${item.discount.percent}% OFF"`,
+          content: item.discount && `"${item.discount.percent}% OFF"`,
         },
         '&:hover': {
           '.CarouselItem-discountSticker::after': {
-            content: `"${item.discount.price.print()}"`,
+            content: `"${item.discount?.price.print()}"`,
           },
           '.CarouselItem-originalPrice': {
             textDecoration: item.discount && 'line-through',
@@ -275,19 +275,26 @@ function CarouselItem({ item }) {
             }}
             className="CarouselItem-originalPrice"
           >
-            {item.price.print()}
+            {item.price?.print()}
           </Box>
         </Box>
       </Link>
       <Stack direction="row" justifyContent="space-between" p={1}>
-        <ExpandingButton
-          textContent={!addedToCart ? 'Add to Cart' : 'Remove from Cart'}
-          buttonIcon={
-            !addedToCart ? <AddShoppingCartIcon /> : <RemoveShoppingCartIcon />
-          }
-          expandDir="right"
-          onClick={handleCartClick}
-        />
+        {/* Can only buy the item if it has a price i.e is released */}
+        {item.price && (
+          <ExpandingButton
+            textContent={!addedToCart ? 'Add to Cart' : 'Remove from Cart'}
+            buttonIcon={
+              !addedToCart ? (
+                <AddShoppingCartIcon />
+              ) : (
+                <RemoveShoppingCartIcon />
+              )
+            }
+            expandDir="right"
+            onClick={handleCartClick}
+          />
+        )}
         <ExpandingButton
           textContent={
             !addedToWishlist ? 'Add to Wishlist' : 'Remove from Wishlist'
@@ -295,7 +302,7 @@ function CarouselItem({ item }) {
           buttonIcon={
             !addedToWishlist ? <ReceiptLongIcon /> : <PlaylistRemoveIcon />
           }
-          expandDir="left"
+          expandDir={item.price ? 'left' : 'right'}
           onClick={() => wishlist.toggle(item.title)}
         />
       </Stack>

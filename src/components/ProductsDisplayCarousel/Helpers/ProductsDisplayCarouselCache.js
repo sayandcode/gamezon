@@ -14,7 +14,7 @@ class ProductsDisplayCarouselCache {
       rangeEnd
     );
     this.#moreItemsAvailable = moreItemsAvailable;
-    const newCarouselItems = await Promise.allSettledFiltered(
+    const newCarouselItems = await Promise.all(
       queriedItemDocs.map(async (itemDoc) =>
         ProductsDisplayCarouselItemHandler.createFrom(itemDoc)
       )

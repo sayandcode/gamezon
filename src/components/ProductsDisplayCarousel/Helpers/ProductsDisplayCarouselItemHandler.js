@@ -30,7 +30,7 @@ class ProductsDisplayCarouselItemHandler extends RootDatabaseEntity {
     const { data } = doc;
 
     this.#title = Title;
-    this.#price = new Price(priceObj);
+    this.#price = priceObj ? new Price(priceObj) : null;
     this.#discountFraction = discountFraction;
     this.#boxArtUrl = boxArtUrl;
     this.#variant = data.variants[0].consoleName;
