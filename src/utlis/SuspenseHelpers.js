@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 
 function promiseToResource(promise) {
   let status = 'pending';
@@ -21,7 +22,7 @@ function promiseToResource(promise) {
       else return result;
     },
     get promise() {
-      return suspender;
+      return promise;
     },
   };
 }
@@ -48,4 +49,6 @@ function useResource(dataFetchFn, dependencies) {
   return stateVar;
 }
 
-export { promiseToResource, useResource };
+const resourcePropType = PropTypes.shape({ read: PropTypes.func });
+
+export { promiseToResource, useResource, resourcePropType };

@@ -3,10 +3,14 @@ import {
   ExpandMore as ExpandMoreIcon,
 } from '@mui/icons-material';
 import { Button, Paper, Typography } from '@mui/material';
-import PropTypes from 'prop-types';
 import { useEffect, useRef, useState } from 'react';
+import { resourcePropType } from '../../../utlis/SuspenseHelpers';
 
-function ProductDescription({ content }) {
+function ProductDescription({ productPageDataResource }) {
+  const dataHandler = productPageDataResource.read();
+  const content = dataHandler.product.description;
+
+  /* COMPONENT STATE */
   const [collapsed, setCollapsed] = useState(true);
   const [showButton, setShowButton] = useState(false);
 
@@ -16,6 +20,7 @@ function ProductDescription({ content }) {
     if (clientHeight !== scrollHeight) setShowButton(true);
   }, []);
 
+  /* RUNTIME CALCULATIONS */
   const buttonContent = collapsed ? (
     <>
       Read More <ExpandMoreIcon />
@@ -59,5 +64,7 @@ function ProductDescription({ content }) {
 }
 
 ProductDescription.propTypes = {
-  content: PropTypes.string.isRequired,
+  productPageDataResource: resourcePropType.isRequired,
 };
+
+export default ProductDescription;

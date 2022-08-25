@@ -1,9 +1,12 @@
-import { Box } from '@mui/material';
+import { Box, Skeleton } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 import CurrImgViewer from './CurrImgViewer';
 
-function ImageViewer({ imgUrls, trailerUrl }) {
+function ImageViewer({ productPageDataResource }) {
+  const dataHandler = productPageDataResource.read();
+  const { trailerUrl, imgUrls } = dataHandler.product;
+
   const videoID = trailerUrl && trailerUrl.match(/watch\?v=(.*)/)[1];
   const items = [
     {
@@ -76,12 +79,20 @@ function ImageViewer({ imgUrls, trailerUrl }) {
 }
 
 ImageViewer.propTypes = {
-  imgUrls: PropTypes.arrayOf(PropTypes.string).isRequired,
-  trailerUrl: PropTypes.string,
+  productPageDataResource: PropTypes.shape({ read: PropTypes.func }).isRequired,
 };
 
-ImageViewer.defaultProps = {
-  trailerUrl: null,
-};
+function ImageViewerFallback() {
+  return (
+    <Skeleton
+      sx={{
+        width: '80%',
+        height: '100%',
+        mx: 'auto',
+      }}
+    />
+  );
+}
 
 export default ImageViewer;
+export { ImageViewerFallback };
