@@ -1,7 +1,7 @@
 import Price from '../../../utlis/HelperClasses/Price';
 import CheckoutOrderItem from './CheckoutOrderItem';
 
-class CheckoutDataHandler {
+class CheckoutItemsHandler {
   static async createFor(cartItems) {
     const orderItems = await Promise.all(
       cartItems.map(async (cartItem) => CheckoutOrderItem.createFor(cartItem))
@@ -34,4 +34,4 @@ class CheckoutDataHandler {
   }
 }
 
-export default CheckoutDataHandler;
+export default CheckoutItemsHandler;

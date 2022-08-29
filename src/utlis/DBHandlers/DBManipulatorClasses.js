@@ -2,6 +2,7 @@ import { doc, deleteDoc, setDoc, getDoc } from 'firebase/firestore';
 import { firestoreDB } from '../firebase-config';
 import {
   GAME_DB_COLLECTION_NAME,
+  METADATA_DB_COLLECTION_NAME,
   ORDER_DB_COLLECTION_NAME,
   USERS_DB_COLLECTION_NAME,
 } from './DBNames';
@@ -61,5 +62,9 @@ const OrderDatabase = new DBManipulator(
   [USERS_DB_COLLECTION_NAME, ORDER_DB_COLLECTION_NAME],
   ['userID', 'orderID']
 );
+const MetadataDatabase = new DBManipulator(
+  [METADATA_DB_COLLECTION_NAME],
+  ['for']
+);
 
-export { UsersDatabase, GameDatabase, OrderDatabase };
+export { UsersDatabase, GameDatabase, OrderDatabase, MetadataDatabase };

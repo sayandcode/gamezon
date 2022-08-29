@@ -7,7 +7,9 @@ import { OrderDatabase } from '../DBHandlers/DBManipulatorClasses';
 class Order {
   #orderID;
 
-  #items;
+  #cartOfOrderItems;
+
+  #address;
 
   #deliveryOptions;
 
@@ -18,12 +20,13 @@ class Order {
       ([key, value]) => [key, getDeserializerFor(key)(value)]
     );
     const deserializedOrderContents = Object.fromEntries(deserializedEntries);
-    return new Order({ ...deserializedOrderContents });
+    return new this({ ...deserializedOrderContents });
   }
 
   serialize() {
     const order = {
-      orderItems: this.#items,
+      orderItems: this.#cartOfOrderItems,
+      address: this.#address,
       deliveryOptions: this.#deliveryOptions,
       timeStamp: this.#timeStamp,
       orderID: this.#orderID,
@@ -35,8 +38,9 @@ class Order {
     return Object.fromEntries(serializedEntries);
   }
 
-  constructor({ orderItems, deliveryOptions, timeStamp, orderID }) {
-    this.#items = orderItems;
+  constructor({ orderItems, address, deliveryOptions, timeStamp, orderID }) {
+    this.#cartOfOrderItems = orderItems;
+    this.#address = address;
     this.#deliveryOptions = deliveryOptions;
     this.#timeStamp = timeStamp || new Date();
     this.#orderID = orderID || generateUuid();
@@ -47,19 +51,24 @@ class Order {
   }
 
   get items() {
-    // <Cart> will protect itself from mutation. We always have a reference to the original cart.
-    // So we're safe from outside mutation
-    return this.#items;
+    // We always have a reference to the original cart. So we're safe from outside mutation
+    // Additionally, cart.contents is returning a cloned obj, so free from mutation.
+    return Object.values(this.#cartOfOrderItems.contents);
+  }
+
+  get address() {
+    // <Address> will protect itself from mutation. We always have a reference to the original address.
+    return this.#address;
   }
 
   get deliveryOptions() {
-    // <Address> will protect itself from mutation. We always have a reference to the original address.
-    const { address, ...otherDeliveryOptions } = this.#deliveryOptions;
-
-    // All of the other options(object keys) are either primitives, or objects themselves.
+    // Delivery options are either primitives, or objects themselves.
     // So they are cloned by `structuredClone`
-    const otherDeliveryOptionsClone = structuredClone(otherDeliveryOptions);
-    return { address, ...otherDeliveryOptionsClone };
+    return structuredClone(this.#deliveryOptions);
+  }
+
+  get timeStamp() {
+    return this.#timeStamp;
   }
 
   async confirmFor(user) {
@@ -78,17 +87,8 @@ function getDeserializerFor(key) {
       return (orderItems) => {
         return new Cart(orderItems);
       };
-    case 'deliveryOptions':
-      return (deliveryOptions) => {
-        const { address: serializedAddress, ...restDeliveryOptions } =
-          deliveryOptions;
-        const deliveryAddress = new Address(serializedAddress);
-
-        return {
-          address: deliveryAddress,
-          ...restDeliveryOptions,
-        };
-      };
+    case 'address':
+      return (addressObj) => new Address(addressObj);
     case 'timeStamp':
       return (timeStamp) => {
         // This is firebase specific. Maybe you should consider redoing this, since it isn't actually deserializing.
@@ -104,18 +104,11 @@ function getDeserializerFor(key) {
 function getSerializerFor(key) {
   switch (key) {
     case 'orderItems':
-      return (orderItems) => {
-        return orderItems.contents; // this serializes the cart
+      return (cartOfOrderItems) => {
+        return cartOfOrderItems.contents; // this serializes the cart
       };
-    case 'deliveryOptions':
-      return (deliveryOptions) => {
-        const { address, ...otherDeliveryOptions } = deliveryOptions;
-        const serializedAddress = address.content; // this serializes the address
-        return {
-          address: serializedAddress,
-          otherDeliveryOptions,
-        };
-      };
+    case 'address':
+      return (address) => address.content;
     case 'timeStamp':
       return (timeStamp) => {
         // This is firebase specific. Maybe you should consider redoing this, since it isn't actually serializing.

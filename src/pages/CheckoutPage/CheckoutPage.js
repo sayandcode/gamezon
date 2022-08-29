@@ -5,11 +5,14 @@ import { Navigate, useLocation } from 'react-router-dom';
 import ErrorMessage from '../../components/ErrorMessage';
 import Cart from '../../utlis/Contexts/UserData/UserDataHelperClasses/Cart';
 import { useResource } from '../../utlis/SuspenseHelpers';
-import CheckoutDataHandler from './Helpers/CheckoutPageHelpers';
-import DeliveryForm from './Subcomponents/DeliveryForm';
+import DeliveryForm, {
+  DeliveryFormFallback,
+} from './Subcomponents/DeliveryForm';
 import CheckoutList, {
   CheckoutItemsListFallback,
 } from './Subcomponents/CheckoutList';
+import CheckoutPageDataHandler from './Helpers/CheckoutPageDataHandler';
+import useDataHandler from '../../utlis/CustomHooks/useDataHandler';
 
 function CheckoutPage() {
   const { state: reactRouterState } = useLocation();
@@ -19,13 +22,20 @@ function CheckoutPage() {
   // serializing and deserializing is necessary because of the nature of navigate-state/useLocation
   const cart = new Cart(reactRouterState.serializedCart);
 
-  /* CHECKOUT DATA RESOURCE */
-  const checkoutDataResource = useResource(getCheckoutData, []);
+  /* COMPONENT DATA HANDLER */
+  const dataHandler = useDataHandler(CheckoutPageDataHandler);
+
+  /* RESOURCES */
+  const checkoutItemsDataResource = useResource(getCheckoutItemsData, []);
+  const ordersMetadataResource = useResource(getOrdersMetadata, []);
 
   /* FUNCTION DEFINITIONS */
-  async function getCheckoutData() {
-    const cartItems = Object.values(cart.contents);
-    return CheckoutDataHandler.createFor(cartItems);
+  async function getCheckoutItemsData() {
+    return dataHandler.getCheckoutItemsData(cart);
+  }
+
+  async function getOrdersMetadata() {
+    return dataHandler.getOrdersMetadata();
   }
 
   return (
@@ -49,10 +59,18 @@ function CheckoutPage() {
           }
         >
           <Suspense fallback={<CheckoutItemsListFallback cart={cart} />}>
-            <CheckoutList checkoutDataResource={checkoutDataResource} />
+            <CheckoutList
+              checkoutItemsDataResource={checkoutItemsDataResource}
+            />
+          </Suspense>
+          <Suspense fallback={<DeliveryFormFallback />}>
+            <DeliveryForm
+              cart={cart}
+              ordersMetadataResource={ordersMetadataResource}
+              checkoutItemsDataResource={checkoutItemsDataResource}
+            />
           </Suspense>
         </ErrorBoundary>
-        <DeliveryForm cart={cart} checkoutDataResource={checkoutDataResource} />
       </Paper>
     </Stack>
   );

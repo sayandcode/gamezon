@@ -1,25 +1,36 @@
 import { Check, Error as ErrorIcon } from '@mui/icons-material';
 import { Box, Button, Skeleton, Stack, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
-import { Suspense, useContext, useReducer, useState } from 'react';
-import { ErrorBoundary } from 'react-error-boundary';
+import { useContext, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AddressSelector from '../../../components/Address/AddressSelector';
 import { NotificationSnackbarContext } from '../../../utlis/Contexts/NotificationSnackbarContext';
 import { UserContext } from '../../../utlis/Contexts/UserData/UserContext';
 import Cart from '../../../utlis/Contexts/UserData/UserDataHelperClasses/Cart';
+import useDataHandler from '../../../utlis/CustomHooks/useDataHandler';
 import Order from '../../../utlis/HelperClasses/OrderClass';
-import Price from '../../../utlis/HelperClasses/Price';
 import sleep from '../../../utlis/sleep';
-import DeliveryOptionsCheckboxes, {
-  defaultDeliveryOptions as initialFormValues,
-  deliveryOptionsBooleans,
-} from './DeliveryOptionsCheckboxes';
+import { resourcePropType } from '../../../utlis/SuspenseHelpers';
+import DeliveryFormDataHandler from '../Helpers/DeliveryFormDataHandler';
+import DeliveryOptionsCheckboxes from './DeliveryOptionsCheckboxes';
 
-function DeliveryForm({ cart, checkoutDataResource }) {
+function DeliveryForm({
+  cart,
+  ordersMetadataResource,
+  checkoutItemsDataResource,
+}) {
+  /* READ RESOURCES */
+  const checkoutItemsData = checkoutItemsDataResource.read();
+  const ordersMetadata = ordersMetadataResource.read();
+
+  /* MAKE HANDLERS */
+  const dataHandler = useDataHandler(
+    new DeliveryFormDataHandler(checkoutItemsData, ordersMetadata)
+  );
+
   const [formValues, setInForm] = useReducer(
     formUpdateReducer,
-    initialFormValues
+    dataHandler.initialFormValues
   );
 
   const [errorChecking, setErrorChecking] = useState(false);
@@ -44,11 +55,17 @@ function DeliveryForm({ cart, checkoutDataResource }) {
       setErrorChecking(true);
       return;
     }
+
+    /* Prepare the order */
     setIsFormSubmitting(true);
+    const { address, ...deliveryOptions } = formValues;
     const order = new Order({
       orderItems: cart,
-      deliveryOptions: formValues,
+      address,
+      deliveryOptions,
     });
+
+    /* And confirm it */
     order.confirmFor(user).then(formSuccessPath).catch(formFailPath);
   };
 
@@ -92,22 +109,12 @@ function DeliveryForm({ cart, checkoutDataResource }) {
       >
         <DeliveryOptionsCheckboxes
           formValues={formValues}
+          options={dataHandler.allDeliveryOptions}
           handleCheckboxChange={handleCheckboxChange}
         />
         <Typography variant="h4" fontWeight="bold">
-          Order Total:
-          <ErrorBoundary fallback={<ErrorIcon sx={{ color: 'error.main' }} />}>
-            <Suspense
-              fallback={
-                <Skeleton sx={{ display: 'inline-block' }} width="100px" />
-              }
-            >
-              <TotalPrice
-                formValues={formValues}
-                checkoutDataResource={checkoutDataResource}
-              />
-            </Suspense>
-          </ErrorBoundary>
+          Order Total:&nbsp;
+          {dataHandler.orderTotalPrice(formValues).print()}
         </Typography>
       </Stack>
       <Box sx={{ textAlign: 'center' }}>
@@ -134,21 +141,55 @@ function DeliveryForm({ cart, checkoutDataResource }) {
 
 DeliveryForm.propTypes = {
   cart: PropTypes.instanceOf(Cart).isRequired,
-  checkoutDataResource: PropTypes.shape({ read: PropTypes.func }).isRequired,
+  ordersMetadataResource: resourcePropType.isRequired,
+  checkoutItemsDataResource: resourcePropType.isRequired,
 };
 
 function formUpdateReducer(oldValues, newValues) {
   return { ...oldValues, ...newValues };
 }
 
-function TotalPrice({ checkoutDataResource, formValues }) {
-  const checkoutData = checkoutDataResource.read();
-  const totalPrice = Object.values(deliveryOptionsBooleans).reduce(
-    (currTotal, option) =>
-      formValues[option.name] ? Price.add(option.price, currTotal) : currTotal,
-    checkoutData.cartTotalPrice
+function DeliveryFormFallback() {
+  return (
+    <div>
+      <Typography variant="h6" ml={3} component="h2">
+        Choose delivery Address
+      </Typography>
+      <Box width="95%" mt={1} mx="auto">
+        <AddressSelector />
+      </Box>
+      <Stack
+        direction="row"
+        sx={{
+          width: '95%',
+          mx: 'auto',
+          my: 2,
+          gap: '5%',
+          justifyContent: 'flex-end',
+          alignItems: 'center',
+        }}
+      >
+        <Skeleton sx={{ height: '100px', width: '100%' }} />
+        <Typography variant="h4" fontWeight="bold" whiteSpace="nowrap">
+          Order Total:
+          <Skeleton sx={{ display: 'inline-block', width: '100px' }} />
+        </Typography>
+      </Stack>
+      <Box sx={{ textAlign: 'center' }}>
+        <Button
+          type="submit"
+          color="secondary"
+          size="large"
+          variant="contained"
+          endIcon={<Check />}
+          disabled
+        >
+          Confirm Order
+        </Button>
+      </Box>
+    </div>
   );
-  return totalPrice.print();
 }
 
 export default DeliveryForm;
+export { DeliveryFormFallback };

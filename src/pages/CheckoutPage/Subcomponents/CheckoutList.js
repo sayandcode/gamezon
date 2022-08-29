@@ -1,9 +1,10 @@
 import { Divider, Skeleton, Stack, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 import Cart from '../../../utlis/Contexts/UserData/UserDataHelperClasses/Cart';
+import { resourcePropType } from '../../../utlis/SuspenseHelpers';
 
-function CheckoutList({ checkoutDataResource }) {
-  const checkoutData = checkoutDataResource.read();
+function CheckoutList({ checkoutItemsDataResource }) {
+  const checkoutData = checkoutItemsDataResource.read();
 
   return (
     <Stack
@@ -55,7 +56,7 @@ function CheckoutList({ checkoutDataResource }) {
 }
 
 CheckoutList.propTypes = {
-  checkoutDataResource: PropTypes.shape({ read: PropTypes.func }).isRequired,
+  checkoutItemsDataResource: resourcePropType.isRequired,
 };
 
 function CheckoutItemsListFallback({ cart }) {
