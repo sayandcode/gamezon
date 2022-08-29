@@ -11,6 +11,7 @@ import Cart from './pages/CartPage/CartPage';
 import Account from './pages/Account';
 import CheckoutPage from './pages/CheckoutPage/CheckoutPage';
 import RedirectIfNotLoggedIn from './utlis/RedirectIfNotLoggedIn';
+import OrdersPage from './pages/OrdersPage/OrdersPage';
 
 function App() {
   return (
@@ -54,6 +55,14 @@ function App() {
                 element={
                   <RedirectIfNotLoggedIn>
                     <CheckoutPage />
+                  </RedirectIfNotLoggedIn>
+                }
+              />
+              <Route
+                path="/orders"
+                element={
+                  <RedirectIfNotLoggedIn>
+                    <OrdersPage />
                   </RedirectIfNotLoggedIn>
                 }
               />
