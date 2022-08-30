@@ -136,7 +136,9 @@ function UserContextProvider({ children }) {
     }
     // serializing and deserializing is necessary because of the nature of navigate-state/useLocation
     const serializedCart = cart.contents;
-    navigate('/checkout', { state: { serializedCart } });
+    navigate('/checkout', {
+      state: { serializedCart, prevPath: window.location.pathname },
+    });
   }
 
   /* GIVE ABILITY TO MANIPULATE USERDATA USING CONTEXT */

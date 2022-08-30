@@ -2,7 +2,7 @@ import { Check, Error as ErrorIcon } from '@mui/icons-material';
 import { Box, Button, Skeleton, Stack, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useContext, useReducer, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import AddressSelector from '../../../components/Address/AddressSelector';
 import { NotificationSnackbarContext } from '../../../utlis/Contexts/NotificationSnackbarContext';
 import { UserContext } from '../../../utlis/Contexts/UserData/UserContext';
@@ -15,10 +15,16 @@ import DeliveryFormDataHandler from '../Helpers/DeliveryFormDataHandler';
 import DeliveryOptionsCheckboxes from './DeliveryOptionsCheckboxes';
 
 function DeliveryForm({
-  cart,
+  cart: checkoutSessionCart,
   ordersMetadataResource,
   checkoutItemsDataResource,
 }) {
+  /* CONTEXTS */
+  const {
+    state: { prevPath },
+  } = useLocation();
+  const { cart: globalCart } = useContext(UserContext);
+
   /* READ RESOURCES */
   const checkoutItemsData = checkoutItemsDataResource.read();
   const ordersMetadata = ordersMetadataResource.read();
@@ -60,13 +66,16 @@ function DeliveryForm({
     setIsFormSubmitting(true);
     const { address, ...deliveryOptions } = formValues;
     const order = new Order({
-      orderItems: cart,
+      orderItems: checkoutSessionCart,
       address,
       deliveryOptions,
     });
 
     /* And confirm it */
     order.confirmFor(user).then(formSuccessPath).catch(formFailPath);
+
+    /* post-order processing */
+    if (prevPath === '/cart') globalCart.empty();
   };
 
   /* FORM SUBMIT SUCCESS AND FAILURE PATHS */

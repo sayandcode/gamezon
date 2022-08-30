@@ -1,3 +1,7 @@
+import {
+  KeyboardDoubleArrowLeft as ChevronLeftIcon,
+  KeyboardDoubleArrowRight as ChevronRightIcon,
+} from '@mui/icons-material';
 import { Button, Divider, Paper, Stack, Typography } from '@mui/material';
 import { Suspense, useContext, useEffect, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
@@ -71,6 +75,8 @@ function OrdersPage() {
         <Divider sx={{ my: 2 }} />
         <Stack direction="row" gap={2} justifyContent="center">
           <Button
+            variant="contained"
+            startIcon={<ChevronLeftIcon />}
             onClick={() => setPageNo((old) => old - 1)}
             disabled={isButtonDisabled}
             sx={{
@@ -80,6 +86,8 @@ function OrdersPage() {
             Newer
           </Button>
           <Button
+            variant="contained"
+            endIcon={<ChevronRightIcon />}
             onClick={() => setPageNo((old) => old + 1)}
             disabled={isButtonDisabled}
             sx={{
