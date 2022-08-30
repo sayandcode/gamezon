@@ -29,6 +29,8 @@ class ProductPageMainItemHandler extends RootDatabaseEntity {
 
   #variants;
 
+  #discountFraction;
+
   #description;
 
   #imgUrls;
@@ -41,6 +43,7 @@ class ProductPageMainItemHandler extends RootDatabaseEntity {
       Title,
       'Genre(s)': genres,
       variants: variantsObj,
+      discount: discountFraction,
       Description,
       trailerURL,
     } = doc.data;
@@ -48,6 +51,7 @@ class ProductPageMainItemHandler extends RootDatabaseEntity {
     this.#title = Title;
     this.#genres = genres;
     this.#variants = this.constructor.#extractVariantsFromObj(variantsObj);
+    this.#discountFraction = discountFraction;
     this.#description = Description;
     this.#imgUrls = screenshotUrls;
     this.#trailerUrl = trailerURL;
@@ -65,6 +69,10 @@ class ProductPageMainItemHandler extends RootDatabaseEntity {
 
   get variants() {
     return this.#variants;
+  }
+
+  get discountFraction() {
+    return this.#discountFraction;
   }
 
   get description() {

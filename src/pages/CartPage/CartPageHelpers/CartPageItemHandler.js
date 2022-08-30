@@ -1,6 +1,19 @@
 import Price from '../../../utlis/HelperClasses/Price';
 
 class CartPageItemHandler {
+  static #extractPriceFor(requiredVariantConsoleName, itemDocData) {
+    const { variants: allVariantsDetails, discount: discountFraction } =
+      itemDocData;
+    const requiredVariantDetails = allVariantsDetails.find(
+      (variant) => variant.consoleName === requiredVariantConsoleName
+    );
+
+    // We dont need to check for null case since all items in cart must have price
+    const variantPrice = new Price(requiredVariantDetails.price);
+    if (discountFraction) return variantPrice.multiply(1 - discountFraction);
+    return variantPrice;
+  }
+
   static async createFor(cartItem, { productDataCache }) {
     const productData = await productDataCache.get({
       productName: cartItem.name,
@@ -28,11 +41,7 @@ class CartPageItemHandler {
     this.#count = itemCartData.count;
 
     const itemDocData = itemProductData.doc.data;
-    const allVariantsDetails = itemDocData.variants;
-    const requiredVariantDetails = allVariantsDetails.find(
-      (variant) => variant.consoleName === itemCartData.variant
-    );
-    this.#price = new Price(requiredVariantDetails.price);
+    this.#price = this.constructor.#extractPriceFor(this.#variant, itemDocData);
     this.#boxArtUrl = itemProductData.boxArtUrl;
   }
 

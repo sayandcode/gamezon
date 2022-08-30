@@ -46,14 +46,6 @@ class Price {
     this.#value = value;
   }
 
-  // get currency() {
-  //   return this.#currency;
-  // }
-
-  // get value() {
-  //   return this.#value;
-  // }
-
   /* Multiply is a scalar operation, so we can have it on the object methods. */
   multiply(count) {
     const multipliedValue = this.#value * count;

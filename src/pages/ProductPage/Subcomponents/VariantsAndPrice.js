@@ -1,6 +1,7 @@
 import { Skeleton, Typography } from '@mui/material';
 import { useState } from 'react';
 import { resourcePropType } from '../../../utlis/SuspenseHelpers';
+import PriceDisplay from './PriceDisplay';
 import ProductActionButtons, {
   ProductActionButtonsFallback,
 } from './ProductActionButtons';
@@ -17,8 +18,8 @@ function VariantsAndPrice({ productPageDataResource }) {
   const [currVariant, setCurrVariant] = useState(variantNames[0]);
 
   /* BUTTON STATUS */
-  const currPrice = variants[currVariant].price;
-  const isButtonsDisabled = !currPrice;
+  const hasPrice = !!variants[currVariant].price;
+  const isButtonsDisabled = !hasPrice;
 
   return (
     <>
@@ -29,19 +30,10 @@ function VariantsAndPrice({ productPageDataResource }) {
           setCurrVariant((oldVariant) => newVariant || oldVariant)
         }
       />
-      <Typography variant="h6" display="inline">
-        Price:
-      </Typography>
-      <Typography
-        variant="h4"
-        color="text.primary"
-        fontWeight="bold"
-        ml={4}
-        gutterBottom
-        width={200}
-      >
-        {currPrice ? currPrice.print() : 'Unreleased'}
-      </Typography>
+      <PriceDisplay
+        productData={productPageData.product}
+        currVariant={currVariant}
+      />
       <ProductActionButtons
         disabled={isButtonsDisabled}
         currVariant={currVariant}

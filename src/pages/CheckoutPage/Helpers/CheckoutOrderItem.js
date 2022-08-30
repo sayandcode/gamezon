@@ -2,11 +2,17 @@ import { GameDatabase } from '../../../utlis/DBHandlers/DBManipulatorClasses';
 import Price from '../../../utlis/HelperClasses/Price';
 
 class CheckoutOrderItem {
-  static #extractPriceObjFor(variant, data) {
-    const requiredVariantData = data.variants.find(
-      (thisVariant) => thisVariant.consoleName === variant
+  static #extractPriceFor(requiredVariantConsoleName, itemDocData) {
+    const { variants: allVariantsDetails, discount: discountFraction } =
+      itemDocData;
+    const requiredVariantDetails = allVariantsDetails.find(
+      (variant) => variant.consoleName === requiredVariantConsoleName
     );
-    return requiredVariantData.price;
+
+    // We dont need to check for null case since all items in cart must have price
+    const variantPrice = new Price(requiredVariantDetails.price);
+    if (discountFraction) return variantPrice.multiply(1 - discountFraction);
+    return variantPrice;
   }
 
   /* createFor fetches the required doc from the database, and extracts the required data from the doc
@@ -14,12 +20,9 @@ class CheckoutOrderItem {
   static async createFor(cartItem) {
     const itemProductDataDoc = await GameDatabase.get({ title: cartItem.name });
     const itemProductData = itemProductDataDoc.data;
-    const priceObj = this.#extractPriceObjFor(
-      cartItem.variant,
-      itemProductData
-    );
+    const price = this.#extractPriceFor(cartItem.variant, itemProductData);
 
-    return new this({ ...cartItem, priceObj });
+    return new this({ ...cartItem, price });
   }
 
   #name;
@@ -32,11 +35,11 @@ class CheckoutOrderItem {
 
   #productID;
 
-  constructor({ variant, productID, name, count, priceObj }) {
+  constructor({ variant, productID, name, count, price }) {
     this.#name = name;
     this.#variant = variant;
     this.#count = count;
-    this.#price = new Price(priceObj);
+    this.#price = price;
     this.#productID = productID;
   }
 
