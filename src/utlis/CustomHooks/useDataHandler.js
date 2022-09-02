@@ -16,7 +16,7 @@ function useDataHandler(instantiatedHandler) {
     const handler = handlerRef.current;
     /* Dispose the handler, if the defined handler feels like it has something to 
     dispose of. This eliminates the need for obligatory methods on the Handler object. */
-    if (Object.hasOwn(handler, 'dispose')) handler.dispose();
+    if ('dispose' in handler) handler.dispose();
   }
   return handlerRef.current;
 }

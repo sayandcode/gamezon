@@ -1,7 +1,6 @@
 import React, { useContext, useState } from 'react';
 import {
   Logout as LogoutIcon,
-  Search as SearchIcon,
   ShoppingCart as ShoppingCartIcon,
 } from '@mui/icons-material';
 import {
@@ -9,10 +8,7 @@ import {
   Avatar,
   Badge,
   Button,
-  darken,
   Divider,
-  InputAdornment,
-  InputBase,
   ListItemIcon,
   Menu,
   MenuItem,
@@ -28,6 +24,7 @@ import { auth } from '../utlis/firebase-config';
 import { NotificationSnackbarContext } from '../utlis/Contexts/NotificationSnackbarContext';
 import HideOnScroll from '../utlis/HideOnScroll';
 import { LoginModalContext } from '../utlis/Contexts/LoginModalContext';
+import SearchBox from './SearchBox/SearchBox';
 
 const Navbar = React.forwardRef((props, ref) => {
   return (
@@ -40,7 +37,7 @@ const Navbar = React.forwardRef((props, ref) => {
             to="/"
             sx={{ color: 'inherit', textDecoration: 'none' }}
           />
-          <SearchBar />
+          <SearchBox />
           <NavbarIcons />
         </Toolbar>
       </AppBar>
@@ -49,39 +46,6 @@ const Navbar = React.forwardRef((props, ref) => {
 });
 
 export default Navbar;
-
-function SearchBar() {
-  return (
-    <InputBase
-      placeholder="Search for anything...(games,consoles, etc.)"
-      sx={{
-        bgcolor: 'primary.contrastText',
-        borderRadius: 1,
-        mx: 5,
-        paddingLeft: 1,
-        py: 0.25,
-        width: '50%',
-        '&.Mui-focused': {
-          bgcolor: (theme) => darken(theme.palette.primary.contrastText, 0.1),
-        },
-      }}
-      endAdornment={
-        <InputAdornment position="end">
-          <Button
-            sx={{
-              borderTopLeftRadius: 0,
-              borderBottomLeftRadius: 0,
-            }}
-            color="secondary"
-            variant="contained"
-          >
-            <SearchIcon sx={{ color: 'text.primary' }} />
-          </Button>
-        </InputAdornment>
-      }
-    />
-  );
-}
 
 function NavbarIcons() {
   const { user, cart } = useContext(UserContext);
