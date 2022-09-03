@@ -1,6 +1,6 @@
 import { GameDatabase } from '../../../utlis/DBHandlers/DBManipulatorClasses';
 import { GameDatabaseQuery } from '../../../utlis/DBHandlers/DBQueryClasses';
-import { getDataFromQuery } from '../../../utlis/DBHandlers/MockDBFetch';
+import { getDataFromQuery } from '../../../utlis/DBHandlers/DBFetch';
 import ProductsDisplayCarouselItemHandler from './ProductsDisplayCarouselItemHandler';
 
 class ProductsDisplayCarouselCache {

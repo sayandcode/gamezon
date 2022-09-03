@@ -1,5 +1,5 @@
 import { GameDatabase } from '../DBHandlers/DBManipulatorClasses';
-import { getboxArtFor } from '../DBHandlers/MockDBFetch';
+import { getboxArtFor } from '../DBHandlers/DBFetch';
 
 class ProductDataCache {
   #cache = {};

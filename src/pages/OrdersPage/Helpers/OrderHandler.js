@@ -1,6 +1,6 @@
 import { format as formatDate } from 'date-fns';
 import RootDatabaseEntity from '../../../utlis/DBHandlers/DBDataConverter';
-import { getboxArtFor } from '../../../utlis/DBHandlers/MockDBFetch';
+import { getboxArtFor } from '../../../utlis/DBHandlers/DBFetch';
 import Order from '../../../utlis/HelperClasses/OrderClass';
 import OrdersMetadata from '../../../utlis/HelperClasses/Metadata/OrdersMetadata';
 import Price from '../../../utlis/HelperClasses/Price';

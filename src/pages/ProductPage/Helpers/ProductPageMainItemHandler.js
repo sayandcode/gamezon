@@ -1,6 +1,6 @@
 import RootDatabaseEntity from '../../../utlis/DBHandlers/DBDataConverter';
 import { GameDatabase } from '../../../utlis/DBHandlers/DBManipulatorClasses';
-import { getScreenshotFor } from '../../../utlis/DBHandlers/MockDBFetch';
+import { getScreenshotFor } from '../../../utlis/DBHandlers/DBFetch';
 import Price from '../../../utlis/HelperClasses/Price';
 
 class ProductPageMainItemHandler extends RootDatabaseEntity {

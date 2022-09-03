@@ -2,7 +2,7 @@ import RootDatabaseEntity from '../../../utlis/DBHandlers/DBDataConverter';
 import {
   getboxArtFor,
   getScreenshotFor,
-} from '../../../utlis/DBHandlers/MockDBFetch';
+} from '../../../utlis/DBHandlers/DBFetch';
 
 class ImageCarouselItem extends RootDatabaseEntity {
   static async createFrom(doc) {

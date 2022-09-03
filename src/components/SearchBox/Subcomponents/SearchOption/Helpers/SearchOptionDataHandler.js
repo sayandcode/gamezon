@@ -1,4 +1,4 @@
-import { getboxArtFor } from '../../../../../utlis/DBHandlers/MockDBFetch';
+import { getboxArtFor } from '../../../../../utlis/DBHandlers/DBFetch';
 
 class SearchOptionDataHandler {
   #imgUrl;

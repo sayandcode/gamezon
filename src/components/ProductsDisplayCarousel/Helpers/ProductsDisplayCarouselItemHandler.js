@@ -1,5 +1,5 @@
 import RootDatabaseEntity from '../../../utlis/DBHandlers/DBDataConverter';
-import { getboxArtFor } from '../../../utlis/DBHandlers/MockDBFetch';
+import { getboxArtFor } from '../../../utlis/DBHandlers/DBFetch';
 import Price from '../../../utlis/HelperClasses/Price';
 
 class ProductsDisplayCarouselItemHandler extends RootDatabaseEntity {
