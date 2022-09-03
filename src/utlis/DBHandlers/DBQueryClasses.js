@@ -17,6 +17,15 @@ import {
 } from './DBNames';
 
 export class DatabaseQuery {
+  static convertToDatabaseComparison(comparison) {
+    switch (comparison) {
+      case 'includes':
+        return 'array-contains';
+      default:
+        return comparison;
+    }
+  }
+
   constructor(collectionPath) {
     this.collectionPath = collectionPath;
   }
@@ -32,9 +41,16 @@ export class DatabaseQuery {
     if (comparison === 'exists') return this.orderBy().orderBy(key);
 
     const copy = this.clone();
-    const officialFieldName = copy.constructor.convertToDatabaseField(key);
+    const officialFieldName = this.constructor.convertToDatabaseField(key);
+    const officialComparison =
+      this.constructor.convertToDatabaseComparison(comparison);
+
     copy.whereFields = copy.whereFields || [];
-    copy.whereFields.push({ key: officialFieldName, comparison, value });
+    copy.whereFields.push({
+      key: officialFieldName,
+      comparison: officialComparison,
+      value,
+    });
     return copy;
   }
 
@@ -202,9 +218,11 @@ export class GameDatabaseQuery extends DatabaseQuery {
         return 'discount';
       case 'spotlight':
         return 'spotlight';
+      case 'consoles':
+        return 'Console(s)';
+
       case undefined:
         return 'Title'; // Title is chosen as the default sorting for the GameDatabaseQuery
-
       default:
         throw new Error(
           `Unknown field: ${field}\n Please request to add this field in DBQueryClasses`

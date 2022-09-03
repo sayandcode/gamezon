@@ -5,6 +5,34 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
+          "fieldPath": "`Console(s)`",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "Title",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "games",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "startingPrice.value",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "Title",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "games",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
           "fieldPath": "Title",
           "order": "ASCENDING"
         },
