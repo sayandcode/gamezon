@@ -1,12 +1,14 @@
 import { Add as AddIcon } from '@mui/icons-material';
 import { alpha, Box, Button, Stack, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
-import { useContext, useState } from 'react';
+import { useContext, useState, lazy, Suspense } from 'react';
 import { formatPhoneNumberIntl } from 'react-phone-number-input';
 import { UserContext } from '../../utlis/Contexts/UserData/UserContext';
 import Address from '../../utlis/Contexts/UserData/UserDataHelperClasses/AddressList/AddressClass';
+import LoadingOverlay from '../LoadingOverlay';
 import ScrollingSelect from '../ScrollingSelect/ScrollingSelect';
-import AddressFormModal from './AddressFormModal';
+
+const AddressFormModal = lazy(() => import('./AddressFormModal'));
 
 function AddressSelector({
   onSelect: handleSelect,
@@ -100,11 +102,22 @@ function AddressSelector({
       >
         New Address
       </Button>
-      <AddressFormModal
-        open={addressModalProps.open}
-        edit={addressModalProps.edit}
-        onClose={() => setAddressModalProps({ open: false, edit: null })}
-      />
+      <Suspense
+        fallback={
+          <LoadingOverlay
+            open={addressModalProps.open}
+            onClose={() => setAddressModalProps({ open: false, edit: null })}
+          />
+        }
+      >
+        {addressModalProps.open && (
+          <AddressFormModal
+            open={addressModalProps.open}
+            edit={addressModalProps.edit}
+            onClose={() => setAddressModalProps({ open: false, edit: null })}
+          />
+        )}
+      </Suspense>
     </Box>
   );
 }
