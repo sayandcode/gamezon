@@ -13,10 +13,15 @@ import VariantsAndPrice, {
   VariantsAndPriceFallback,
 } from './Subcomponents/VariantsAndPrice';
 
+/* This wrapper component is for the sole purpose of unmounting and remounting
+the page content, when the route changes(i.e. the product changes) */
 function ProductPage() {
   const params = useParams();
   const { productName } = params;
+  return <PageContent productName={productName} key={productName} />;
+}
 
+function PageContent({ productName }) {
   const productPageDataResource = useResource(getProductPageData, []);
 
   /* CLEANUP DATA LEAKS */
@@ -35,12 +40,12 @@ function ProductPage() {
   }
 
   return (
-    /* All of the suspense components are handled in the same file where the 
+    /* All of the suspense components are handled in the same file where the
     resource is created, i.e here. */
-    /* Any component that has a prop *Resource triggers the suspense boundary. 
+    /* Any component that has a prop *Resource triggers the suspense boundary.
     This pattern does two things:
-      1) Prevents unnecessary prop drilling of resources
-      2) Makes it clear which components need suspense boundaries */
+      1- Prevents unnecessary prop drilling of resources
+      2- Makes it clear which components need suspense boundaries */
     <ErrorBoundary fallback={<ErrorFallback />}>
       <Suspense fallback={<SuspenseFallback productName={productName} />}>
         <Stack m={2} spacing={2}>
@@ -79,6 +84,10 @@ function ProductPage() {
     </ErrorBoundary>
   );
 }
+
+PageContent.propTypes = {
+  productName: PropTypes.string.isRequired,
+};
 
 function SuspenseFallback({ productName }) {
   return (
