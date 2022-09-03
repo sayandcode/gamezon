@@ -1,45 +1,25 @@
 import ProductsDisplayCarouselCache from './ProductsDisplayCarouselCache';
 
 class ProductsDisplayCarouselDataHandler {
-  static #itemsCache = new ProductsDisplayCarouselCache();
+  #itemsCache = new ProductsDisplayCarouselCache();
 
-  static async createFor(items, { rangeStart, rangeEnd }) {
-    const carouselItemsDataHandlers = await this.#itemsCache.fetch(items, {
-      rangeStart,
-      rangeEnd,
-    });
-    return new this({
-      carouselItemsDataHandlers,
-      rangeStart,
-      rangeEnd,
-    });
-  }
-
-  #carouselItems;
-
-  #rangeStart;
-
-  #rangeEnd;
-
-  constructor({ carouselItemsDataHandlers, rangeStart, rangeEnd }) {
-    this.#rangeStart = rangeStart;
-    this.#rangeEnd = rangeEnd;
-    this.#carouselItems = carouselItemsDataHandlers;
-  }
-
-  get carouselItems() {
-    return this.#carouselItems;
-  }
-
-  get showArrow() {
-    const cache = this.constructor.#itemsCache;
-    return {
-      left: this.#rangeStart !== 0,
-      right: cache.moreItemsAvailable || this.#rangeEnd < cache.highestIndex,
+  async getItems(items, { rangeStart, rangeEnd }) {
+    const cache = this.#itemsCache;
+    const carouselItems = await cache.fetch(items, { rangeStart, rangeEnd });
+    const showArrow = {
+      left: rangeStart !== 0,
+      right: cache.moreItemsAvailable || rangeEnd < cache.highestIndex,
     };
+
+    const returnObj = {
+      carouselItems,
+      showArrow,
+    };
+    Object.freeze(returnObj); // read-only
+    return returnObj;
   }
 
-  static clearCache() {
+  dispose() {
     this.#itemsCache.clear();
   }
 }

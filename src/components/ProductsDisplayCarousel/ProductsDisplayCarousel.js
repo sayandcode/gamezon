@@ -30,6 +30,7 @@ import { useResource } from '../../utlis/SuspenseHelpers';
 import ErrorMessage from '../ErrorMessage';
 import ProductsDisplayCarouselDataHandler from './Helpers/ProductsDisplayCarouselDataHandler';
 import ProductsDisplayCarouselItemHandler from './Helpers/ProductsDisplayCarouselItemHandler';
+import useDataHandler from '../../utlis/CustomHooks/useDataHandler';
 
 const CAROUSEL_ITEM_HEIGHT = '250px';
 const CAROUSEL_ITEM_WIDTH = '150px';
@@ -47,8 +48,11 @@ export default function ProductsDisplayCarousel({ title, items }) {
   const [rangeStart, setRangeStart] = useState(0);
   const rangeEnd = rangeStart + itemCount - 1;
 
+  /* HANDLER */
+  const dataHandler = useDataHandler(new ProductsDisplayCarouselDataHandler());
+
   /* PROVIDE ITEMSRESOURCE */
-  const dataResource = useResource(getProductDisplayCarouselData, [
+  const itemsResource = useResource(getItemsData, [
     rangeStart,
     itemCount,
     manualUpdateCounter,
@@ -56,13 +60,10 @@ export default function ProductsDisplayCarousel({ title, items }) {
 
   /* EMPTY CACHE ON ITEMS PROP CHANGE */
   useEffect(() => {
-    ProductsDisplayCarouselDataHandler.clearCache();
+    dataHandler.dispose();
     setRangeStart(0);
     manualUpdate();
   }, [items]);
-
-  /* DISPOSE OF THE DATA WHEN COMPONENT IS UNMOUNTED */
-  useEffect(() => ProductsDisplayCarouselDataHandler.clearCache(), []);
 
   /* RUNTIME CALCULATIONS */
   const changePage = ({ forward }) => {
@@ -74,8 +75,8 @@ export default function ProductsDisplayCarousel({ title, items }) {
   };
 
   /* FUNCTION DEFINITIONS */
-  function getProductDisplayCarouselData() {
-    return ProductsDisplayCarouselDataHandler.createFor(items, {
+  async function getItemsData() {
+    return dataHandler.getItems(items, {
       rangeStart,
       rangeEnd,
     });
@@ -97,7 +98,7 @@ export default function ProductsDisplayCarousel({ title, items }) {
         <ErrorBoundary fallback={<ErrorFallback />}>
           <Suspense fallback={<CarouselSkeletons count={itemCount} />}>
             <CarouselItems
-              dataResource={dataResource}
+              dataResource={itemsResource}
               changePage={changePage}
             />
           </Suspense>
