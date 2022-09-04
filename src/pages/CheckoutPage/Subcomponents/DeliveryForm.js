@@ -21,7 +21,7 @@ function DeliveryForm({
 }) {
   /* CONTEXTS */
   const {
-    state: { prevPath },
+    state: { prevHash },
   } = useLocation();
   const { cart: globalCart } = useContext(UserContext);
 
@@ -75,7 +75,7 @@ function DeliveryForm({
     order.confirmFor(user).then(formSuccessPath).catch(formFailPath);
 
     /* post-order processing */
-    if (prevPath === '/cart') globalCart.empty();
+    if (prevHash === '#/cart') globalCart.empty();
   };
 
   /* FORM SUBMIT SUCCESS AND FAILURE PATHS */

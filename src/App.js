@@ -1,4 +1,4 @@
-import { Routes, Route, BrowserRouter } from 'react-router-dom';
+import { Routes, Route, HashRouter } from 'react-router-dom';
 import { Box } from '@mui/material';
 import Footer from './components/Footer';
 import Navbar from './components/Navbar';
@@ -15,7 +15,7 @@ import OrdersPage from './pages/OrdersPage/OrdersPage';
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <ContextProvidersWrapper>
         <Box
           sx={{
@@ -84,7 +84,7 @@ function App() {
           </footer>
         </Box>
       </ContextProvidersWrapper>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
