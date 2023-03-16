@@ -2,6 +2,9 @@
 This was my first major React project. It took me all the way from learning useState-useEffect, to concurrent react, and maintaining global state using reducers. 
 
 ## Libraries and notable APIs used
+
+<img src="documentation/readmeImages/mui-banner.webp" alt="Material UI banner" style="max-height:300px;width:100%;object-fit:contain;" />
+
 ### Material UI
 I used MUI for most of the components, and as a global theme provider. This was my first experience with a component library, and I was impressed. In my previous projects, writing the CSS was the worst part of the job. Two reasons why:
   1. **Styling phase is detached from the logic phase:** Conceptually, the UI design guides the logic of the component. So it makes sense to have them both in the same place, instead of having some contrived separation using file extensions. When writing the style rules, you don't know all the scenarios that require styling; which only come up when you write the JS. So this kind of pre-emptive styling was always incomplete until you wrote the JS, since you had to come back to add the finishing touches.
@@ -15,6 +18,8 @@ All I needed to focus on was the small parts of the UI I needed to customize to 
 
 MUI's customization and theming turned out to be complex, but immensely powerful. I now feel confident that MUI can help build almost any of the components for a standard website, while providing a theme that is starkly distinct from any cookie cutter websites and CSS frameworks.
 
+<img src="documentation/readmeImages/puppeteer-banner.webp" alt="Puppeteer banner" style="max-height:300px;width:100%;object-fit:contain;" />
+
 ### Puppeteer
 A significant chunk of the development time for this project went into scraping the dataset off the internet. My only previous experience with scraping was seeing Jesse Eisenberg write Perl scripts from his dorm room in the Social Network. 
 
@@ -22,13 +27,21 @@ Although puppeteer was straightforward enough, the bulk of my time went into red
 
 What I do know is that I have iterated over my designs several times and each subsequent iteration provided incremental improvements to the developer(ie. my) experience. Keep in mind that at the time of scraping the dataset, and creating the database, the front-end of the website was non-existent. I was collecting data and organizing it, with nothing more than a hypothesis that this could be useful in the final website. Perhaps if I knew about backend design, I would have approached this in a more structured manner, and not dealt with as much frustration.
 
+<img src="documentation/readmeImages/firebase-banner.webp" alt="Firebase banner" style="max-height:300px;width:100%;object-fit:contain;" />
+
 ### Firebase
 Firebase was one of the big stepping stones for me in this project. Aside from React itself, this was one of the main libraries I intended to get better at using this project. I had seen fireship.io's videos and noticed how he says firebase is very beginner friendly. Nothing really is *friendly* when you first learn it. But after using firebase extensively for this project - using it for authentication, pageinated queries, nested collections - I understand how elegant firebase is.
+
+<img src="documentation/readmeImages/algolia-banner.webp" alt="Algolia banner" style="max-height:300px;width:100%;object-fit:contain;" />
 
 ### Algolia
 I did not expect to use algolia in this project. However when firebase's documentation pointed to it, and gave me no other option, I decided to use it to implement the search feature. Initially, I was a little overwhelmed with the features (and slightly afraid of emptying my monthly search quota), but very quickly, I got the feeling that algolia is just like firebase: *Overwhelming, but elegant*.
 
 I was initially going to use their `InstantSearch.js` library, but then decided that at this stage of the website, their base api client `algoliasearch` was more than enough.
+
+<img src="documentation/readmeImages/formik-banner.webp" alt="Formik banner" style="max-height:300px;width:100%;object-fit:contain;margin-bottom:1rem;" />
+
+<img src="documentation/readmeImages/yup-banner.webp" alt="Yup banner" style="max-height:300px;width:100%;object-fit:contain;" />
 
 ### Formik and Yup
 This was another one of the libraries I intended, but didn't expect to use in this project. In this very project, I have used formik+yup for one form and implemented the other using plain react; and the difference in DX is stark. Formik+Yup provides a much more streamlined experience and handles the different input cases much more elegantly than manually implementing these checks.
@@ -37,10 +50,14 @@ However I did notice that there was noticeable lag in the form when using these 
 
 One other thing I'd like to mention is that I created a custom component to use `react-phone-number-input` to accept the user's phone number along with country code. That turned out to be a huge headache. The component logic was straightforward, but styling the component with MUI, while making sure the logic still worked, was a pain in the ass. In hindsight, this would have been much simpler if I read the documentation for `react-phone-number-input` more deeply the first time. However through this intense headache of a task, I have become quite adept at creating custom components with MUI, and overriding the default styles for any stock components.
 
+<img src="documentation/readmeImages/suspense-banner.webp" alt="React Suspense banner" style="max-height:300px;width:100%;object-fit:contain;" />
+
 ### Suspense for data fetching
 Although this is not a separate library, it deserves its own place in this write up. Including suspense for data fetching did more than just add a fallback UI. In hindsight, I think that suspense was one of the biggest drivers for me to clean up the low-level architecture of my react components. Including `resource`s, forced me to abstract the data handling to a separate class, and handle the data within the component in a much more elegant, and declarative fashion. 
 
 Huge shoutout to [Sam Selikoff](https://www.youtube.com/c/SamSelikoff). His channel might be small, but the stuff in there is gold. His suspense videos are really good. The login modal component animation is a direct inspiration from his framer motion video.
+
+<img src="documentation/readmeImages/js-proxy-banner.webp" alt="Javascript Proxy banner" style="max-height:300px;width:100%;object-fit:contain;" />
 
 ### Reducers and Proxies
 This is definitely not something I expected I'd learn through this project. Instead it was mothered by the necessity of the application. I had to maintain a global state for the user data like the cart and wishlist, since they could conceptually be modified from any location in the application. For this, the solution I ended up making was to maintain a global state, and push changes to this state using a common reducer-like function. So no matter what property was changed, this was propagated to the global state using the same reducer function, carrying differing payloads. Several days after implementing this, I came to know that this is called a reducer pattern. A delightful surprise. Reminds me of how I ended up making HTML templates and document fragments in my previous project(toDoApp), since building out the UI using JS is very cumbersome. That was just JSX!
@@ -164,7 +181,7 @@ I had learnt about OOP first in my school days when we were taught C++. I knew w
 > ***That's a class.***
 
 <div style="text-align:center">
-<img src="slap-the-head-oh-no.gif" alt="Facepalm" width="60%" >
+<img src="documentation/readmeImages/slap-the-head-oh-no.webp" alt="Facepalm" style="width:80%; max-height:300px;object-fit:contain;" >
 </div>
 
 That's it? I was doing screwed up classes(JS closures) all this time. Why not go all the way and use the ES6 syntax. I thought, instead of having these long ass function definitions inside the react component, let me just extract it to a class.
