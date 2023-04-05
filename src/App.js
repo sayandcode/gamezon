@@ -18,70 +18,93 @@ function App() {
     <HashRouter>
       <ContextProvidersWrapper>
         <Box
+          as="h1"
           sx={{
-            minHeight: '100vh',
-            position: 'relative',
+            display: { xs: 'flex', md: 'none' },
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh',
+            fontSize: '1rem',
+            px: 1,
+            textAlign: 'center',
           }}
         >
-          <Navbar />
-          <PersistentComponents />
-          <main>
-            <Routes>
-              <Route path="/" element={<Home />}>
-                <Route
-                  path="/confirmEmailLogin"
-                  element={<ConfirmEmailLogin />}
-                />
-              </Route>
-              <Route path="/product/:productName" element={<ProductPage />} />
-              <Route
-                path="/cart"
-                element={
-                  <RedirectIfNotLoggedIn>
-                    <Cart />
-                  </RedirectIfNotLoggedIn>
-                }
-              />
-              <Route
-                path="/account"
-                element={
-                  <RedirectIfNotLoggedIn>
-                    <Account />
-                  </RedirectIfNotLoggedIn>
-                }
-              />
-              <Route
-                path="/checkout"
-                element={
-                  <RedirectIfNotLoggedIn>
-                    <CheckoutPage />
-                  </RedirectIfNotLoggedIn>
-                }
-              />
-              <Route
-                path="/orders"
-                element={
-                  <RedirectIfNotLoggedIn>
-                    <OrdersPage />
-                  </RedirectIfNotLoggedIn>
-                }
-              />
-              <Route
-                path="*"
-                element={<h1>Error 404: Page doesn&apos;t exist</h1>}
-              />
-            </Routes>
-          </main>
-          <footer
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              width: '100%',
-              transform: 'translateY(100%)',
+          This website is not intended to be used on mobile
+        </Box>
+        <Box
+          sx={{
+            display: {
+              xs: 'none',
+              md: 'block',
+            },
+          }}
+        >
+          <Box
+            sx={{
+              minHeight: '100vh',
+              position: 'relative',
             }}
           >
-            <Footer />
-          </footer>
+            <Navbar />
+            <PersistentComponents />
+            <main>
+              <Routes>
+                <Route path="/" element={<Home />}>
+                  <Route
+                    path="/confirmEmailLogin"
+                    element={<ConfirmEmailLogin />}
+                  />
+                </Route>
+                <Route path="/product/:productName" element={<ProductPage />} />
+                <Route
+                  path="/cart"
+                  element={
+                    <RedirectIfNotLoggedIn>
+                      <Cart />
+                    </RedirectIfNotLoggedIn>
+                  }
+                />
+                <Route
+                  path="/account"
+                  element={
+                    <RedirectIfNotLoggedIn>
+                      <Account />
+                    </RedirectIfNotLoggedIn>
+                  }
+                />
+                <Route
+                  path="/checkout"
+                  element={
+                    <RedirectIfNotLoggedIn>
+                      <CheckoutPage />
+                    </RedirectIfNotLoggedIn>
+                  }
+                />
+                <Route
+                  path="/orders"
+                  element={
+                    <RedirectIfNotLoggedIn>
+                      <OrdersPage />
+                    </RedirectIfNotLoggedIn>
+                  }
+                />
+                <Route
+                  path="*"
+                  element={<h1>Error 404: Page doesn&apos;t exist</h1>}
+                />
+              </Routes>
+            </main>
+            <footer
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                width: '100%',
+                transform: 'translateY(100%)',
+              }}
+            >
+              <Footer />
+            </footer>
+          </Box>
         </Box>
       </ContextProvidersWrapper>
     </HashRouter>
