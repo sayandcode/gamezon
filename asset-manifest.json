@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/gamezon/static/css/main.e4437523.css",
-    "main.js": "/gamezon/static/js/main.c29956dc.js",
+    "main.js": "/gamezon/static/js/main.03e866dd.js",
     "static/js/802.e28090f2.chunk.js": "/gamezon/static/js/802.e28090f2.chunk.js",
     "static/js/651.c24f2044.chunk.js": "/gamezon/static/js/651.c24f2044.chunk.js",
     "static/media/noto-sans-all-500-normal.woff": "/gamezon/static/media/noto-sans-all-500-normal.72acc07464a0cdb23a21.woff",
@@ -45,12 +45,12 @@
     "static/media/noto-sans-vietnamese-700-normal.woff2": "/gamezon/static/media/noto-sans-vietnamese-700-normal.0d08f35ddb53338da80d.woff2",
     "index.html": "/gamezon/index.html",
     "main.e4437523.css.map": "/gamezon/static/css/main.e4437523.css.map",
-    "main.c29956dc.js.map": "/gamezon/static/js/main.c29956dc.js.map",
+    "main.03e866dd.js.map": "/gamezon/static/js/main.03e866dd.js.map",
     "802.e28090f2.chunk.js.map": "/gamezon/static/js/802.e28090f2.chunk.js.map",
     "651.c24f2044.chunk.js.map": "/gamezon/static/js/651.c24f2044.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.e4437523.css",
-    "static/js/main.c29956dc.js"
+    "static/js/main.03e866dd.js"
   ]
 }
